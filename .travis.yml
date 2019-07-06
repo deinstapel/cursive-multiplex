@@ -2,6 +2,10 @@ language: rust
 rust:
   - nightly
 
+install:
+  - nvm install 10
+  - ./scripts/prepare-end2end-tests.sh
+
 deploy:
   provider: pages
   skip-cleanup: true
