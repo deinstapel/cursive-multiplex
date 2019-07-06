@@ -29,6 +29,15 @@ struct Mux {
 impl View for Mux {
     fn draw(&self, printer: &Printer<'_, '_>) {
         self.v.draw(printer);
+        for node in self.tree.iter() {
+            //this has to be moved
+            match node.data.view {
+                Some(view) => {
+                    node.data.view.unwrap().draw(printer);
+                },
+                None => {}
+            }
+        }
     }
 }
 
