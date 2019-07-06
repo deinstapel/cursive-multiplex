@@ -32,8 +32,8 @@ impl View for Mux {
         for node in self.tree.iter() {
             //this has to be moved
             match node.data.view {
-                Some(view) => {
-                    node.data.view.unwrap().draw(printer);
+                Some(ref view) => {
+                    view.draw(printer);
                 },
                 None => {}
             }
@@ -66,7 +66,7 @@ impl Mux {
         let canvas = Canvas::wrap(id_view);
         let mut new = Mux{
             tree: indextree::Arena::new(),
-            v: Box::new(canvas),
+            v: Box::new(cursive::views::DummyView),
         };
         new.tree.new_node(Node::new(canvas, "foo".to_string()));
         new
