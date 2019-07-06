@@ -1,0 +1,10 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`checks if the files in this directory are the same 1`] = `
+"__snapshots__
+end2end.rs
+ls.test.js
+node_modules
+package.json
+"
+`;
