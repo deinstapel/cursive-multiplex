@@ -5,36 +5,57 @@ extern crate failure;
 
 mod error;
 
-use cursive::views::{IdView, Canvas, LinearLayout};
+use cursive::views::Canvas;
 use cursive::view::View;
+use cursive::Vec2;
 use cursive::Printer;
-use failure::Error;
 use error::AddViewError;
 
 #[derive(Debug)]
-enum Path {
-    LeftOrUp(Box<Path>),
-    RightOrDown(Box<Path>),
+pub enum Path {
+    LeftOrUp(Box<Option<Path>>),
+    RightOrDown(Box<Option<Path>>),
 }
 
 type Id = String;
 
-struct Mux {
+pub struct Mux {
     tree: indextree::Arena<Node>,
     root: indextree::NodeId,
     v: Box<dyn View>,
 }
 
 impl View for Mux {
-    fn draw(&self, printer: &Printer<'_, '_>) {
+    fn draw(&self, printer: &Printer) {
         self.v.draw(printer);
         for node in self.tree.iter() {
             match node.data.view {
                 Some(ref view) => {
                     view.draw(printer);
                 },
-                None => {}
+                None => {},
             }
+        }
+    }
+
+    fn needs_relayout(&self) -> bool {
+        true
+    }
+
+    fn required_size(&mut self, constraint: Vec2) -> Vec2 {
+        Vec2::new(constraint.x, constraint.y/3)
+    }
+
+    fn layout(&mut self, constraint: Vec2) {
+        // We need mutables for layouting so lets take another route
+        let mut ids = Vec::new();
+        for node_id in self.root.descendants(&self.tree) {
+            ids.push(node_id);
+        }
+
+        // And now read them out, but mutable
+        for node_id in ids {
+            self.tree.get_mut(node_id).unwrap().data.layout_view(constraint);
         }
     }
 }
@@ -54,20 +75,23 @@ impl Node {
             id: id,
         }
     }
+
+    fn layout_view(&mut self, vec: Vec2) {
+        if let Some(x) = self.view.as_mut() {
+            x.layout(vec);
+        }
+    }
 }
 
 impl Mux {
     pub fn new() -> Mux {
-
-        let layout = LinearLayout::vertical();
-        let id_view = IdView::new("root", layout);
-        let canvas = Canvas::wrap(id_view);
+        let canvas = Canvas::new(());
         let mut new_tree = indextree::Arena::new();
         let new_root = new_tree.new_node(Node::new(canvas, "foo".to_string()));
         let new_mux = Mux{
             tree: new_tree,
             root: new_root,
-            v: Box::new(cursive::views::DummyView),
+            v: Box::new(cursive::views::TextView::new("It is working fine.".to_string())),
         };
         new_mux
     }
@@ -98,7 +122,7 @@ impl Mux {
                         Path::LeftOrUp(ch)=> {
                             match cur_node.children(&self.tree).nth(0) {
                                 Some(node) => {
-                                    self.add_horizontal_path(v, node, Some(*ch), new_id)
+                                    self.add_horizontal_path(v, node, *ch, new_id)
                                     // Ok (self)
                                 },
                                 None => {
@@ -111,7 +135,7 @@ impl Mux {
                             if cur_node.children(&self.tree).count() < 2 {
                                 match cur_node.children(&self.tree).last() {
                                     Some(node) => {
-                                        self.add_horizontal_path(v, node, Some(*ch), new_id)
+                                        self.add_horizontal_path(v, node, *ch, new_id)
                                         // Ok(self)
                                     },
                                     None => {
@@ -120,7 +144,7 @@ impl Mux {
                                     },
                                 }
                             } else {
-                                Err(AddViewError::InvalidPath{path: *ch})
+                                Err(AddViewError::InvalidPath{path: ch.unwrap()})
                             }
                         },
                     }
