@@ -2,10 +2,10 @@ extern crate cursive;
 extern crate indextree;
 extern crate failure;
 #[macro_use] extern crate failure_derive;
+#[macro_use] extern crate log;
 
 mod error;
 
-use cursive::views::Canvas;
 use cursive::view::View;
 use cursive::Vec2;
 use cursive::Printer;
@@ -15,6 +15,11 @@ use error::AddViewError;
 pub enum Path {
     LeftOrUp(Box<Option<Path>>),
     RightOrDown(Box<Option<Path>>),
+}
+
+enum Orientation {
+    Vertical,
+    Horizontal,
 }
 
 type Id = String;
@@ -27,16 +32,9 @@ pub struct Mux {
 
 impl View for Mux {
     fn draw(&self, printer: &Printer) {
-        self.v.draw(printer);
-        for node in self.tree.iter() {
-            match node.data.view {
-                Some(ref view) => {
-                    view.draw(printer);
-                },
-                None => {},
-            }
-        }
+        self.rec_draw(printer, self.root)
     }
+
 
     fn needs_relayout(&self) -> bool {
         true
@@ -63,16 +61,18 @@ impl View for Mux {
 struct Node {
     view: Option<Box<dyn View>>,
     id: Id,
+    orientation: Orientation,
 }
 
 impl Node {
-    fn new<T>(v: T, id: Id) -> Self
+    fn new<T>(v: T, id: Id, orit: Orientation) -> Self
     where
         T: View
     {
         Self {
             view: Some(Box::new(v)),
             id: id,
+            orientation: orit
         }
     }
 
@@ -81,19 +81,47 @@ impl Node {
             x.layout(vec);
         }
     }
+
+    fn draw(&self, printer: &Printer) {
+        match self.view {
+            Some(ref view) => {
+                view.draw(printer);
+            },
+            None => {},
+        }
+    }
 }
 
 impl Mux {
     pub fn new() -> Mux {
-        let canvas = Canvas::new(());
+        let root_node = Node {
+            view: None,
+            id: "foo".to_string(),
+            orientation: Orientation::Horizontal,
+        };
         let mut new_tree = indextree::Arena::new();
-        let new_root = new_tree.new_node(Node::new(canvas, "foo".to_string()));
+        let new_root = new_tree.new_node(root_node);
         let new_mux = Mux{
             tree: new_tree,
             root: new_root,
             v: Box::new(cursive::views::TextView::new("It is working fine.".to_string())),
         };
         new_mux
+    }
+
+    fn rec_draw(&self, printer: &Printer, root: indextree::NodeId) {
+        self.tree.get(root).unwrap().data.draw(printer);
+        match root.children(&self.tree).count() {
+            1 => self.rec_draw(printer, root.children(&self.tree).next().unwrap()),
+            2 => {
+                let printer1 = &printer.cropped(Vec2::new(printer.size.x/2, printer.size.y));
+                let printer2 = &printer.offset(Vec2::new(printer.size.x/2, 0)).cropped(Vec2::new(printer.size.x/2, printer.size.y));
+                self.rec_draw(printer1, root.children(&self.tree).next().unwrap());
+                self.rec_draw(printer2, root.children(&self.tree).last().unwrap());
+            },
+            0 => {},
+            _ => {debug!("Illegal Number of Child Nodes")},
+        }
     }
 
     // Might remove this
@@ -123,7 +151,6 @@ impl Mux {
                             match cur_node.children(&self.tree).nth(0) {
                                 Some(node) => {
                                     self.add_horizontal_path(v, node, *ch, new_id)
-                                    // Ok (self)
                                 },
                                 None => {
                                     // Truncate
@@ -150,7 +177,7 @@ impl Mux {
                     }
                 },
                 None if cur_node.following_siblings(&self.tree, ).count() + cur_node.preceding_siblings(&self.tree, ).count() < 2 => {
-                    let new_node = self.tree.new_node(Node::new(v, new_id));
+                    let new_node = self.tree.new_node(Node::new(v, new_id, Orientation::Horizontal));
                     cur_node.insert_after(new_node, &mut self.tree, )?;
                     Ok(self)
                 },
@@ -162,11 +189,12 @@ impl Mux {
                     let new_intermediate = self.tree.new_node(Node{
                         view: None,
                         id: "intermediate".to_string(),
+                        orientation: Orientation::Horizontal,
                     });
 
                     parent.append(new_intermediate, &mut self.tree)?;
                     new_intermediate.append(cur_node, &mut self.tree, )?;
-                    new_intermediate.append(self.tree.new_node(Node::new(v, new_id)), &mut self.tree, )?;
+                    new_intermediate.append(self.tree.new_node(Node::new(v, new_id, Orientation::Horizontal)), &mut self.tree, )?;
                     Ok(self)
                 },
             }
@@ -176,7 +204,7 @@ impl Mux {
     where
         T: View
     {
-                let new_node = self.tree.new_node(Node::new(v, new_id));
+                let new_node = self.tree.new_node(Node::new(v, new_id, Orientation::Horizontal));
 
                 // Copy index here to extra vector so self is not bound to the iterator
                 // self.tree is here not clonable, bc no cursive implements the clone trait
@@ -197,6 +225,7 @@ impl Mux {
                             let new_intermediate = self.tree.new_node(Node{
                                 view: None,
                                 id: "intermediate".to_string(),
+                                orientation: Orientation::Horizontal,
                             });
 
                             parent.append(new_intermediate, &mut self.tree)?;
