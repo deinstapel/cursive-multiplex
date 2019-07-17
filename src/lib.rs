@@ -27,7 +27,6 @@ type Id = String;
 pub struct Mux {
     tree: indextree::Arena<Node>,
     root: indextree::NodeId,
-    v: Box<dyn View>,
 }
 
 impl View for Mux {
@@ -104,20 +103,39 @@ impl Mux {
         let new_mux = Mux{
             tree: new_tree,
             root: new_root,
-            v: Box::new(cursive::views::TextView::new("It is working fine.".to_string())),
         };
         new_mux
     }
 
     fn rec_draw(&self, printer: &Printer, root: indextree::NodeId) {
         self.tree.get(root).unwrap().data.draw(printer);
+        let printer1;
+        let printer2;
         match root.children(&self.tree).count() {
             1 => self.rec_draw(printer, root.children(&self.tree).next().unwrap()),
             2 => {
-                let printer1 = &printer.cropped(Vec2::new(printer.size.x/2, printer.size.y));
-                let printer2 = &printer.offset(Vec2::new(printer.size.x/2, 0)).cropped(Vec2::new(printer.size.x/2, printer.size.y));
-                self.rec_draw(printer1, root.children(&self.tree).next().unwrap());
-                self.rec_draw(printer2, root.children(&self.tree).last().unwrap());
+                debug!("Print Children Nodes");
+                match self.tree.get(root).unwrap().data.orientation {
+                    Orientation::Horizontal => {
+                        printer1 = printer.cropped(Vec2::new(printer.size.x/2, printer.size.y));
+                        printer2 = printer.offset(Vec2::new(printer.size.x/2, 0)).cropped(Vec2::new(printer.size.x/2, printer.size.y));
+                    },
+                    Orientation::Vertical => {
+                        printer1 = printer.cropped(Vec2::new(printer.size.x, printer.size.y/2));
+                        printer2 = printer.offset(Vec2::new(0,printer.size.y/2)).cropped(Vec2::new(printer.size.x,printer.size.y/2));
+                    },
+                }
+                self.rec_draw(&printer1, root.children(&self.tree).next().unwrap());
+                match self.tree.get(root).unwrap().data.orientation {
+                    Orientation::Vertical => {
+                        printer1.print_hline(Vec2::new(0, printer.size.y/2-1), printer.size.x, "─");
+                    },
+                    Orientation::Horizontal => {
+                        printer1.print_vline(Vec2::new(printer.size.x/2-1, 0), printer.size.y, "|");
+                    },
+                }
+                debug!("Print Delimiter");
+                self.rec_draw(&printer2, root.children(&self.tree).last().unwrap());
             },
             0 => {},
             _ => {debug!("Illegal Number of Child Nodes")},
@@ -204,36 +222,52 @@ impl Mux {
     where
         T: View
     {
-                let new_node = self.tree.new_node(Node::new(v, new_id, Orientation::Horizontal));
+        self.add_node_id(v, id, new_id,Orientation::Horizontal)
+    }
 
-                // Copy index here to extra vector so self is not bound to the iterator
-                // self.tree is here not clonable, bc no cursive implements the clone trait
-                let mut descendants = Vec::new();
-                self.root.descendants(&self.tree).for_each(|node_id| {
-                    descendants.push(node_id);
-                });
+    fn add_node_id<T>(&mut self, v: T, id: Id, new_id: Id, orientation: Orientation) -> Result<&Self, AddViewError>
+    where
+        T: View
+    {
+        let new_node = self.tree.new_node(Node::new(v, new_id, Orientation::Horizontal));
 
-                for node_id in descendants.iter() {
-                    if self.tree.get(*node_id).unwrap().data.id == id {
-                        if node_id.children(&self.tree).count() < 2 {
-                            node_id.append(new_node, &mut self.tree)?;
-                        } else {
-                            // First element is node itself, second direct parent
-                            let parent = node_id.ancestors(&self.tree).nth(1).unwrap();
-                            node_id.detach(&mut self.tree);
+        // Copy index here to extra vector so self is not bound to the iterator
+        // self.tree is here not clonable, bc no cursive implements the clone trait
+        let mut descendants = Vec::new();
+        self.root.descendants(&self.tree).for_each(|node_id| {
+            descendants.push(node_id);
+        });
 
-                            let new_intermediate = self.tree.new_node(Node{
-                                view: None,
-                                id: "intermediate".to_string(),
-                                orientation: Orientation::Horizontal,
-                            });
+        for node_id in descendants.iter() {
+            if self.tree.get(*node_id).unwrap().data.id == id {
+                if node_id.children(&self.tree).count() < 2 {
+                    node_id.append(new_node, &mut self.tree)?;
+                    self.tree.get_mut(*node_id).unwrap().data.orientation = orientation;
+                } else {
+                    // First element is node itself, second direct parent
+                    let parent = node_id.ancestors(&self.tree).nth(1).unwrap();
+                    node_id.detach(&mut self.tree);
 
-                            parent.append(new_intermediate, &mut self.tree)?;
-                            new_intermediate.append(*node_id, &mut self.tree, )?;
-                            new_intermediate.append(new_node, &mut self.tree, )?;
-                        }
-                    }
+                    let new_intermediate = self.tree.new_node(Node{
+                        view: None,
+                        id: "intermediate".to_string(),
+                        orientation: orientation,
+                    });
+
+                    parent.append(new_intermediate, &mut self.tree)?;
+                    new_intermediate.append(*node_id, &mut self.tree, )?;
+                    new_intermediate.append(new_node, &mut self.tree, )?;
                 }
-                Ok(self)
+                break
+            }
+        }
+        Ok(self)
+    }
+
+    pub fn add_vertical_id<T>(&mut self, v: T, id: Id, new_id: Id) -> Result<&Self, AddViewError>
+    where
+        T: View
+    {
+        self.add_node_id(v, id, new_id, Orientation::Vertical)
     }
 }
