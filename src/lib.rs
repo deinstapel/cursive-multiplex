@@ -142,23 +142,21 @@ impl Mux {
         }
     }
 
-    // Might remove this
-    pub fn add_horizontal<T>(&mut self, v: T, path: Option<Path>, id: Option<Id>, new_id: Id) -> Result<&Self, AddViewError>
+    pub fn add_horizontal_path<T>(&mut self, v: T, path: Option<Path>, new_id: Id) -> Result<&Self, AddViewError>
     where
         T: View
     {
-        match path {
-            Some(path) => self.add_horizontal_path(v, self.root, Some(path), new_id),
-            None => {
-                match id {
-                    Some(id) => self.add_horizontal_id(v, id, new_id),
-                    None => Err(AddViewError::GenericError{})
-                }
-            }
-        }
+        self.add_node_path(v, path, new_id, Orientation::Horizontal, self.root)
     }
 
-    pub fn add_horizontal_path<T>(&mut self, v: T, cur_node: indextree::NodeId, path: Option<Path>, new_id: Id) -> Result<&Self, AddViewError>
+    pub fn add_vertical_path<T>(&mut self, v: T, path: Option<Path>, new_id: Id) -> Result<&Self, AddViewError>
+    where
+        T: View
+    {
+        self.add_node_path(v, path, new_id, Orientation::Vertical, self.root)
+    }
+
+    fn add_node_path<T>(&mut self, v: T, path: Option<Path>, new_id: Id, orientation: Orientation, cur_node: indextree::NodeId) -> Result<&Self, AddViewError>
     where
         T: View
     {
@@ -168,11 +166,11 @@ impl Mux {
                         Path::LeftOrUp(ch)=> {
                             match cur_node.children(&self.tree).nth(0) {
                                 Some(node) => {
-                                    self.add_horizontal_path(v, node, *ch, new_id)
+                                    self.add_node_path(v, *ch, new_id, orientation, node)
                                 },
                                 None => {
                                     // Truncate
-                                    self.add_horizontal_path(v, cur_node, None, new_id)
+                                    self.add_node_path(v, None, new_id, orientation, cur_node)
                                 },
                             }
                         },
@@ -180,12 +178,12 @@ impl Mux {
                             if cur_node.children(&self.tree).count() < 2 {
                                 match cur_node.children(&self.tree).last() {
                                     Some(node) => {
-                                        self.add_horizontal_path(v, node, *ch, new_id)
+                                        self.add_node_path(v, *ch, new_id, orientation, node)
                                         // Ok(self)
                                     },
                                     None => {
                                         // Truncate, if too specific
-                                        self.add_horizontal_path(v, cur_node, None, new_id)
+                                        self.add_node_path(v, None, new_id, orientation, cur_node)
                                     },
                                 }
                             } else {

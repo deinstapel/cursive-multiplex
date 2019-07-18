@@ -11,7 +11,7 @@ fn main() {
 
     let mut mux = Mux::new();
 
-    match mux.add_horizontal(cursive::views::TextView::new("It works!".to_string()), None, Some("foo".to_string()), "bar".to_string()) {
+    match mux.add_horizontal_id(cursive::views::TextView::new("It works!".to_string()), "foo".to_string(), "bar".to_string()) {
         Ok(_) => {
         },
         Err(_) => {
@@ -23,7 +23,7 @@ fn main() {
         Err(_) => {
         },
     }
-    match mux.add_horizontal(cursive::views::TextView::new("More text".to_string()), Some(Path::LeftOrUp(Box::new(None))), None, "loo".to_string()) {
+    match mux.add_horizontal_path(cursive::views::TextView::new("More text".to_string()), Some(Path::LeftOrUp(Box::new(None))), "loo".to_string()) {
         Ok(_) => {
         },
         Err(_) => {
