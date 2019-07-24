@@ -10,6 +10,12 @@ pub enum AddViewError {
     GenericError {},
 }
 
+#[derive(Debug, Fail)]
+pub enum SearchPathError {
+    #[fail(display = "some error occured")]
+    GenericError {},
+}
+
 impl std::convert::From<failure::Error> for AddViewError {
     fn from(_error: failure::Error) -> Self {
         AddViewError::GenericError{}

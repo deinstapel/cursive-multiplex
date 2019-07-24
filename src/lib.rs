@@ -6,7 +6,9 @@ extern crate failure;
 
 mod error;
 
-use cursive::view::View;
+use cursive::view::{View, Selector};
+use cursive::event::{Event, EventResult, Key};
+use cursive::direction::{Absolute, Direction};
 use cursive::Vec2;
 use cursive::Printer;
 use error::AddViewError;
@@ -17,20 +19,31 @@ pub enum Path {
     RightOrDown(Box<Option<Path>>),
 }
 
+#[derive(PartialEq)]
 enum Orientation {
     Vertical,
     Horizontal,
 }
 
-type Id = String;
+#[derive(Debug,PartialEq)]
+enum SearchPath {
+    Left,
+    Right,
+    Up,
+    Down,
+}
+
+pub type Id = indextree::NodeId;
 
 pub struct Mux {
     tree: indextree::Arena<Node>,
     root: indextree::NodeId,
+    focus: indextree::NodeId,
 }
 
 impl View for Mux {
     fn draw(&self, printer: &Printer) {
+        debug!("Current Focus: {}", self.focus);
         self.rec_draw(printer, self.root)
     }
 
@@ -40,7 +53,7 @@ impl View for Mux {
     }
 
     fn required_size(&mut self, constraint: Vec2) -> Vec2 {
-        Vec2::new(constraint.x, constraint.y/3)
+        constraint
     }
 
     fn layout(&mut self, constraint: Vec2) {
@@ -55,23 +68,54 @@ impl View for Mux {
             self.tree.get_mut(node_id).unwrap().data.layout_view(constraint);
         }
     }
+
+    fn take_focus(&mut self, _source: Direction) -> bool {
+        true
+    }
+
+    fn focus_view(&mut self, _: &Selector) -> Result<(), ()> {
+        Ok(())
+    }
+
+    fn on_event(&mut self, evt: Event) -> EventResult {
+        match evt {
+            Event::Key(Key::Left) => {
+                self.move_focus(Absolute::Left)
+            },
+            Event::Key(Key::Right) => {
+                self.move_focus(Absolute::Right)
+            },
+            Event::Key(Key::Up) => {
+                self.move_focus(Absolute::Up)
+            },
+            Event::Key(Key::Down) => {
+                self.move_focus(Absolute::Down)
+            },
+            _ => EventResult::Ignored,
+        }
+    }
 }
 
 struct Node {
     view: Option<Box<dyn View>>,
-    id: Id,
     orientation: Orientation,
 }
 
 impl Node {
-    fn new<T>(v: T, id: Id, orit: Orientation) -> Self
+    fn new<T>(v: T, orit: Orientation) -> Self
     where
         T: View
     {
         Self {
             view: Some(Box::new(v)),
-            id: id,
             orientation: orit
+        }
+    }
+
+    fn has_view(&self) -> bool {
+        match self.view {
+            Some(_) => true,
+            None => false,
         }
     }
 
@@ -89,13 +133,13 @@ impl Node {
             None => {},
         }
     }
+
 }
 
 impl Mux {
     pub fn new() -> Mux {
         let root_node = Node {
             view: None,
-            id: "foo".to_string(),
             orientation: Orientation::Horizontal,
         };
         let mut new_tree = indextree::Arena::new();
@@ -103,8 +147,13 @@ impl Mux {
         let new_mux = Mux{
             tree: new_tree,
             root: new_root,
+            focus: new_root,
         };
         new_mux
+    }
+
+    pub fn get_root(&self) -> Id {
+        self.root
     }
 
     fn rec_draw(&self, printer: &Printer, root: indextree::NodeId) {
@@ -115,17 +164,19 @@ impl Mux {
             1 => self.rec_draw(printer, root.children(&self.tree).next().unwrap()),
             2 => {
                 debug!("Print Children Nodes");
+                let left = root.children(&self.tree).next().unwrap();
+                let right = root.children(&self.tree).last().unwrap();
                 match self.tree.get(root).unwrap().data.orientation {
                     Orientation::Horizontal => {
                         printer1 = printer.cropped(Vec2::new(printer.size.x/2, printer.size.y));
                         printer2 = printer.offset(Vec2::new(printer.size.x/2, 0)).cropped(Vec2::new(printer.size.x/2, printer.size.y));
                     },
                     Orientation::Vertical => {
-                        printer1 = printer.cropped(Vec2::new(printer.size.x, printer.size.y/2));
+                        printer1 = printer.cropped(Vec2::new(printer.size.x, printer.size.y/2)).focused(self.focus == left);
                         printer2 = printer.offset(Vec2::new(0,printer.size.y/2)).cropped(Vec2::new(printer.size.x,printer.size.y/2));
                     },
                 }
-                self.rec_draw(&printer1, root.children(&self.tree).next().unwrap());
+                self.rec_draw(&printer1, left);
                 match self.tree.get(root).unwrap().data.orientation {
                     Orientation::Vertical => {
                         printer1.print_hline(Vec2::new(0, printer.size.y/2-1), printer.size.x, "─");
@@ -135,28 +186,28 @@ impl Mux {
                     },
                 }
                 debug!("Print Delimiter");
-                self.rec_draw(&printer2, root.children(&self.tree).last().unwrap());
+                self.rec_draw(&printer2, right);
             },
             0 => {},
             _ => {debug!("Illegal Number of Child Nodes")},
         }
     }
 
-    pub fn add_horizontal_path<T>(&mut self, v: T, path: Option<Path>, new_id: Id) -> Result<&Self, AddViewError>
+    pub fn add_horizontal_path<T>(&mut self, v: T, path: Option<Path>) -> Result<Id, AddViewError>
     where
         T: View
     {
-        self.add_node_path(v, path, new_id, Orientation::Horizontal, self.root)
+        self.add_node_path(v, path, Orientation::Horizontal, self.root)
     }
 
-    pub fn add_vertical_path<T>(&mut self, v: T, path: Option<Path>, new_id: Id) -> Result<&Self, AddViewError>
+    pub fn add_vertical_path<T>(&mut self, v: T, path: Option<Path>) -> Result<Id, AddViewError>
     where
         T: View
     {
-        self.add_node_path(v, path, new_id, Orientation::Vertical, self.root)
+        self.add_node_path(v, path, Orientation::Vertical, self.root)
     }
 
-    fn add_node_path<T>(&mut self, v: T, path: Option<Path>, new_id: Id, orientation: Orientation, cur_node: indextree::NodeId) -> Result<&Self, AddViewError>
+    fn add_node_path<T>(&mut self, v: T, path: Option<Path>, orientation: Orientation, cur_node: indextree::NodeId) -> Result<Id, AddViewError>
     where
         T: View
     {
@@ -166,11 +217,11 @@ impl Mux {
                         Path::LeftOrUp(ch)=> {
                             match cur_node.children(&self.tree).nth(0) {
                                 Some(node) => {
-                                    self.add_node_path(v, *ch, new_id, orientation, node)
+                                    self.add_node_path(v, *ch, orientation, node)
                                 },
                                 None => {
                                     // Truncate
-                                    self.add_node_path(v, None, new_id, orientation, cur_node)
+                                    self.add_node_path(v, None, orientation, cur_node)
                                 },
                             }
                         },
@@ -178,12 +229,12 @@ impl Mux {
                             if cur_node.children(&self.tree).count() < 2 {
                                 match cur_node.children(&self.tree).last() {
                                     Some(node) => {
-                                        self.add_node_path(v, *ch, new_id, orientation, node)
+                                        self.add_node_path(v, *ch, orientation, node)
                                         // Ok(self)
                                     },
                                     None => {
                                         // Truncate, if too specific
-                                        self.add_node_path(v, None, new_id, orientation, cur_node)
+                                        self.add_node_path(v, None, orientation, cur_node)
                                     },
                                 }
                             } else {
@@ -193,9 +244,11 @@ impl Mux {
                     }
                 },
                 None if cur_node.following_siblings(&self.tree, ).count() + cur_node.preceding_siblings(&self.tree, ).count() < 2 => {
-                    let new_node = self.tree.new_node(Node::new(v, new_id, Orientation::Horizontal));
+                    let new_node = self.tree.new_node(Node::new(v, Orientation::Horizontal));
                     cur_node.insert_after(new_node, &mut self.tree, )?;
-                    Ok(self)
+                    self.focus = new_node;
+                    debug!("Changed Focus: {}", new_node);
+                    Ok(new_node)
                 },
                 None => {
                     // First element is node itself, second direct parent
@@ -204,68 +257,295 @@ impl Mux {
 
                     let new_intermediate = self.tree.new_node(Node{
                         view: None,
-                        id: "intermediate".to_string(),
                         orientation: Orientation::Horizontal,
                     });
 
                     parent.append(new_intermediate, &mut self.tree)?;
                     new_intermediate.append(cur_node, &mut self.tree, )?;
-                    new_intermediate.append(self.tree.new_node(Node::new(v, new_id, Orientation::Horizontal)), &mut self.tree, )?;
-                    Ok(self)
+                    let new_node = self.tree.new_node(Node::new(v, Orientation::Horizontal));
+                    new_intermediate.append(new_node, &mut self.tree, )?;
+                    self.focus = new_node;
+                    debug!("Changed Focus: {}", new_node);
+                    Ok(new_node)
                 },
             }
     }
 
-    pub fn add_horizontal_id<T>(&mut self, v: T, id: Id, new_id: Id) -> Result<&Self, AddViewError>
+    pub fn add_horizontal_id<T>(&mut self, v: T, id: Id) -> Result<Id, AddViewError>
     where
         T: View
     {
-        self.add_node_id(v, id, new_id,Orientation::Horizontal)
+        self.add_node_id(v, id, Orientation::Horizontal)
     }
 
-    fn add_node_id<T>(&mut self, v: T, id: Id, new_id: Id, orientation: Orientation) -> Result<&Self, AddViewError>
+    fn add_node_id<T>(&mut self, v: T, id: Id, orientation: Orientation) -> Result<Id, AddViewError>
     where
         T: View
     {
-        let new_node = self.tree.new_node(Node::new(v, new_id, Orientation::Horizontal));
+        let new_node = self.tree.new_node(Node::new(v, Orientation::Horizontal));
 
-        // Copy index here to extra vector so self is not bound to the iterator
-        // self.tree is here not clonable, bc no cursive implements the clone trait
-        let mut descendants = Vec::new();
-        self.root.descendants(&self.tree).for_each(|node_id| {
-            descendants.push(node_id);
-        });
+        let mut node_id;
+        if let Some(parent) = id.ancestors(&self.tree).nth(1) {
+            node_id = parent;
+        } else {
+            node_id = id;
+        }
 
-        for node_id in descendants.iter() {
-            if self.tree.get(*node_id).unwrap().data.id == id {
-                if node_id.children(&self.tree).count() < 2 {
-                    node_id.append(new_node, &mut self.tree)?;
-                    self.tree.get_mut(*node_id).unwrap().data.orientation = orientation;
-                } else {
-                    // First element is node itself, second direct parent
-                    let parent = node_id.ancestors(&self.tree).nth(1).unwrap();
-                    node_id.detach(&mut self.tree);
+        if node_id.children(&self.tree).count() < 2 && !self.tree.get(node_id).unwrap().data.has_view() {
+            node_id.append(new_node, &mut self.tree)?;
+            self.tree.get_mut(node_id).unwrap().data.orientation = orientation;
+        } else {
+            // First element is node itself, second direct parent
+            let parent = node_id;
+            node_id = id;
 
-                    let new_intermediate = self.tree.new_node(Node{
-                        view: None,
-                        id: "intermediate".to_string(),
-                        orientation: orientation,
-                    });
+            let position: Path;
+            if parent.children(&self.tree).next().unwrap() == node_id {
+                position = Path::LeftOrUp(Box::new(None));
+            } else {
+                position = Path::RightOrDown(Box::new(None));
+            }
 
+            node_id.detach(&mut self.tree);
+
+            let new_intermediate = self.tree.new_node(Node{
+                view: None,
+                orientation: orientation,
+            });
+            match position {
+                Path::RightOrDown(_) => {
                     parent.append(new_intermediate, &mut self.tree)?;
-                    new_intermediate.append(*node_id, &mut self.tree, )?;
-                    new_intermediate.append(new_node, &mut self.tree, )?;
+                },
+                Path::LeftOrUp(_) => {
+                    parent.prepend(new_intermediate, &mut self.tree)?;
                 }
-                break
+            }
+            new_intermediate.append(node_id, &mut self.tree, )?;
+            new_intermediate.append(new_node, &mut self.tree, )?;
+            debug!("Changed order");
+        }
+
+        self.focus = new_node;
+        debug!("Changed Focus: {}", new_node);
+        Ok(new_node)
+    }
+
+    pub fn add_vertical_id<T>(&mut self, v: T, id: Id) -> Result<Id, AddViewError>
+    where
+        T: View
+    {
+        self.add_node_id(v, id, Orientation::Vertical)
+    }
+
+    fn move_focus(&mut self, direction: Absolute) -> EventResult {
+        match self.search_focus_path(direction, self.focus.ancestors(&self.tree).nth(1).unwrap(), self.focus) {
+            Ok((path, turn_point)) => {
+                // Traverse the path down again
+                if let Some(focus) = self.traverse_search_path(path, turn_point) {
+                    self.focus = focus;
+                    EventResult::Consumed(None)
+                } else {
+                    EventResult::Ignored
+                }
+            },
+            Err(_) => EventResult::Ignored,
+        }
+    }
+
+    fn traverse_search_path(&self, mut path: Vec<SearchPath>, turn_point: Id) -> Option<Id> {
+        let mut cur_node = turn_point;
+
+        println!("Path Begin: {:?}", path);
+        while let Some(step) = path.pop() {
+            match self.traverse_single_node(step, turn_point, cur_node) {
+                Some(node) => {
+                    cur_node = node;
+                },
+                None => {
+                    println!("Remaining Path: {:?}", path);
+                    println!("Current node: {}", cur_node);
+                    // cur_node = cur_node.children(&self.tree).next().unwrap();
+                    break
+                },
             }
         }
-        Ok(self)
+        Some(cur_node)
     }
 
-    pub fn add_vertical_id<T>(&mut self, v: T, id: Id, new_id: Id) -> Result<&Self, AddViewError>
-    where
-        T: View
-    {
-        self.add_node_id(v, id, new_id, Orientation::Vertical)
+
+    fn traverse_single_node(&self, action: SearchPath, turn_point: Id, cur_node: Id) -> Option<Id> {
+        let left = || -> Option<Id> {
+            if let Some(left) = cur_node.children(&self.tree).next() {
+                Some(left)
+            } else {
+                None
+            }
+        };
+
+        let right = || -> Option<Id> {
+            if let Some(right) = cur_node.children(&self.tree).last() {
+                Some(right)
+            } else {
+                None
+            }
+        };
+        let up = left;
+        let down = right;
+
+        match self.tree.get(turn_point).unwrap().data.orientation {
+            Orientation::Horizontal => {
+                match action {
+                    // Switching Sides for Left & Right
+                    SearchPath::Right if self.tree.get(cur_node).unwrap().data.orientation == Orientation::Horizontal => {
+                        left()
+                    },
+                    SearchPath::Left if self.tree.get(cur_node).unwrap().data.orientation == Orientation::Horizontal => {
+                        right()
+                    },
+                    // Remain for Up & Down
+                    SearchPath::Up if self.tree.get(cur_node).unwrap().data.orientation == Orientation::Vertical => {
+                        up()
+                    },
+                    SearchPath::Down if self.tree.get(cur_node).unwrap().data.orientation == Orientation::Vertical => {
+                        down()
+                    },
+                    _ => None,
+                }
+            },
+            Orientation::Vertical => {
+                match action {
+                    // Remain for Left & Right
+                    SearchPath::Right if self.tree.get(cur_node).unwrap().data.orientation == Orientation::Horizontal => {
+                        right()
+                    },
+                    SearchPath::Left if self.tree.get(cur_node).unwrap().data.orientation == Orientation::Horizontal => {
+                        left()
+                    },
+                    // Switch for Up & Down
+                    SearchPath::Up if self.tree.get(cur_node).unwrap().data.orientation == Orientation::Vertical => {
+                        down()
+                    },
+                    SearchPath::Down if self.tree.get(cur_node).unwrap().data.orientation == Orientation::Vertical => {
+                        up()
+                    },
+                    _ => None,
+                }
+            },
+        }
+    }
+
+    fn search_focus_path(&self, direction: Absolute, nodeid: Id, fromid: Id) -> Result<(Vec<SearchPath>, Id), ()>  {
+
+        let mut cur_node = Some(nodeid);
+        let mut from_node = fromid;
+
+        let mut path = Vec::new();
+
+        while cur_node.is_some() {
+            match self.tree.get(nodeid).unwrap().data.orientation {
+                Orientation::Horizontal if direction == Absolute::Left || direction == Absolute::Right => {
+                    if nodeid.children(&self.tree).next().unwrap() == from_node {
+                        path.push(SearchPath::Left);
+                        from_node = cur_node.unwrap();
+                        cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
+                    } else {
+                        path.push(SearchPath::Right);
+                        from_node = cur_node.unwrap();
+                        cur_node = None;
+                    }
+                },
+                Orientation::Vertical if direction == Absolute::Up || direction == Absolute::Down => {
+                    if nodeid.children(&self.tree).next().unwrap() == from_node {
+                        path.push(SearchPath::Up);
+                        from_node = cur_node.unwrap();
+                        cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
+                    } else {
+                        path.push(SearchPath::Down);
+                        from_node = cur_node.unwrap();
+                        cur_node = None;
+                    }
+                },
+                Orientation::Horizontal => {
+                    if nodeid.children(&self.tree).next().unwrap() == from_node {
+                        path.push(SearchPath::Left);
+                        from_node = cur_node.unwrap();
+                        cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
+                    } else {
+                        path.push(SearchPath::Right);
+                        from_node = cur_node.unwrap();
+                        cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
+                    }
+                },
+                Orientation::Vertical => {
+                    if nodeid.children(&self.tree).next().unwrap() == from_node {
+                        path.push(SearchPath::Up);
+                        from_node = cur_node.unwrap();
+                        cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
+                    } else {
+                        path.push(SearchPath::Down);
+                        from_node = cur_node.unwrap();
+                        cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
+                    }
+                }
+            }
+        }
+
+        match self.tree.get(from_node).unwrap().data.orientation {
+            Orientation::Horizontal if *path.last().unwrap() == SearchPath::Down || *path.last().unwrap() == SearchPath::Up => {
+                Err(())
+            },
+            Orientation::Vertical if *path.last().unwrap() == SearchPath::Left || *path.last().unwrap() == SearchPath::Right => {
+                Err(())
+            },
+            _ => {
+                Ok((path, from_node))
+            }
+        }
+    }
+}
+
+
+#[cfg(test)]
+mod tree {
+    use cursive::views::DummyView;
+    use cursive::event::{Key, Event};
+    use cursive::traits::View;
+    use super::Mux;
+
+    #[test]
+    fn test_vertical() {
+        // Vertical test
+        println!("Vertical Test");
+        let mut test_mux = Mux::new();
+        for node in test_mux.root.descendants(&test_mux.tree) {
+            print!("{},", node);
+        }
+        println!("");
+        let node1 = test_mux.add_vertical_id(DummyView, test_mux.get_root()).unwrap();
+        for node in test_mux.root.descendants(&test_mux.tree) {
+            print!("{},", node);
+        }
+        println!("");
+        let node2 = test_mux.add_vertical_id(DummyView, node1).unwrap();
+        for node in test_mux.root.descendants(&test_mux.tree) {
+            print!("{},", node);
+        }
+        let node3 = test_mux.add_vertical_id(DummyView, node1).unwrap();
+
+        let pre_focus = test_mux.focus;
+        test_mux.on_event(Event::Key(Key::Up));
+        println!("Up Movement");
+        println!("Pre Move focus: {}, Post Move Focus: {}", pre_focus, test_mux.focus);
+        assert_ne!(pre_focus, test_mux.focus);
+
+        test_mux.on_event(Event::Key(Key::Down));
+        for node in test_mux.root.descendants(&test_mux.tree) {
+            print!("{},", node);
+        }
+        println!("Down Movement");
+        println!("Expected Focus: {}, Current Focus: {}", pre_focus, test_mux.focus);
+        assert_eq!(pre_focus, test_mux.focus);
+
+
     }
 }

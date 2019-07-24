@@ -6,5 +6,6 @@ end2end.rs
 ls.test.js
 node_modules
 package.json
+tree.rs
 "
 `;
