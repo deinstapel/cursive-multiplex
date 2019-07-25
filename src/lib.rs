@@ -517,20 +517,12 @@ mod tree {
         // Vertical test
         println!("Vertical Test");
         let mut test_mux = Mux::new();
-        for node in test_mux.root.descendants(&test_mux.tree) {
-            print!("{},", node);
-        }
-        println!("");
         let node1 = test_mux.add_vertical_id(DummyView, test_mux.get_root()).unwrap();
-        for node in test_mux.root.descendants(&test_mux.tree) {
-            print!("{},", node);
-        }
-        println!("");
         let node2 = test_mux.add_vertical_id(DummyView, node1).unwrap();
-        for node in test_mux.root.descendants(&test_mux.tree) {
-            print!("{},", node);
-        }
-        let node3 = test_mux.add_vertical_id(DummyView, node1).unwrap();
+        let _ = test_mux.add_vertical_id(DummyView, node1).unwrap();
+        let _ = test_mux.add_vertical_id(DummyView, node1).unwrap();
+        let _ = test_mux.add_vertical_id(DummyView, node2).unwrap();
+        let _ = test_mux.add_vertical_id(DummyView, node2).unwrap();
 
         let pre_focus = test_mux.focus;
         test_mux.on_event(Event::Key(Key::Up));
@@ -546,6 +538,54 @@ mod tree {
         println!("Expected Focus: {}, Current Focus: {}", pre_focus, test_mux.focus);
         assert_eq!(pre_focus, test_mux.focus);
 
+        direction_test(&mut test_mux);
+    }
 
+    #[test]
+    fn test_nesting() {
+        println!("Nesting Test");
+
+        let mut mux = Mux::new();
+
+        let mut nodes = Vec::new();
+
+        for _ in 0..10 {
+            match mux.add_horizontal_id(DummyView, if let Some(x) = nodes.last() {*x} else {mux.get_root()}) {
+                Ok(node) => {
+                    nodes.push(node);
+                },
+                Err(_) => {
+                    assert!(false);
+                },
+            }
+            match mux.add_vertical_id(DummyView, *nodes.last().unwrap()) {
+                Ok(node) => {
+                    nodes.push(node);
+                },
+                Err(_) => {
+                    assert!(false);
+                },
+            }
+        }
+
+        for node in nodes.iter() {
+            mux.focus = *node;
+            direction_test(&mut mux);
+        }
+    }
+
+    fn direction_test(mux: &mut Mux) {
+        // This is a shotgun approach to have a look if any unforeseen focus moves could happen, resulting in a uncertain state
+        mux.on_event(Event::Key(Key::Up));
+        mux.on_event(Event::Key(Key::Left));
+        mux.on_event(Event::Key(Key::Down));
+        mux.on_event(Event::Key(Key::Right));
+        mux.on_event(Event::Key(Key::Up));
+        mux.on_event(Event::Key(Key::Left));
+        mux.on_event(Event::Key(Key::Left));
+        mux.on_event(Event::Key(Key::Down));
+        mux.on_event(Event::Key(Key::Right));
+        mux.on_event(Event::Key(Key::Up));
+        mux.on_event(Event::Key(Key::Left));
     }
 }
