@@ -134,6 +134,14 @@ impl Node {
         }
     }
 
+    fn take_focus(&mut self) -> bool {
+        if let Some(view) = self.view.as_mut() {
+            view.take_focus(Direction::none())
+        } else {
+            false
+        }
+    }
+
 }
 
 impl Mux {
@@ -342,7 +350,11 @@ impl Mux {
             Ok((path, turn_point)) => {
                 // Traverse the path down again
                 if let Some(focus) = self.traverse_search_path(path, turn_point) {
-                    self.focus = focus;
+                    if self.tree.get_mut(focus).unwrap().data.take_focus() {
+                        self.focus = focus;
+                    } else {
+                        println!("Focus rejected by {}", focus);
+                    }
                     EventResult::Consumed(None)
                 } else {
                     EventResult::Ignored
@@ -442,12 +454,13 @@ impl Mux {
         let mut path = Vec::new();
 
         while cur_node.is_some() {
-            match self.tree.get(nodeid).unwrap().data.orientation {
+            println!("Current node in search path: {}", cur_node.unwrap());
+            match self.tree.get(cur_node.unwrap()).unwrap().data.orientation {
                 Orientation::Horizontal if direction == Absolute::Left || direction == Absolute::Right => {
                     if nodeid.children(&self.tree).next().unwrap() == from_node {
                         path.push(SearchPath::Left);
                         from_node = cur_node.unwrap();
-                        cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
+                        cur_node = None;
                     } else {
                         path.push(SearchPath::Right);
                         from_node = cur_node.unwrap();
@@ -458,7 +471,7 @@ impl Mux {
                     if nodeid.children(&self.tree).next().unwrap() == from_node {
                         path.push(SearchPath::Up);
                         from_node = cur_node.unwrap();
-                        cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
+                        cur_node = None;
                     } else {
                         path.push(SearchPath::Down);
                         from_node = cur_node.unwrap();
@@ -507,7 +520,7 @@ impl Mux {
 
 #[cfg(test)]
 mod tree {
-    use cursive::views::DummyView;
+    use cursive::views::{DummyView, TextArea};
     use cursive::event::{Key, Event};
     use cursive::traits::View;
     use super::Mux;
@@ -517,28 +530,20 @@ mod tree {
         // Vertical test
         println!("Vertical Test");
         let mut test_mux = Mux::new();
-        let node1 = test_mux.add_vertical_id(DummyView, test_mux.get_root()).unwrap();
-        let node2 = test_mux.add_vertical_id(DummyView, node1).unwrap();
-        let _ = test_mux.add_vertical_id(DummyView, node1).unwrap();
-        let _ = test_mux.add_vertical_id(DummyView, node1).unwrap();
-        let _ = test_mux.add_vertical_id(DummyView, node2).unwrap();
-        let _ = test_mux.add_vertical_id(DummyView, node2).unwrap();
+        let node1 = test_mux.add_vertical_id(TextArea::new(), test_mux.get_root()).unwrap();
+        let node2 = test_mux.add_vertical_id(TextArea::new(), node1).unwrap();
+        let node3 = test_mux.add_vertical_id(TextArea::new(), node2).unwrap();
 
-        let pre_focus = test_mux.focus;
-        test_mux.on_event(Event::Key(Key::Up));
+        assert_eq!(node3, test_mux.focus);
         println!("Up Movement");
-        println!("Pre Move focus: {}, Post Move Focus: {}", pre_focus, test_mux.focus);
-        assert_ne!(pre_focus, test_mux.focus);
-
-        test_mux.on_event(Event::Key(Key::Down));
-        for node in test_mux.root.descendants(&test_mux.tree) {
-            print!("{},", node);
-        }
+        test_mux.on_event(Event::Key(Key::Up));
+        print_tree(&test_mux);
+        assert_eq!(node2, test_mux.focus);
         println!("Down Movement");
-        println!("Expected Focus: {}, Current Focus: {}", pre_focus, test_mux.focus);
-        assert_eq!(pre_focus, test_mux.focus);
+        test_mux.on_event(Event::Key(Key::Down));
+        assert_eq!(node3, test_mux.focus);
 
-        direction_test(&mut test_mux);
+        // direction_test(&mut test_mux);
     }
 
     #[test]
@@ -550,6 +555,7 @@ mod tree {
         let mut nodes = Vec::new();
 
         for _ in 0..10 {
+            print_tree(&mux);
             match mux.add_horizontal_id(DummyView, if let Some(x) = nodes.last() {*x} else {mux.get_root()}) {
                 Ok(node) => {
                     nodes.push(node);
@@ -572,6 +578,36 @@ mod tree {
             mux.focus = *node;
             direction_test(&mut mux);
         }
+    }
+
+    #[test]
+    fn expected_vertical_horizontal() {
+        let mut mux = Mux::new();
+        let node1 = mux.add_horizontal_id(TextArea::new(), mux.root).unwrap();
+        let node2 = mux.add_horizontal_id(TextArea::new(), node1).unwrap();
+        let node3 = mux.add_vertical_id(TextArea::new(), node2).unwrap();
+        print_tree(&mux);
+
+        assert_eq!(mux.focus, node3);
+        mux.on_event(Event::Key(Key::Up));
+        assert_eq!(mux.focus, node2);
+        match mux.on_event(Event::Key(Key::Left)) {
+            cursive::event::EventResult::Consumed(_) => {
+                assert_eq!(mux.focus, node1);
+            },
+            cursive::event::EventResult::Ignored => {
+                println!("Not to be ignored Event ignored, Focus was at: {}", mux.focus);
+                assert!(false);
+            },
+        }
+    }
+
+    fn print_tree(mux: &Mux) {
+        print!("Current Tree: ");
+        for node in mux.root.descendants(&mux.tree) {
+            print!("{},", node);
+        }
+        println!("");
     }
 
     fn direction_test(mux: &mut Mux) {

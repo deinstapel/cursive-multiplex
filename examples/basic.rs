@@ -10,9 +10,9 @@ fn main() {
 
     let mut mux = Mux::new();
 
-    let node1 = mux.add_horizontal_id(cursive::views::TextView::new("Foo".to_string()), mux.get_root()).unwrap();
-    let node2 = mux.add_vertical_id(cursive::views::TextView::new("Bar".to_string()), node1).unwrap();
-    let node3 = mux.add_horizontal_id(cursive::views::TextView::new("Fin".to_string()), node2).unwrap();
+    let node1 = mux.add_horizontal_id(cursive::views::TextArea::new(), mux.get_root()).unwrap();
+    let node2 = mux.add_horizontal_id(cursive::views::TextArea::new(), node1).unwrap();
+    let node3 = mux.add_vertical_id(cursive::views::TextArea::new(), node2).unwrap();
 
     let idlayer = cursive::views::IdView::new("Steven", mux);
 
