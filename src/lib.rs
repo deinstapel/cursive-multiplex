@@ -11,7 +11,7 @@ use cursive::event::{Event, EventResult, Key};
 use cursive::direction::{Absolute, Direction};
 use cursive::Vec2;
 use cursive::Printer;
-use error::AddViewError;
+use error::{AddViewError, RemoveViewError};
 
 #[derive(Debug)]
 pub enum Path {
@@ -345,6 +345,39 @@ impl Mux {
         self.add_node_id(v, id, Orientation::Vertical)
     }
 
+    pub fn remove_id(&mut self, id: Id) -> Result<Id, RemoveViewError> {
+        let desc: Vec<Id> = self.root.descendants(&self.tree).collect();
+        if desc.contains(&id) {
+            let sib_id: Id;
+            if id.preceding_siblings(&self.tree,).count() > 1 {
+                sib_id = id.preceding_siblings(&self.tree, ).nth(1).unwrap();
+            } else if id.following_siblings(&self.tree, ).count() > 1 {
+                sib_id = id.following_siblings(&self.tree, ).nth(1).unwrap();
+            } else {
+                return Err(RemoveViewError::Generic{})
+            }
+            let parent = id.ancestors(&self.tree).nth(1).unwrap();
+            id.detach(&mut self.tree);
+
+            if let Some(anker) = parent.ancestors(&self.tree).nth(1) {
+                if anker.children(&self.tree).next().unwrap() == parent {
+                    parent.detach(&mut self.tree);
+                    anker.prepend(sib_id, &mut self.tree)?;
+                    Ok(id)
+                } else {
+                    parent.detach(&mut self.tree);
+                    anker.append(sib_id, &mut self.tree)?;
+                    Ok(id)
+                }
+            } else {
+                self.root = sib_id;
+                Ok(id)
+            }
+        } else {
+            Err(RemoveViewError::InvalidId{id: id})
+        }
+    }
+
     fn move_focus(&mut self, direction: Absolute) -> EventResult {
         match self.search_focus_path(direction, self.focus.ancestors(&self.tree).nth(1).unwrap(), self.focus) {
             Ok((path, turn_point)) => {
@@ -369,18 +402,27 @@ impl Mux {
 
         println!("Path Begin: {:?}", path);
         while let Some(step) = path.pop() {
+            println!("Next Step: {:?}", step);
             match self.traverse_single_node(step, turn_point, cur_node) {
                 Some(node) => {
+                    println!("{}", node);
                     cur_node = node;
                 },
                 None => {
-                    println!("Remaining Path: {:?}", path);
-                    println!("Current node: {}", cur_node);
+                    // Truncate remaining path
                     // cur_node = cur_node.children(&self.tree).next().unwrap();
                     break
                 },
             }
         }
+
+        while !self.tree.get(cur_node).unwrap().data.has_view() {
+            match cur_node.children(&self.tree).next() {
+                Some(node) => cur_node = node,
+                None => return None,
+            }
+        }
+
         Some(cur_node)
     }
 
@@ -455,20 +497,22 @@ impl Mux {
 
         while cur_node.is_some() {
             println!("Current node in search path: {}", cur_node.unwrap());
+            println!("Originating from node: {}", from_node);
             match self.tree.get(cur_node.unwrap()).unwrap().data.orientation {
                 Orientation::Horizontal if direction == Absolute::Left || direction == Absolute::Right => {
-                    if nodeid.children(&self.tree).next().unwrap() == from_node {
+                    if cur_node.unwrap().children(&self.tree).next().unwrap() == from_node {
                         path.push(SearchPath::Left);
                         from_node = cur_node.unwrap();
                         cur_node = None;
                     } else {
+                        println!("{}", cur_node.unwrap().children(&self.tree).next().unwrap() == from_node);
                         path.push(SearchPath::Right);
                         from_node = cur_node.unwrap();
                         cur_node = None;
                     }
                 },
                 Orientation::Vertical if direction == Absolute::Up || direction == Absolute::Down => {
-                    if nodeid.children(&self.tree).next().unwrap() == from_node {
+                    if cur_node.unwrap().children(&self.tree).next().unwrap() == from_node {
                         path.push(SearchPath::Up);
                         from_node = cur_node.unwrap();
                         cur_node = None;
@@ -479,7 +523,7 @@ impl Mux {
                     }
                 },
                 Orientation::Horizontal => {
-                    if nodeid.children(&self.tree).next().unwrap() == from_node {
+                    if cur_node.unwrap().children(&self.tree).next().unwrap() == from_node {
                         path.push(SearchPath::Left);
                         from_node = cur_node.unwrap();
                         cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
@@ -490,7 +534,7 @@ impl Mux {
                     }
                 },
                 Orientation::Vertical => {
-                    if nodeid.children(&self.tree).next().unwrap() == from_node {
+                    if cur_node.unwrap().children(&self.tree).next().unwrap() == from_node {
                         path.push(SearchPath::Up);
                         from_node = cur_node.unwrap();
                         cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
@@ -525,6 +569,58 @@ mod tree {
     use cursive::traits::View;
     use super::Mux;
 
+
+    #[test]
+    fn test_remove() {
+        // General Remove test
+        let mut test_mux = Mux::new();
+        let node1 = test_mux.add_vertical_id(TextArea::new(), test_mux.get_root()).unwrap();
+        let node2 = test_mux.add_vertical_id(TextArea::new(), node1).unwrap();
+        let node3 = test_mux.add_vertical_id(TextArea::new(), node2).unwrap();
+
+        print_tree(&test_mux);
+        test_mux.remove_id(node3).unwrap();
+        print_tree(&test_mux);
+        match test_mux.remove_id(node3) {
+            Ok(_) => {
+                print_tree(&test_mux);
+                println!("Delete should have removed: {}", node3);
+                assert!(false);
+            },
+            Err(_) => {},
+        }
+    }
+
+    #[test]
+    fn test_diagonal() {
+        let mut mux = Mux::new();
+
+        let node1 = mux.add_vertical_id(TextArea::new(), mux.get_root()).unwrap();
+        let node2 = mux.add_horizontal_id(TextArea::new(), node1).unwrap();
+        let _ = mux.add_vertical_id(TextArea::new(), node2).unwrap();
+        let bottom_left_corner = mux.add_vertical_id(TextArea::new(), node1).unwrap();
+        let bottom_left_middle = mux.add_horizontal_id(TextArea::new(), bottom_left_corner).unwrap();
+        let upper_right_corner = mux.add_horizontal_id(TextArea::new(), node2).unwrap();
+
+        print_tree(&mux);
+
+        mux.focus = bottom_left_corner;
+        assert_eq!(mux.focus, bottom_left_corner);
+
+        println!("Moving right...");
+        mux.on_event(Event::Key(Key::Right));
+        assert_eq!(mux.focus, bottom_left_middle);
+        println!("Moving up...");
+        mux.on_event(Event::Key(Key::Up));
+        assert_eq!(mux.focus, node1);
+        println!("Moving right...");
+        mux.on_event(Event::Key(Key::Right));
+        assert_eq!(mux.focus, node2);
+        println!("Moving right...");
+        mux.on_event(Event::Key(Key::Right));
+        assert_eq!(mux.focus, upper_right_corner);
+    }
+
     #[test]
     fn test_vertical() {
         // Vertical test
@@ -543,7 +639,7 @@ mod tree {
         test_mux.on_event(Event::Key(Key::Down));
         assert_eq!(node3, test_mux.focus);
 
-        // direction_test(&mut test_mux);
+        direction_test(&mut test_mux);
     }
 
     #[test]
