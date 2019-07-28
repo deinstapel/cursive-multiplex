@@ -11,7 +11,7 @@ use cursive::event::{Event, EventResult, Key};
 use cursive::direction::{Absolute, Direction};
 use cursive::Vec2;
 use cursive::Printer;
-use error::{AddViewError, RemoveViewError};
+use error::{AddViewError, RemoveViewError, SwitchError};
 
 #[derive(Debug)]
 pub enum Path {
@@ -378,6 +378,50 @@ impl Mux {
         }
     }
 
+    pub fn switch_views(&mut self, fst: Id, snd: Id) -> Result<(), SwitchError> {
+        if let Some(parent1) = fst.ancestors(&self.tree).nth(1) {
+            if let Some(parent2) = snd.ancestors(&self.tree).nth(1) {
+                if parent1.children(&self.tree).next().unwrap() == fst {
+                    fst.detach(&mut self.tree);
+                    if parent2.children(&self.tree).next().unwrap() == snd {
+                        snd.detach(&mut self.tree);
+                        parent1.prepend(snd, &mut self.tree)?;
+                        parent2.prepend(fst, &mut self.tree)?;
+                        Ok(())
+                    } else {
+                        snd.detach(&mut self.tree);
+                        parent1.prepend(snd, &mut self.tree)?;
+                        parent2.append(fst, &mut self.tree)?;
+                        Ok(())
+                    }
+                } else {
+                    fst.detach(&mut self.tree);
+                    if parent2.children(&self.tree).next().unwrap() == snd {
+                        snd.detach(&mut self.tree);
+                        parent1.append(snd, &mut self.tree)?;
+                        parent2.prepend(fst, &mut self.tree)?;
+                        Ok(())
+                    } else {
+                        snd.detach(&mut self.tree);
+                        parent1.append(snd, &mut self.tree)?;
+                        parent2.append(fst, &mut self.tree)?;
+                        Ok(())
+                    }
+                }
+            } else {
+                Err(SwitchError::NoParent{
+                    from: snd,
+                    to: fst,
+                })
+            }
+        } else {
+            Err(SwitchError::NoParent{
+                from: fst,
+                to: snd,
+            })
+        }
+    }
+
     fn move_focus(&mut self, direction: Absolute) -> EventResult {
         match self.search_focus_path(direction, self.focus.ancestors(&self.tree).nth(1).unwrap(), self.focus) {
             Ok((path, turn_point)) => {
@@ -640,6 +684,16 @@ mod tree {
         assert_eq!(node3, test_mux.focus);
 
         direction_test(&mut test_mux);
+    }
+
+    #[test]
+    fn test_switch() {
+        let mut mux = Mux::new();
+        let node1 = mux.add_horizontal_id(DummyView, mux.get_root()).unwrap();
+        let node2 = mux.add_horizontal_id(DummyView, node1).unwrap();
+        let node3 = mux.add_vertical_id(DummyView, node2).unwrap();
+
+        mux.switch_views(node1, node3).unwrap();
     }
 
     #[test]
