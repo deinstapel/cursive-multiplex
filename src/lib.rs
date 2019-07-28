@@ -545,25 +545,47 @@ impl Mux {
             match self.tree.get(cur_node.unwrap()).unwrap().data.orientation {
                 Orientation::Horizontal if direction == Absolute::Left || direction == Absolute::Right => {
                     if cur_node.unwrap().children(&self.tree).next().unwrap() == from_node {
+                        // Originated from left
                         path.push(SearchPath::Left);
                         from_node = cur_node.unwrap();
-                        cur_node = None;
+
+                        if direction == Absolute::Left {
+                            cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
+                        } else {
+                            cur_node = None;
+                        }
                     } else {
-                        println!("{}", cur_node.unwrap().children(&self.tree).next().unwrap() == from_node);
+                        // Originated from right
                         path.push(SearchPath::Right);
                         from_node = cur_node.unwrap();
-                        cur_node = None;
+                        if direction == Absolute::Right {
+                            cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
+                        } else {
+                            cur_node = None;
+                        }
                     }
                 },
                 Orientation::Vertical if direction == Absolute::Up || direction == Absolute::Down => {
+
                     if cur_node.unwrap().children(&self.tree).next().unwrap() == from_node {
+                        // Originated from up
                         path.push(SearchPath::Up);
                         from_node = cur_node.unwrap();
-                        cur_node = None;
+
+                        if direction == Absolute::Up {
+                            cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
+                        } else {
+                            cur_node = None;
+                        }
                     } else {
+                        // Originated from down
                         path.push(SearchPath::Down);
                         from_node = cur_node.unwrap();
-                        cur_node = None;
+                        if direction == Absolute::Down {
+                            cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
+                        } else {
+                            cur_node = None;
+                        }
                     }
                 },
                 Orientation::Horizontal => {
@@ -633,6 +655,51 @@ mod tree {
             },
             Err(_) => {},
         }
+    }
+
+    #[test]
+    fn test_quadratic() {
+        let mut mux = Mux::new();
+
+        let top_left_corner = mux.add_vertical_id(TextArea::new(), mux.get_root()).unwrap();
+        let top_right_mid = mux.add_horizontal_id(TextArea::new(), top_left_corner).unwrap();
+        let bottom_right_mid = mux.add_vertical_id(TextArea::new(), top_right_mid).unwrap();
+        let top_right_corner = mux.add_horizontal_id(TextArea::new(), top_right_mid).unwrap();
+        let bottom_right_corner = mux.add_horizontal_id(TextArea::new(), bottom_right_mid).unwrap();
+        let bottom_left_corner = mux.add_vertical_id(TextArea::new(), top_left_corner).unwrap();
+        let top_left_mid = mux.add_horizontal_id(TextArea::new(), top_left_corner).unwrap();
+        let bottom_left_mid = mux.add_horizontal_id(TextArea::new(), bottom_left_corner).unwrap();
+
+        mux.focus = top_right_corner;
+
+        print_tree(&mux);
+
+        println!("Moving left...");
+        mux.on_event(Event::Key(Key::Left));
+        assert_eq!(mux.focus, top_right_mid);
+        println!("Moving left...");
+        mux.on_event(Event::Key(Key::Left));
+        assert_eq!(mux.focus, top_left_mid);
+        println!("Moving left...");
+        mux.on_event(Event::Key(Key::Left));
+        assert_eq!(mux.focus, top_left_corner);
+        println!("Moving down");
+        mux.on_event(Event::Key(Key::Down));
+        assert_eq!(mux.focus, bottom_left_corner);
+        println!("Moving right...");
+        mux.on_event(Event::Key(Key::Right));
+        assert_eq!(mux.focus, bottom_left_mid);
+        println!("Moving right...");
+        mux.on_event(Event::Key(Key::Right));
+        assert_eq!(mux.focus, bottom_right_mid);
+        println!("Moving right...");
+        mux.on_event(Event::Key(Key::Right));
+        assert_eq!(mux.focus, bottom_right_corner);
+        println!("Moving up...");
+        mux.on_event(Event::Key(Key::Up));
+        assert_eq!(mux.focus, top_right_corner);
+
+        println!("Circle completed");
     }
 
     #[test]

@@ -10,12 +10,14 @@ fn main() {
     println!("Vertical Test");
     let mut mux = Mux::new();
 
-    let node1 = mux.add_vertical_id(TextArea::new(), mux.get_root()).unwrap();
-    let node2 = mux.add_horizontal_id(TextArea::new(), node1).unwrap();
-    let _ = mux.add_vertical_id(TextArea::new(), node2).unwrap();
-    let bottom_left_corner = mux.add_vertical_id(TextArea::new(), node1).unwrap();
-    let bottom_left_middle = mux.add_horizontal_id(TextArea::new(), bottom_left_corner).unwrap();
-    let upper_right_corner = mux.add_horizontal_id(TextArea::new(), node2).unwrap();
+    let top_left_corner = mux.add_vertical_id(TextArea::new(), mux.get_root()).unwrap();
+    let top_right_mid = mux.add_horizontal_id(TextArea::new(), top_left_corner).unwrap();
+    let bottom_right_mid = mux.add_vertical_id(TextArea::new(), top_right_mid).unwrap();
+    let top_right_corner = mux.add_horizontal_id(TextArea::new(), top_right_mid).unwrap();
+    let bottom_right_corner = mux.add_horizontal_id(TextArea::new(), bottom_right_mid).unwrap();
+    let bottom_left_corner = mux.add_vertical_id(TextArea::new(), top_left_corner).unwrap();
+    let top_left_mid = mux.add_horizontal_id(TextArea::new(), top_left_corner).unwrap();
+    let bottom_left_mid = mux.add_horizontal_id(TextArea::new(), bottom_left_corner).unwrap();
 
     let idlayer = cursive::views::IdView::new("Steven", mux);
 
@@ -24,7 +26,7 @@ fn main() {
     siv.add_fullscreen_layer(boxes);
     siv.add_global_callback('q', Cursive::quit);
     siv.add_global_callback('e', move |ref mut siv| {
-        add_plane(siv, node2);
+        add_plane(siv, top_left_mid);
     });
     cursive::logger::init();
     siv.run();
