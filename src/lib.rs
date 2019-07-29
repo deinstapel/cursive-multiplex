@@ -78,20 +78,27 @@ impl View for Mux {
     }
 
     fn on_event(&mut self, evt: Event) -> EventResult {
-        match evt {
-            Event::Key(Key::Left) => {
-                self.move_focus(Absolute::Left)
+        let result = self.tree.get_mut(self.focus).unwrap().data.on_event(evt.relativized(Vec2::new(0, 0)));
+
+        match result {
+            EventResult::Ignored => {
+                match evt {
+                    Event::Key(Key::Left) => {
+                        self.move_focus(Absolute::Left)
+                    },
+                    Event::Key(Key::Right) => {
+                        self.move_focus(Absolute::Right)
+                    },
+                    Event::Key(Key::Up) => {
+                        self.move_focus(Absolute::Up)
+                    },
+                    Event::Key(Key::Down) => {
+                        self.move_focus(Absolute::Down)
+                    },
+                    _ => EventResult::Ignored,
+                }
             },
-            Event::Key(Key::Right) => {
-                self.move_focus(Absolute::Right)
-            },
-            Event::Key(Key::Up) => {
-                self.move_focus(Absolute::Up)
-            },
-            Event::Key(Key::Down) => {
-                self.move_focus(Absolute::Down)
-            },
-            _ => EventResult::Ignored,
+            result => result,
         }
     }
 }
@@ -122,6 +129,14 @@ impl Node {
     fn layout_view(&mut self, vec: Vec2) {
         if let Some(x) = self.view.as_mut() {
             x.layout(vec);
+        }
+    }
+
+    fn on_event(&mut self, evt: Event) -> EventResult {
+        if let Some(view) = self.view.as_mut() {
+            view.on_event(evt)
+        } else {
+            EventResult::Ignored
         }
     }
 
@@ -164,6 +179,10 @@ impl Mux {
         self.root
     }
 
+    pub fn get_focus(&self) -> Id {
+        self.focus
+    }
+
     fn rec_draw(&self, printer: &Printer, root: indextree::NodeId) {
         self.tree.get(root).unwrap().data.draw(printer);
         let printer1;
@@ -187,10 +206,14 @@ impl Mux {
                 self.rec_draw(&printer1, left);
                 match self.tree.get(root).unwrap().data.orientation {
                     Orientation::Vertical => {
-                        printer1.print_hline(Vec2::new(0, printer.size.y/2-1), printer.size.x, "─");
+                        if printer.size.y > 1 {
+                            printer1.print_hline(Vec2::new(0, printer.size.y/2-1), printer.size.x, "─");
+                        }
                     },
                     Orientation::Horizontal => {
-                        printer1.print_vline(Vec2::new(printer.size.x/2-1, 0), printer.size.y, "|");
+                        if printer.size.x > 1 {
+                            printer1.print_vline(Vec2::new(printer.size.x/2-1, 0), printer.size.y, "│");
+                        }
                     },
                 }
                 debug!("Print Delimiter");
@@ -429,9 +452,9 @@ impl Mux {
                 if let Some(focus) = self.traverse_search_path(path, turn_point) {
                     if self.tree.get_mut(focus).unwrap().data.take_focus() {
                         self.focus = focus;
-                    } else {
-                        println!("Focus rejected by {}", focus);
-                    }
+                    }// else {
+                    //    println!("Focus rejected by {}", focus);
+                    //}
                     EventResult::Consumed(None)
                 } else {
                     EventResult::Ignored
@@ -444,12 +467,12 @@ impl Mux {
     fn traverse_search_path(&self, mut path: Vec<SearchPath>, turn_point: Id) -> Option<Id> {
         let mut cur_node = turn_point;
 
-        println!("Path Begin: {:?}", path);
+        // println!("Path Begin: {:?}", path);
         while let Some(step) = path.pop() {
-            println!("Next Step: {:?}", step);
+            // println!("Next Step: {:?}", step);
             match self.traverse_single_node(step, turn_point, cur_node) {
                 Some(node) => {
-                    println!("{}", node);
+                    // println!("{}", node);
                     cur_node = node;
                 },
                 None => {
@@ -540,8 +563,8 @@ impl Mux {
         let mut path = Vec::new();
 
         while cur_node.is_some() {
-            println!("Current node in search path: {}", cur_node.unwrap());
-            println!("Originating from node: {}", from_node);
+            // println!("Current node in search path: {}", cur_node.unwrap());
+            // println!("Originating from node: {}", from_node);
             match self.tree.get(cur_node.unwrap()).unwrap().data.orientation {
                 Orientation::Horizontal if direction == Absolute::Left || direction == Absolute::Right => {
                     if cur_node.unwrap().children(&self.tree).next().unwrap() == from_node {
@@ -640,9 +663,9 @@ mod tree {
     fn test_remove() {
         // General Remove test
         let mut test_mux = Mux::new();
-        let node1 = test_mux.add_vertical_id(TextArea::new(), test_mux.get_root()).unwrap();
-        let node2 = test_mux.add_vertical_id(TextArea::new(), node1).unwrap();
-        let node3 = test_mux.add_vertical_id(TextArea::new(), node2).unwrap();
+        let node1 = test_mux.add_vertical_id(DummyView, test_mux.get_root()).unwrap();
+        let node2 = test_mux.add_vertical_id(DummyView, node1).unwrap();
+        let node3 = test_mux.add_vertical_id(DummyView, node2).unwrap();
 
         print_tree(&test_mux);
         test_mux.remove_id(node3).unwrap();
@@ -657,101 +680,7 @@ mod tree {
         }
     }
 
-    #[test]
-    fn test_quadratic() {
-        let mut mux = Mux::new();
 
-        let top_left_corner = mux.add_vertical_id(TextArea::new(), mux.get_root()).unwrap();
-        let top_right_mid = mux.add_horizontal_id(TextArea::new(), top_left_corner).unwrap();
-        let bottom_right_mid = mux.add_vertical_id(TextArea::new(), top_right_mid).unwrap();
-        let top_right_corner = mux.add_horizontal_id(TextArea::new(), top_right_mid).unwrap();
-        let bottom_right_corner = mux.add_horizontal_id(TextArea::new(), bottom_right_mid).unwrap();
-        let bottom_left_corner = mux.add_vertical_id(TextArea::new(), top_left_corner).unwrap();
-        let top_left_mid = mux.add_horizontal_id(TextArea::new(), top_left_corner).unwrap();
-        let bottom_left_mid = mux.add_horizontal_id(TextArea::new(), bottom_left_corner).unwrap();
-
-        mux.focus = top_right_corner;
-
-        print_tree(&mux);
-
-        println!("Moving left...");
-        mux.on_event(Event::Key(Key::Left));
-        assert_eq!(mux.focus, top_right_mid);
-        println!("Moving left...");
-        mux.on_event(Event::Key(Key::Left));
-        assert_eq!(mux.focus, top_left_mid);
-        println!("Moving left...");
-        mux.on_event(Event::Key(Key::Left));
-        assert_eq!(mux.focus, top_left_corner);
-        println!("Moving down");
-        mux.on_event(Event::Key(Key::Down));
-        assert_eq!(mux.focus, bottom_left_corner);
-        println!("Moving right...");
-        mux.on_event(Event::Key(Key::Right));
-        assert_eq!(mux.focus, bottom_left_mid);
-        println!("Moving right...");
-        mux.on_event(Event::Key(Key::Right));
-        assert_eq!(mux.focus, bottom_right_mid);
-        println!("Moving right...");
-        mux.on_event(Event::Key(Key::Right));
-        assert_eq!(mux.focus, bottom_right_corner);
-        println!("Moving up...");
-        mux.on_event(Event::Key(Key::Up));
-        assert_eq!(mux.focus, top_right_corner);
-
-        println!("Circle completed");
-    }
-
-    #[test]
-    fn test_diagonal() {
-        let mut mux = Mux::new();
-
-        let node1 = mux.add_vertical_id(TextArea::new(), mux.get_root()).unwrap();
-        let node2 = mux.add_horizontal_id(TextArea::new(), node1).unwrap();
-        let _ = mux.add_vertical_id(TextArea::new(), node2).unwrap();
-        let bottom_left_corner = mux.add_vertical_id(TextArea::new(), node1).unwrap();
-        let bottom_left_middle = mux.add_horizontal_id(TextArea::new(), bottom_left_corner).unwrap();
-        let upper_right_corner = mux.add_horizontal_id(TextArea::new(), node2).unwrap();
-
-        print_tree(&mux);
-
-        mux.focus = bottom_left_corner;
-        assert_eq!(mux.focus, bottom_left_corner);
-
-        println!("Moving right...");
-        mux.on_event(Event::Key(Key::Right));
-        assert_eq!(mux.focus, bottom_left_middle);
-        println!("Moving up...");
-        mux.on_event(Event::Key(Key::Up));
-        assert_eq!(mux.focus, node1);
-        println!("Moving right...");
-        mux.on_event(Event::Key(Key::Right));
-        assert_eq!(mux.focus, node2);
-        println!("Moving right...");
-        mux.on_event(Event::Key(Key::Right));
-        assert_eq!(mux.focus, upper_right_corner);
-    }
-
-    #[test]
-    fn test_vertical() {
-        // Vertical test
-        println!("Vertical Test");
-        let mut test_mux = Mux::new();
-        let node1 = test_mux.add_vertical_id(TextArea::new(), test_mux.get_root()).unwrap();
-        let node2 = test_mux.add_vertical_id(TextArea::new(), node1).unwrap();
-        let node3 = test_mux.add_vertical_id(TextArea::new(), node2).unwrap();
-
-        assert_eq!(node3, test_mux.focus);
-        println!("Up Movement");
-        test_mux.on_event(Event::Key(Key::Up));
-        print_tree(&test_mux);
-        assert_eq!(node2, test_mux.focus);
-        println!("Down Movement");
-        test_mux.on_event(Event::Key(Key::Down));
-        assert_eq!(node3, test_mux.focus);
-
-        direction_test(&mut test_mux);
-    }
 
     #[test]
     fn test_switch() {
@@ -794,28 +723,6 @@ mod tree {
         for node in nodes.iter() {
             mux.focus = *node;
             direction_test(&mut mux);
-        }
-    }
-
-    #[test]
-    fn expected_vertical_horizontal() {
-        let mut mux = Mux::new();
-        let node1 = mux.add_horizontal_id(TextArea::new(), mux.root).unwrap();
-        let node2 = mux.add_horizontal_id(TextArea::new(), node1).unwrap();
-        let node3 = mux.add_vertical_id(TextArea::new(), node2).unwrap();
-        print_tree(&mux);
-
-        assert_eq!(mux.focus, node3);
-        mux.on_event(Event::Key(Key::Up));
-        assert_eq!(mux.focus, node2);
-        match mux.on_event(Event::Key(Key::Left)) {
-            cursive::event::EventResult::Consumed(_) => {
-                assert_eq!(mux.focus, node1);
-            },
-            cursive::event::EventResult::Ignored => {
-                println!("Not to be ignored Event ignored, Focus was at: {}", mux.focus);
-                assert!(false);
-            },
         }
     }
 
