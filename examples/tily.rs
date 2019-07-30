@@ -7,20 +7,21 @@ use cursive_multiplex::{Mux, Path, Id};
 fn main() {
     let mut siv = Cursive::default();
     siv.show_debug_console();
-    println!("Vertical Test");
     let (mut mux, top_left_corner) = Mux::new(TextArea::new());
 
     let top_right_mid = mux.add_horizontal_id(TextArea::new(), top_left_corner).unwrap();
     let bottom_right_mid = mux.add_vertical_id(TextArea::new(), top_right_mid).unwrap();
-    let top_right_corner = mux.add_horizontal_id(TextArea::new(), top_right_mid).unwrap();
+    let top_right_corner = mux.add_horizontal_id(cursive::views::Panel::new(TextArea::new()), top_right_mid).unwrap();
     let bottom_right_corner = mux.add_horizontal_id(TextArea::new(), bottom_right_mid).unwrap();
     let bottom_left_corner = mux.add_vertical_id(TextArea::new(), top_left_corner).unwrap();
     let top_left_mid = mux.add_horizontal_id(TextArea::new(), top_left_corner).unwrap();
-    let bottom_left_mid = mux.add_horizontal_id(TextArea::new(), bottom_left_corner).unwrap();
+    let bottom_left_mid = mux.add_horizontal_id(cursive::views::Panel::new(TextArea::new()), bottom_left_corner).unwrap();
 
     let idlayer = cursive::views::IdView::new("Steven", mux);
 
     let boxes = cursive::views::BoxView::new(cursive::view::SizeConstraint::Full, cursive::view::SizeConstraint::Full, idlayer, );
+
+
 
     siv.add_fullscreen_layer(boxes);
     siv.add_global_callback('q', Cursive::quit);

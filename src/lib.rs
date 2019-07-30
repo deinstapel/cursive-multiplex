@@ -44,6 +44,7 @@ pub struct Mux {
 impl View for Mux {
     fn draw(&self, printer: &Printer) {
         debug!("Current Focus: {}", self.focus);
+        // println!("Mux currently focused: {}", printer.focused);
         self.rec_draw(printer, self.root)
     }
 
@@ -188,8 +189,7 @@ impl Mux {
         self.focus
     }
 
-    fn rec_draw(&self, printer: &Printer, root: indextree::NodeId) {
-        self.tree.get(root).unwrap().data.draw(printer);
+    fn rec_draw(&self, printer: &Printer, root: Id) {
         let printer1;
         let printer2;
         match root.children(&self.tree).count() {
@@ -201,30 +201,42 @@ impl Mux {
                 match self.tree.get(root).unwrap().data.orientation {
                     Orientation::Horizontal => {
                         printer1 = printer.cropped(Vec2::new(printer.size.x/2, printer.size.y));
-                        printer2 = printer.offset(Vec2::new(printer.size.x/2, 0)).cropped(Vec2::new(printer.size.x/2, printer.size.y));
+                        printer2 = printer.offset(Vec2::new(printer.size.x/2+1, 0)).cropped(Vec2::new(printer.size.x/2, printer.size.y));
                     },
                     Orientation::Vertical => {
                         printer1 = printer.cropped(Vec2::new(printer.size.x, printer.size.y/2)).focused(self.focus == left);
-                        printer2 = printer.offset(Vec2::new(0,printer.size.y/2)).cropped(Vec2::new(printer.size.x,printer.size.y/2));
+                        printer2 = printer.offset(Vec2::new(0,printer.size.y/2+1)).cropped(Vec2::new(printer.size.x,printer.size.y/2)).focused(self.focus == right);
                     },
                 }
                 self.rec_draw(&printer1, left);
                 match self.tree.get(root).unwrap().data.orientation {
                     Orientation::Vertical => {
                         if printer.size.y > 1 {
-                            printer1.print_hline(Vec2::new(0, printer.size.y/2-1), printer.size.x, "─");
+                            printer.print_hline(Vec2::new(0, printer.size.y/2), printer.size.x, "─");
                         }
                     },
                     Orientation::Horizontal => {
                         if printer.size.x > 1 {
-                            printer1.print_vline(Vec2::new(printer.size.x/2-1, 0), printer.size.y, "│");
+                            printer.print_vline(Vec2::new(printer.size.x/2, 0), printer.size.y, "│");
                         }
                     },
                 }
                 debug!("Print Delimiter");
                 self.rec_draw(&printer2, right);
             },
-            0 => {},
+            0 => {
+                // Pshhhhhh, nothing going on here
+                // To set focus this has to be copied either way
+                let mut better_printer = printer.clone();
+                better_printer.focused = {
+                    if self.focus == root {
+                        true
+                    } else {
+                        false
+                    }
+                };
+                self.tree.get(root).unwrap().data.draw(&better_printer);
+            },
             _ => {debug!("Illegal Number of Child Nodes")},
         }
     }
