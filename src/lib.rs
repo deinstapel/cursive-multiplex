@@ -160,19 +160,24 @@ impl Node {
 }
 
 impl Mux {
-    pub fn new() -> Mux {
+    pub fn new<T>(v: T) -> (Mux, Id)
+    where
+        T: View
+    {
         let root_node = Node {
             view: None,
             orientation: Orientation::Horizontal,
         };
         let mut new_tree = indextree::Arena::new();
         let new_root = new_tree.new_node(root_node);
-        let new_mux = Mux{
+        let mut new_mux = Mux{
             tree: new_tree,
             root: new_root,
             focus: new_root,
         };
-        new_mux
+        // borked if not succeeding
+        let fst_view = new_mux.add_horizontal_id(v, new_root).unwrap();
+        (new_mux, fst_view)
     }
 
     pub fn get_root(&self) -> Id {
@@ -662,8 +667,7 @@ mod tree {
     #[test]
     fn test_remove() {
         // General Remove test
-        let mut test_mux = Mux::new();
-        let node1 = test_mux.add_vertical_id(DummyView, test_mux.get_root()).unwrap();
+        let (mut test_mux, node1) = Mux::new(DummyView);
         let node2 = test_mux.add_vertical_id(DummyView, node1).unwrap();
         let node3 = test_mux.add_vertical_id(DummyView, node2).unwrap();
 
@@ -684,8 +688,7 @@ mod tree {
 
     #[test]
     fn test_switch() {
-        let mut mux = Mux::new();
-        let node1 = mux.add_horizontal_id(DummyView, mux.get_root()).unwrap();
+        let (mut mux, node1) = Mux::new(DummyView);
         let node2 = mux.add_horizontal_id(DummyView, node1).unwrap();
         let node3 = mux.add_vertical_id(DummyView, node2).unwrap();
 
@@ -696,7 +699,7 @@ mod tree {
     fn test_nesting() {
         println!("Nesting Test");
 
-        let mut mux = Mux::new();
+        let (mut mux, _) = Mux::new(DummyView);
 
         let mut nodes = Vec::new();
 

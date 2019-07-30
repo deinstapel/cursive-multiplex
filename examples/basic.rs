@@ -8,7 +8,6 @@ fn main() {
     let mut siv = Cursive::default();
     // siv.show_debug_console();
 
-    let mut mux = Mux::new();
 
     let text = "
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec congue porttitor pellentesque. Vestibulum a tellus sagittis, blandit erat ac, finibus eros. Praesent cursus at ligula laoreet congue. Proin vehicula diam mattis metus aliquet aliquam. Nullam finibus tellus id dolor porta venenatis. Cras vestibulum leo sit amet congue ultrices. Phasellus convallis ut enim tincidunt interdum.
@@ -21,7 +20,8 @@ Morbi id velit a nisi convallis malesuada eget a lorem. Integer gravida varius v
 
 Integer sit amet eleifend ex. Vivamus aliquam eros et massa pellentesque gravida. Nam ullamcorper in urna eget condimentum. Integer tincidunt cursus purus, non egestas erat ultrices a. Pellentesque id leo tristique, tincidunt nunc nec, iaculis nisl. Etiam sit amet ex vitae nunc facilisis auctor. Mauris ultrices lobortis purus, eget venenatis odio. Donec vulputate arcu nunc, quis posuere eros vestibulum non. Nullam aliquam ex ac mi varius, non sodales enim ultricies. Phasellus nec feugiat enim, at vestibulum enim. Nulla fermentum velit sem, ac dapibus nisi lobortis eu. Nulla eget consectetur massa, sed eleifend lorem. Ut convallis erat nec sapien facilisis posuere. Nam sit amet mollis tortor. Donec posuere neque eu risus sodales, vitae maximus erat sagittis. ";
 
-    let node1 = mux.add_horizontal_id(cursive::views::TextView::new(text).scrollable(), mux.get_root()).unwrap();
+    let (mut mux, node1) = Mux::new(cursive::views::TextView::new(text).scrollable());
+
     let node2 = mux.add_horizontal_id(cursive::views::TextArea::new(), node1).unwrap();
     let node3 = mux.add_vertical_id(cursive::views::TextArea::new(), node2).unwrap();
 

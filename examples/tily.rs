@@ -8,9 +8,8 @@ fn main() {
     let mut siv = Cursive::default();
     siv.show_debug_console();
     println!("Vertical Test");
-    let mut mux = Mux::new();
+    let (mut mux, top_left_corner) = Mux::new(TextArea::new());
 
-    let top_left_corner = mux.add_vertical_id(TextArea::new(), mux.get_root()).unwrap();
     let top_right_mid = mux.add_horizontal_id(TextArea::new(), top_left_corner).unwrap();
     let bottom_right_mid = mux.add_vertical_id(TextArea::new(), top_right_mid).unwrap();
     let top_right_corner = mux.add_horizontal_id(TextArea::new(), top_right_mid).unwrap();

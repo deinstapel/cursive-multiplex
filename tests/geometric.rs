@@ -11,8 +11,7 @@ fn test_line_vertical() {
     let mut siv = Cursive::dummy();
 
     println!("Vertical Test");
-    let mut test_mux = Mux::new();
-    let node1 = test_mux.add_vertical_id(TextArea::new(), test_mux.get_root()).unwrap();
+    let (mut test_mux, node1) = Mux::new(TextArea::new());
     let node2 = test_mux.add_vertical_id(TextArea::new(), node1).unwrap();
     let node3 = test_mux.add_vertical_id(TextArea::new(), node2).unwrap();
 
@@ -33,10 +32,9 @@ fn test_line_vertical() {
 
 #[test]
 fn test_triangle() {
-    let mut mux = Mux::new();
+    let (mut mux, node1) = Mux::new(TextArea::new());
     let mut siv = Cursive::dummy();
 
-    let node1 = mux.add_horizontal_id(TextArea::new(), mux.get_root()).unwrap();
     let node2 = mux.add_horizontal_id(TextArea::new(), node1).unwrap();
     let node3 = mux.add_vertical_id(TextArea::new(), node2).unwrap();
 
@@ -61,10 +59,9 @@ fn test_triangle() {
 
 #[test]
 fn test_diagonal() {
-    let mut mux = Mux::new();
+    let (mut mux, node1) = Mux::new(TextArea::new());
     let mut siv = Cursive::dummy();
 
-    let node1 = mux.add_vertical_id(TextArea::new(), mux.get_root()).unwrap();
     let node2 = mux.add_horizontal_id(TextArea::new(), node1).unwrap();
     let _ = mux.add_vertical_id(TextArea::new(), node2).unwrap();
     let upper_right_corner = mux.add_horizontal_id(TextArea::new(), node2).unwrap();
@@ -98,9 +95,8 @@ fn test_quadratic() {
     // Quadratic test
 
     let mut siv = Cursive::dummy();
-    let mut mux = Mux::new();
+    let (mut mux, top_left_corner) = Mux::new(TextArea::new());
 
-    let top_left_corner = mux.add_vertical_id(TextArea::new(), mux.get_root()).unwrap();
     let top_right_mid = mux.add_horizontal_id(TextArea::new(), top_left_corner).unwrap();
     let bottom_right_mid = mux.add_vertical_id(TextArea::new(), top_right_mid).unwrap();
     let bottom_right_corner = mux.add_horizontal_id(TextArea::new(), bottom_right_mid).unwrap();
