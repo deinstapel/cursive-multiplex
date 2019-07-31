@@ -469,10 +469,11 @@ impl Mux {
                 if let Some(focus) = self.traverse_search_path(path, turn_point) {
                     if self.tree.get_mut(focus).unwrap().data.take_focus() {
                         self.focus = focus;
-                    }// else {
-                    //    println!("Focus rejected by {}", focus);
-                    //}
-                    EventResult::Consumed(None)
+                        EventResult::Consumed(None)
+                    }else {
+                        debug!("Focus rejected by {}", focus);
+                        EventResult::Ignored
+                    }
                 } else {
                     EventResult::Ignored
                 }
