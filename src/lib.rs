@@ -13,6 +13,8 @@ use cursive::Vec2;
 use cursive::Printer;
 use error::{AddViewError, RemoveViewError, SwitchError};
 
+
+/// Path is a recursive enum made to be able to identify a pane by it's actual location in the multiplexer. An upper Pane on the left side for example would have the path `Path::LeftOrUp(Box::new(Some(Path::LeftOrUp(Box::new(None)))))`.
 #[derive(Debug)]
 pub enum Path {
     LeftOrUp(Box<Option<Path>>),
@@ -33,8 +35,10 @@ enum SearchPath {
     Down,
 }
 
+/// Identifier for views in binary tree of mux.
 pub type Id = indextree::NodeId;
 
+/// View holding information and managing multiplexer.
 pub struct Mux {
     tree: indextree::Arena<Node>,
     root: indextree::NodeId,
@@ -161,6 +165,17 @@ impl Node {
 }
 
 impl Mux {
+
+    /// Initialization for a new mutliplexer view, view to be provided is the first view to be displayed. It's best to use the main view you want to use here later on, but if neccessary views can also be switched.
+    /// Returned is a tuple consisting of the multiplexer view itself and the id assigend to the passed view.
+    ///
+    /// # Example
+    /// ```
+    /// # extern crate cursive;
+    /// # fn main () {
+    /// let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// # }
+    /// ```
     pub fn new<T>(v: T) -> (Mux, Id)
     where
         T: View
@@ -181,10 +196,18 @@ impl Mux {
         (new_mux, fst_view)
     }
 
-    pub fn get_root(&self) -> Id {
-        self.root
-    }
-
+    /// Returns the current focused view id.
+    /// By default the newest node added to the multiplexer gets focused.
+    /// Focus can also be changed by the user.
+    /// # Example
+    /// ```
+    /// # extern crate cursive;
+    /// # fn main () {
+    /// let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// let current_focus = mux.get_focus();
+    /// assert_eq!(current_focus, node1);
+    /// # }
+    /// ```
     pub fn get_focus(&self) -> Id {
         self.focus
     }
@@ -225,34 +248,50 @@ impl Mux {
                 self.rec_draw(&printer2, right);
             },
             0 => {
-                // Pshhhhhh, nothing going on here
-                // To set focus this has to be copied either way
-                let mut better_printer = printer.clone();
-                better_printer.focused = {
-                    if self.focus == root {
-                        true
-                    } else {
-                        false
-                    }
-                };
-                self.tree.get(root).unwrap().data.draw(&better_printer);
+                self.tree.get(root).unwrap().data.draw(&printer.focused(self.focus == root));
             },
             _ => {debug!("Illegal Number of Child Nodes")},
         }
     }
 
-    pub fn add_horizontal_path<T>(&mut self, v: T, path: Option<Path>) -> Result<Id, AddViewError>
+    /// Add the given view to the tree based on the path, if the path is too specific it will be truncated, if not specific enough an error will be returned.
+    /// When successful `Ok()` will contain the assigned `Id`
+    /// # Example
+    /// ```
+    /// # extern crate cursive;
+    /// # use cursive_multiplex::{Path};
+    /// # fn main () {
+    /// # let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// # let current_focus = mux.get_focus();
+    /// # assert_eq!(current_focus, node1);
+    /// let new_node = mux.add_horizontal_path(cursive::views::DummyView, Path::RightOrDown(Box::new(None))).unwrap();
+    /// # }
+    /// ```
+    pub fn add_horizontal_path<T>(&mut self, v: T, path: Path) -> Result<Id, AddViewError>
     where
         T: View
     {
-        self.add_node_path(v, path, Orientation::Horizontal, self.root)
+        self.add_node_path(v, Some(path), Orientation::Horizontal, self.root)
     }
 
-    pub fn add_vertical_path<T>(&mut self, v: T, path: Option<Path>) -> Result<Id, AddViewError>
+    /// Add the given view to the tree based on the path, if the path is too specific it will be truncated, if not specific enough an error will be returned.
+    /// When successful `Ok()` will contain the assigned `Id`
+    /// # Example
+    /// ```
+    /// # extern crate cursive;
+    /// # use cursive_multiplex::{Path};
+    /// # fn main () {
+    /// # let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// # let current_focus = mux.get_focus();
+    /// # assert_eq!(current_focus, node1);
+    /// let new_node = mux.add_vertical_path(cursive::views::DummyView, Path::RightOrDown(Box::new(None))).unwrap();
+    /// # }
+    /// ```
+    pub fn add_vertical_path<T>(&mut self, v: T, path: Path) -> Result<Id, AddViewError>
     where
         T: View
     {
-        self.add_node_path(v, path, Orientation::Vertical, self.root)
+        self.add_node_path(v, Some(path), Orientation::Vertical, self.root)
     }
 
     fn add_node_path<T>(&mut self, v: T, path: Option<Path>, orientation: Orientation, cur_node: indextree::NodeId) -> Result<Id, AddViewError>
@@ -319,6 +358,17 @@ impl Mux {
             }
     }
 
+    /// Add the given view to the tree based on the path, if the path is too specific it will be truncated, if not specific enough an error will be returned.
+    /// When successful `Ok()` will contain the assigned `Id`
+    /// # Example
+    /// ```
+    /// # extern crate cursive;
+    /// # use cursive_multiplex::{Path};
+    /// # fn main () {
+    /// let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// let new_node = mux.add_horizontal_id(cursive::views::DummyView, node1).unwrap();
+    /// # }
+    /// ```
     pub fn add_horizontal_id<T>(&mut self, v: T, id: Id) -> Result<Id, AddViewError>
     where
         T: View
@@ -378,6 +428,17 @@ impl Mux {
         Ok(new_node)
     }
 
+    /// Add the given view to the tree based on the path, if the path is too specific it will be truncated, if not specific enough an error will be returned.
+    /// When successful `Ok()` will contain the assigned `Id`
+    /// # Example
+    /// ```
+    /// # extern crate cursive;
+    /// # use cursive_multiplex::{Path};
+    /// # fn main () {
+    /// let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// let new_node = mux.add_vertical_id(cursive::views::DummyView, node1).unwrap();
+    /// # }
+    /// ```
     pub fn add_vertical_id<T>(&mut self, v: T, id: Id) -> Result<Id, AddViewError>
     where
         T: View
@@ -385,6 +446,18 @@ impl Mux {
         self.add_node_id(v, id, Orientation::Vertical)
     }
 
+    /// Removes the given id from the multiplexer, returns an error if not a valid id contained in the tree or the lone root of the tree.
+    /// When successful the Id of the removed Node is returned.
+    /// # Example
+    /// ```
+    /// # extern crate cursive;
+    /// # use cursive_multiplex::{Path};
+    /// # fn main () {
+    /// # let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// let new_node = mux.add_vertical_id(cursive::views::DummyView, node1).unwrap();
+    /// mux.remove_id(new_node);
+    /// # }
+    /// ```
     pub fn remove_id(&mut self, id: Id) -> Result<Id, RemoveViewError> {
         let desc: Vec<Id> = self.root.descendants(&self.tree).collect();
         if desc.contains(&id) {
@@ -418,6 +491,21 @@ impl Mux {
         }
     }
 
+
+    /// Allows for position switching of two views, returns error if ids not in multiplexer.
+    /// When successful empty `Ok(())`
+    /// # Example
+    /// ```
+    /// # extern crate cursive;
+    /// # use cursive_multiplex::{Path};
+    /// # fn main () {
+    /// # let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// let daniel = mux.add_vertical_id(cursive::views::DummyView, node1).unwrap();
+    /// let the_cooler_daniel = mux.add_vertical_id(cursive::views::DummyView, node1).unwrap();
+    /// // Oops I wanted the cooler daniel in another spot
+    /// mux.switch_views(daniel, the_cooler_daniel);
+    /// # }
+    /// ```
     pub fn switch_views(&mut self, fst: Id, snd: Id) -> Result<(), SwitchError> {
         if let Some(parent1) = fst.ancestors(&self.tree).nth(1) {
             if let Some(parent2) = snd.ancestors(&self.tree).nth(1) {
@@ -718,7 +806,7 @@ mod tree {
 
         for _ in 0..10 {
             print_tree(&mux);
-            match mux.add_horizontal_id(DummyView, if let Some(x) = nodes.last() {*x} else {mux.get_root()}) {
+            match mux.add_horizontal_id(DummyView, if let Some(x) = nodes.last() {*x} else {mux.root}) {
                 Ok(node) => {
                     nodes.push(node);
                 },
