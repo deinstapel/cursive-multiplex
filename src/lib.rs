@@ -44,6 +44,114 @@ pub struct Mux {
     tree: indextree::Arena<Node>,
     root: indextree::NodeId,
     focus: indextree::NodeId,
+    focus_up: Event,
+    focus_down: Event,
+    focus_left: Event,
+    focus_right: Event,
+    resize_left: Event,
+    resize_right: Event,
+    resize_up: Event,
+    resize_down: Event,
+}
+
+pub struct MuxBuilder {
+    focus_up: Event,
+    focus_down: Event,
+    focus_left: Event,
+    focus_right: Event,
+    resize_left: Event,
+    resize_right: Event,
+    resize_up: Event,
+    resize_down: Event,
+}
+
+impl MuxBuilder {
+    pub fn new() -> Self {
+        MuxBuilder{
+            focus_up: Event::Shift(Key::Up),
+            focus_down: Event::Shift(Key::Down),
+            focus_left: Event::Shift(Key::Left),
+            focus_right: Event::Shift(Key::Right),
+            resize_up: Event::Ctrl(Key::Up),
+            resize_down: Event::Ctrl(Key::Down),
+            resize_left: Event::Ctrl(Key::Left),
+            resize_right: Event::Ctrl(Key::Right),
+        }
+    }
+
+    /// Initialization for a new mutliplexer view, view to be provided is the first view to be displayed. It's best to use the main view you want to use here later on, but if neccessary views can also be switched.
+    /// Returned is a tuple consisting of the multiplexer view itself and the id assigend to the passed view.
+    ///
+    /// # Example
+    /// ```
+    /// # extern crate cursive;
+    /// # fn main () {
+    /// let builder = cursive_multiplex::MuxBuilder::new();
+    /// let (mut mux, node1) = builder.build(cursive::views::DummyView);
+    /// # }
+    /// ```
+    pub fn build<T>(&self, v: T) -> (Mux, Id)
+    where
+        T: View
+    {
+        let root_node = Node {
+            view: None,
+            split_ratio_offset: 0,
+            orientation: Orientation::Horizontal,
+        };
+        let mut new_tree = indextree::Arena::new();
+        let new_root = new_tree.new_node(root_node);
+
+        let mut new_mux = Mux{
+            tree: new_tree,
+            root: new_root,
+            focus: new_root,
+            focus_up: self.focus_up.clone(),
+            focus_down: self.focus_down.clone(),
+            focus_left: self.focus_left.clone(),
+            focus_right: self.focus_right.clone(),
+            resize_left: self.resize_left.clone(),
+            resize_right: self.resize_right.clone(),
+            resize_up: self.resize_up.clone(),
+            resize_down: self.resize_down.clone(),
+        };
+        // borked if not succeeding
+        let fst_view = new_mux.add_horizontal_id(v, new_root).unwrap();
+        (new_mux, fst_view)
+    }
+
+    pub fn focus_up(&mut self, evt: Event) -> &mut Self {
+        self.focus_up = evt;
+        self
+    }
+    pub fn focus_down(&mut self, evt: Event) -> &mut Self {
+        self.focus_down = evt;
+        self
+    }
+    pub fn focus_left(&mut self, evt: Event) -> &mut Self {
+        self.focus_left = evt;
+        self
+    }
+    pub fn focus_right(&mut self, evt: Event) -> &mut Self {
+        self.focus_right = evt;
+        self
+    }
+    pub fn resize_left(&mut self, evt: Event) -> &mut Self {
+        self.resize_left = evt;
+        self
+    }
+    pub fn resize_right(&mut self, evt: Event) -> &mut Self {
+        self.resize_right = evt;
+        self
+    }
+    pub fn resize_up(&mut self, evt: Event) -> &mut Self {
+        self.resize_up = evt;
+        self
+    }
+    pub fn resize_down(&mut self, evt: Event) -> &mut Self {
+        self.resize_down = evt;
+        self
+    }
 }
 
 impl View for Mux {
@@ -177,44 +285,10 @@ impl Node {
             false
         }
     }
-
-    fn change_offset(&mut self, offset: i16) {
-        self.split_ratio_offset += offset;
-    }
 }
 
 impl Mux {
 
-    /// Initialization for a new mutliplexer view, view to be provided is the first view to be displayed. It's best to use the main view you want to use here later on, but if neccessary views can also be switched.
-    /// Returned is a tuple consisting of the multiplexer view itself and the id assigend to the passed view.
-    ///
-    /// # Example
-    /// ```
-    /// # extern crate cursive;
-    /// # fn main () {
-    /// let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
-    /// # }
-    /// ```
-    pub fn new<T>(v: T) -> (Mux, Id)
-    where
-        T: View
-    {
-        let root_node = Node {
-            view: None,
-            split_ratio_offset: 0,
-            orientation: Orientation::Horizontal,
-        };
-        let mut new_tree = indextree::Arena::new();
-        let new_root = new_tree.new_node(root_node);
-        let mut new_mux = Mux{
-            tree: new_tree,
-            root: new_root,
-            focus: new_root,
-        };
-        // borked if not succeeding
-        let fst_view = new_mux.add_horizontal_id(v, new_root).unwrap();
-        (new_mux, fst_view)
-    }
 
     /// Returns the current focused view id.
     /// By default the newest node added to the multiplexer gets focused.
@@ -223,7 +297,7 @@ impl Mux {
     /// ```
     /// # extern crate cursive;
     /// # fn main () {
-    /// let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// let (mut mux, node1) = cursive_multiplex::MuxBuilder::new().build(cursive::views::DummyView);
     /// let current_focus = mux.get_focus();
     /// assert_eq!(current_focus, node1);
     /// # }
@@ -311,6 +385,7 @@ impl Mux {
                         printer2 = printer.offset(Vec2::new(0, add_offset(printer.size.y/2+1, root_data.split_ratio_offset))).cropped(Vec2::new(printer.size.x,add_offset(printer.size.y/2, -root_data.split_ratio_offset)));
                     },
                 }
+                println!("{}", root_data.split_ratio_offset);
                 self.rec_draw(&printer1, left);
                 match self.tree.get(root).unwrap().data.orientation {
                     Orientation::Vertical => {
@@ -340,7 +415,7 @@ impl Mux {
     /// # extern crate cursive;
     /// # use cursive_multiplex::{Path};
     /// # fn main () {
-    /// # let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// # let (mut mux, node1) = cursive_multiplex::MuxBuilder::new().build(cursive::views::DummyView);
     /// # let current_focus = mux.get_focus();
     /// # assert_eq!(current_focus, node1);
     /// let new_node = mux.add_horizontal_path(cursive::views::DummyView, Path::RightOrDown(Box::new(None))).unwrap();
@@ -360,7 +435,7 @@ impl Mux {
     /// # extern crate cursive;
     /// # use cursive_multiplex::{Path};
     /// # fn main () {
-    /// # let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// # let (mut mux, node1) = cursive_multiplex::MuxBuilder::new().build(cursive::views::DummyView);
     /// # let current_focus = mux.get_focus();
     /// # assert_eq!(current_focus, node1);
     /// let new_node = mux.add_vertical_path(cursive::views::DummyView, Path::RightOrDown(Box::new(None))).unwrap();
@@ -445,7 +520,7 @@ impl Mux {
     /// # extern crate cursive;
     /// # use cursive_multiplex::{Path};
     /// # fn main () {
-    /// let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// let (mut mux, node1) = cursive_multiplex::MuxBuilder::new().build(cursive::views::DummyView);
     /// let new_node = mux.add_horizontal_id(cursive::views::DummyView, node1).unwrap();
     /// # }
     /// ```
@@ -516,7 +591,7 @@ impl Mux {
     /// # extern crate cursive;
     /// # use cursive_multiplex::{Path};
     /// # fn main () {
-    /// let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// let (mut mux, node1) = cursive_multiplex::MuxBuilder::new().build(cursive::views::DummyView);
     /// let new_node = mux.add_vertical_id(cursive::views::DummyView, node1).unwrap();
     /// # }
     /// ```
@@ -534,7 +609,7 @@ impl Mux {
     /// # extern crate cursive;
     /// # use cursive_multiplex::{Path};
     /// # fn main () {
-    /// # let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// # let (mut mux, node1) = cursive_multiplex::MuxBuilder::new().build(cursive::views::DummyView);
     /// let new_node = mux.add_vertical_id(cursive::views::DummyView, node1).unwrap();
     /// mux.remove_id(new_node);
     /// # }
@@ -580,7 +655,7 @@ impl Mux {
     /// # extern crate cursive;
     /// # use cursive_multiplex::{Path};
     /// # fn main () {
-    /// # let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// # let (mut mux, node1) = cursive_multiplex::MuxBuilder::new().build(cursive::views::DummyView);
     /// let daniel = mux.add_vertical_id(cursive::views::DummyView, node1).unwrap();
     /// let the_cooler_daniel = mux.add_vertical_id(cursive::views::DummyView, node1).unwrap();
     /// // Oops I wanted the cooler daniel in another spot
@@ -843,13 +918,13 @@ mod tree {
     use cursive::views::{DummyView, TextArea};
     use cursive::event::{Key, Event};
     use cursive::traits::View;
-    use super::Mux;
+    use super::{MuxBuilder, Mux};
 
 
     #[test]
     fn test_remove() {
         // General Remove test
-        let (mut test_mux, node1) = Mux::new(DummyView);
+        let (mut test_mux, node1) = MuxBuilder::new().build(DummyView);
         let node2 = test_mux.add_vertical_id(DummyView, node1).unwrap();
         let node3 = test_mux.add_vertical_id(DummyView, node2).unwrap();
 
@@ -870,7 +945,7 @@ mod tree {
 
     #[test]
     fn test_switch() {
-        let (mut mux, node1) = Mux::new(DummyView);
+        let (mut mux, node1) = MuxBuilder::new().build(DummyView);
         let node2 = mux.add_horizontal_id(DummyView, node1).unwrap();
         let node3 = mux.add_vertical_id(DummyView, node2).unwrap();
 
@@ -881,7 +956,7 @@ mod tree {
     fn test_nesting() {
         println!("Nesting Test");
 
-        let (mut mux, _) = Mux::new(DummyView);
+        let (mut mux, _) = MuxBuilder::new().build(DummyView);
 
         let mut nodes = Vec::new();
 
