@@ -196,28 +196,28 @@ impl View for Mux {
         match result {
             EventResult::Ignored => {
                 match evt {
-                    Event::Key(Key::Left) => {
+                    _ if self.focus_left == evt => {
                         self.move_focus(Absolute::Left)
                     },
-                    Event::Key(Key::Right) => {
+                    _ if self.focus_right == evt => {
                         self.move_focus(Absolute::Right)
                     },
-                    Event::Key(Key::Up) => {
+                    _ if self.focus_up == evt => {
                         self.move_focus(Absolute::Up)
                     },
-                    Event::Key(Key::Down) => {
+                    _ if self.focus_down == evt => {
                         self.move_focus(Absolute::Down)
                     },
-                    Event::Shift(Key::Left) => {
+                    _ if self.resize_left == evt => {
                         self.resize(Absolute::Left)
                     },
-                    Event::Shift(Key::Right) => {
+                    _ if self.resize_right == evt => {
                         self.resize(Absolute::Right)
                     },
-                    Event::Shift(Key::Up) => {
+                    _ if self.resize_up == evt => {
                         self.resize(Absolute::Up)
                     },
-                    Event::Shift(Key::Down) => {
+                    _ if self.resize_down == evt => {
                         self.resize(Absolute::Down)
                     },
                     _ => {
@@ -385,7 +385,6 @@ impl Mux {
                         printer2 = printer.offset(Vec2::new(0, add_offset(printer.size.y/2+1, root_data.split_ratio_offset))).cropped(Vec2::new(printer.size.x,add_offset(printer.size.y/2, -root_data.split_ratio_offset)));
                     },
                 }
-                println!("{}", root_data.split_ratio_offset);
                 self.rec_draw(&printer1, left);
                 match self.tree.get(root).unwrap().data.orientation {
                     Orientation::Vertical => {
