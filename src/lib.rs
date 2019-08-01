@@ -7,6 +7,7 @@ extern crate failure;
 mod error;
 
 use cursive::view::{View, Selector};
+use std::convert::TryFrom;
 use cursive::event::{Event, EventResult, Key};
 use cursive::direction::{Absolute, Direction};
 use cursive::Vec2;
@@ -84,7 +85,6 @@ impl View for Mux {
 
     fn on_event(&mut self, evt: Event) -> EventResult {
         let result = self.tree.get_mut(self.focus).unwrap().data.on_event(evt.relativized(Vec2::new(0, 0)));
-
         match result {
             EventResult::Ignored => {
                 match evt {
@@ -100,7 +100,21 @@ impl View for Mux {
                     Event::Key(Key::Down) => {
                         self.move_focus(Absolute::Down)
                     },
-                    _ => EventResult::Ignored,
+                    Event::Shift(Key::Left) => {
+                        self.resize(Absolute::Left)
+                    },
+                    Event::Shift(Key::Right) => {
+                        self.resize(Absolute::Right)
+                    },
+                    Event::Shift(Key::Up) => {
+                        self.resize(Absolute::Up)
+                    },
+                    Event::Shift(Key::Down) => {
+                        self.resize(Absolute::Down)
+                    },
+                    _ => {
+                        EventResult::Ignored
+                    },
                 }
             },
             result => result,
@@ -111,6 +125,7 @@ impl View for Mux {
 struct Node {
     view: Option<Box<dyn View>>,
     orientation: Orientation,
+    split_ratio_offset: i16,
 }
 
 impl Node {
@@ -120,7 +135,8 @@ impl Node {
     {
         Self {
             view: Some(Box::new(v)),
-            orientation: orit
+            orientation: orit,
+            split_ratio_offset: 0,
         }
     }
 
@@ -162,6 +178,9 @@ impl Node {
         }
     }
 
+    fn change_offset(&mut self, offset: i16) {
+        self.split_ratio_offset += offset;
+    }
 }
 
 impl Mux {
@@ -182,6 +201,7 @@ impl Mux {
     {
         let root_node = Node {
             view: None,
+            split_ratio_offset: 0,
             orientation: Orientation::Horizontal,
         };
         let mut new_tree = indextree::Arena::new();
@@ -212,39 +232,98 @@ impl Mux {
         self.focus
     }
 
+    fn resize(&mut self, direction: Absolute) -> EventResult {
+        let orit = {
+            match direction {
+                Absolute::Left | Absolute::Right => {
+                    Orientation::Horizontal
+                },
+                Absolute::Up | Absolute::Down => {
+                    Orientation::Vertical
+                },
+                _ => {
+                    Orientation::Horizontal
+                }
+            }
+        };
+
+        let mut parent = self.focus.ancestors(&self.tree).nth(1);
+        while parent.is_some() {
+            if let Some(view) = self.tree.get_mut(parent.unwrap()) {
+                if view.data.orientation == orit {
+                    match direction {
+                        Absolute::Left | Absolute::Up => {
+                            view.data.split_ratio_offset -= 1;
+                            return EventResult::Consumed(None)
+                        },
+                        Absolute::Right | Absolute::Down => {
+                            view.data.split_ratio_offset += 1;
+                            return EventResult::Consumed(None)
+                        },
+                        _ => {},
+                    }
+                } else {
+                    parent = parent.unwrap().ancestors(&self.tree).nth(1);
+                }
+            }
+        }
+        EventResult::Ignored
+    }
+
     fn rec_draw(&self, printer: &Printer, root: Id) {
-        let printer1;
-        let printer2;
         match root.children(&self.tree).count() {
             1 => self.rec_draw(printer, root.children(&self.tree).next().unwrap()),
             2 => {
                 debug!("Print Children Nodes");
                 let left = root.children(&self.tree).next().unwrap();
                 let right = root.children(&self.tree).last().unwrap();
-                match self.tree.get(root).unwrap().data.orientation {
+                let printer1;
+                let printer2;
+                let root_data = &self.tree.get(root).unwrap().data;
+                let add_offset = |split: usize, offset: i16| -> usize {
+                    if offset < 0 {
+                        match usize::try_from(offset.abs()) {
+                            Ok(u) => {
+                                split - u
+                            },
+                            Err(_) => {
+                                split
+                            },
+                        }
+                    } else {
+                        match usize::try_from(offset) {
+                            Ok(u) => {
+                                split + u
+                            },
+                            Err(_) => {
+                                split
+                            },
+                        }
+                    }
+                };
+                match root_data.orientation {
                     Orientation::Horizontal => {
-                        printer1 = printer.cropped(Vec2::new(printer.size.x/2, printer.size.y));
-                        printer2 = printer.offset(Vec2::new(printer.size.x/2+1, 0)).cropped(Vec2::new(printer.size.x/2, printer.size.y));
+                        printer1 = printer.cropped(Vec2::new(add_offset(printer.size.x/2, root_data.split_ratio_offset), printer.size.y));
+                        printer2 = printer.offset(Vec2::new(add_offset(printer.size.x/2 + 1, root_data.split_ratio_offset), 0)).cropped(Vec2::new(add_offset(printer.size.x/2, -root_data.split_ratio_offset), printer.size.y));
                     },
                     Orientation::Vertical => {
-                        printer1 = printer.cropped(Vec2::new(printer.size.x, printer.size.y/2)).focused(self.focus == left);
-                        printer2 = printer.offset(Vec2::new(0,printer.size.y/2+1)).cropped(Vec2::new(printer.size.x,printer.size.y/2)).focused(self.focus == right);
+                        printer1 = printer.cropped(Vec2::new(printer.size.x, add_offset(printer.size.y/2, root_data.split_ratio_offset)));
+                        printer2 = printer.offset(Vec2::new(0, add_offset(printer.size.y/2+1, root_data.split_ratio_offset))).cropped(Vec2::new(printer.size.x,add_offset(printer.size.y/2, -root_data.split_ratio_offset)));
                     },
                 }
                 self.rec_draw(&printer1, left);
                 match self.tree.get(root).unwrap().data.orientation {
                     Orientation::Vertical => {
                         if printer.size.y > 1 {
-                            printer.print_hline(Vec2::new(0, printer.size.y/2), printer.size.x, "─");
+                            printer.print_hline(Vec2::new(0, add_offset(printer.size.y/2, root_data.split_ratio_offset)), printer.size.x, "─");
                         }
                     },
                     Orientation::Horizontal => {
                         if printer.size.x > 1 {
-                            printer.print_vline(Vec2::new(printer.size.x/2, 0), printer.size.y, "│");
+                            printer.print_vline(Vec2::new(add_offset(printer.size.x/2, root_data.split_ratio_offset), 0), printer.size.y, "│");
                         }
                     },
                 }
-                debug!("Print Delimiter");
                 self.rec_draw(&printer2, right);
             },
             0 => {
@@ -344,6 +423,7 @@ impl Mux {
 
                     let new_intermediate = self.tree.new_node(Node{
                         view: None,
+                        split_ratio_offset: 0,
                         orientation: Orientation::Horizontal,
                     });
 
@@ -408,6 +488,7 @@ impl Mux {
 
             let new_intermediate = self.tree.new_node(Node{
                 view: None,
+                split_ratio_offset: 0,
                 orientation: orientation,
             });
             match position {
