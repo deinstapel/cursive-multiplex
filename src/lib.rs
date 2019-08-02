@@ -672,14 +672,17 @@ impl Mux {
                 if anker.children(&self.tree).next().unwrap() == parent {
                     parent.detach(&mut self.tree);
                     anker.prepend(sib_id, &mut self.tree)?;
+                    self.focus = sib_id;
                     Ok(id)
                 } else {
                     parent.detach(&mut self.tree);
                     anker.append(sib_id, &mut self.tree)?;
+                    self.focus = sib_id;
                     Ok(id)
                 }
             } else {
                 self.root = sib_id;
+                self.focus = sib_id;
                 Ok(id)
             }
         } else {

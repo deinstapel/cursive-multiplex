@@ -22,23 +22,53 @@ Integer sit amet eleifend ex. Vivamus aliquam eros et massa pellentesque gravida
 
     let (mut mux, node1) = MuxBuilder::new().build(cursive::views::ScrollView::new(cursive::views::TextView::new(text)));
 
+    let mut menubar = cursive::views::Menubar::new();
+    menubar.add_leaf("Hello from cursive_multiplex", |_|{});
+    menubar.add_leaf("Feel free to try out the examples simply with `cargo run --example=basic` or `cargo run --example=tily`", |_|{});
+
     let node2 = mux.add_horizontal_id(cursive::views::TextArea::new(), node1).unwrap();
     let node3 = mux.add_vertical_id(cursive::views::TextArea::new(), node2).unwrap();
 
-    let idlayer = cursive::views::IdView::new("Steven", mux);
+    let idlayer = cursive::views::IdView::new("Mux", mux);
+    let mut linear = cursive::views::LinearLayout::new(cursive::direction::Orientation::Vertical);
 
-    let boxes = cursive::views::BoxView::new(cursive::view::SizeConstraint::Full, cursive::view::SizeConstraint::Full, idlayer, );
-
-    siv.add_fullscreen_layer(boxes);
+    linear.add_child(idlayer);
+    linear.add_child(menubar);
+    siv.add_fullscreen_layer(linear);
     siv.add_global_callback('q', Cursive::quit);
-    siv.add_global_callback('e', move |ref mut siv| {
-        add_plane(siv, node3);
+    siv.add_global_callback(cursive::event::Event::Alt(cursive::event::Key::Ins), move |ref mut siv| {
+        add_pane(siv);
+    });
+    siv.add_global_callback(cursive::event::Event::Alt(cursive::event::Key::Del), move |ref mut siv| {
+        remove_pane(siv);
     });
     cursive::logger::init();
     siv.run();
 }
 
-fn add_plane(siv: &mut Cursive, node: Id) {
-    let mut foo: cursive::views::ViewRef<Mux> = siv.find_id("Steven").unwrap();
-    foo.add_vertical_id(cursive::views::TextView::new("Dynamic!".to_string()), node);
+fn add_pane(siv: &mut Cursive) {
+    let mut mux: cursive::views::ViewRef<Mux> = siv.find_id("Mux").unwrap();
+    let surprise = "⢀⣠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⣠⣤⣶⣶
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⢰⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⣀⣀⣾⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⡏⠉⠛⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⣿
+⣿⣿⣿⣿⣿⣿⠀⠀⠀⠈⠛⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠛⠉⠁⠀⣿
+⣿⣿⣿⣿⣿⣿⣧⡀⠀⠀⠀⠀⠙⠿⠿⠿⠻⠿⠿⠟⠿⠛⠉⠀⠀⠀⠀⠀⣸⣿
+⣿⣿⣿⣿⣿⣿⣿⣷⣄⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⣴⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⡟⠀⠀⢰⣹⡆⠀⠀⠀⠀⠀⠀⣭⣷⠀⠀⠀⠸⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⠃⠀⠀⠈⠉⠀⠀⠤⠄⠀⠀⠀⠉⠁⠀⠀⠀⠀⢿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⢾⣿⣷⠀⠀⠀⠀⡠⠤⢄⠀⠀⠀⠠⣿⣿⣷⠀⢸⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⡀⠉⠀⠀⠀⠀⠀⢄⠀⢀⠀⠀⠀⠀⠉⠉⠁⠀⠀⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿
+";
+    let id = mux.get_focus();
+    mux.add_vertical_id(cursive::views::TextView::new(surprise), id);
+}
+
+fn remove_pane(siv: &mut Cursive) {
+    let mut mux: cursive::views::ViewRef<Mux> = siv.find_id("Mux").unwrap();
+    let id = mux.get_focus();
+    mux.remove_id(id);
 }
