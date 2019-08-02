@@ -26,8 +26,12 @@ fn test_line_vertical() {
     assert_eq!(node2, mux.get_focus());
     mux.on_event(Event::Shift(Key::Down));
     assert_eq!(node3, mux.get_focus());
-    mux.on_event(Event::Shift(Key::Left));
-    assert_eq!(node1, mux.get_focus());
+    match mux.on_event(Event::Shift(Key::Left)) {
+        cursive::event::EventResult::Ignored => {},
+        _ => {
+            assert!(false);
+        },
+    }
 }
 
 #[test]

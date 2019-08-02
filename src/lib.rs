@@ -22,7 +22,7 @@ pub enum Path {
     RightOrDown(Box<Option<Path>>),
 }
 
-#[derive(PartialEq)]
+#[derive(Debug,PartialEq)]
 enum Orientation {
     Vertical,
     Horizontal,
@@ -898,10 +898,10 @@ impl Mux {
         }
 
         match self.tree.get(from_node).unwrap().data.orientation {
-            Orientation::Horizontal if *path.last().unwrap() == SearchPath::Down || *path.last().unwrap() == SearchPath::Up => {
+            Orientation::Horizontal if direction == Absolute::Up || direction == Absolute::Down => {
                 Err(())
             },
-            Orientation::Vertical if *path.last().unwrap() == SearchPath::Left || *path.last().unwrap() == SearchPath::Right => {
+            Orientation::Vertical if direction == Absolute::Left || direction == Absolute::Right => {
                 Err(())
             },
             _ => {
