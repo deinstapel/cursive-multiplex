@@ -171,16 +171,7 @@ impl View for Mux {
     }
 
     fn layout(&mut self, constraint: Vec2) {
-        // We need mutables for layouting so lets take another route
-        let mut ids = Vec::new();
-        for node_id in self.root.descendants(&self.tree) {
-            ids.push(node_id);
-        }
-
-        // And now read them out, but mutable
-        for node_id in ids {
-            self.tree.get_mut(node_id).unwrap().data.layout_view(constraint);
-        }
+        self.rec_layout(self.root, constraint);
     }
 
     fn take_focus(&mut self, _source: Direction) -> bool {
@@ -342,6 +333,56 @@ impl Mux {
             }
         }
         EventResult::Ignored
+    }
+
+    fn rec_layout(&mut self, root: Id, constraint: Vec2) {
+        match root.children(&self.tree).count() {
+            1 => self.rec_layout(root.children(&self.tree).next().unwrap(), constraint),
+            2 => {
+                let left = root.children(&self.tree).next().unwrap();
+                let right = root.children(&self.tree).last().unwrap();
+                let const1;
+                let const2;
+                let root_data = &self.tree.get(root).unwrap().data;
+                let add_offset = |split: usize, offset: i16| -> usize {
+                    if offset < 0 {
+                        match usize::try_from(offset.abs()) {
+                            Ok(u) => {
+                                split - u
+                            },
+                            Err(_) => {
+                                split
+                            },
+                        }
+                    } else {
+                        match usize::try_from(offset) {
+                            Ok(u) => {
+                                split + u
+                            },
+                            Err(_) => {
+                                split
+                            },
+                        }
+                    }
+                };
+                match root_data.orientation {
+                    Orientation::Horizontal => {
+                        const1 = Vec2::new(add_offset(constraint.x/2, root_data.split_ratio_offset), constraint.y);
+                        const2 = Vec2::new(add_offset(constraint.x/2, -root_data.split_ratio_offset), constraint.y);
+                    },
+                    Orientation::Vertical => {
+                        const1 = Vec2::new(constraint.x, add_offset(constraint.y/2, root_data.split_ratio_offset));
+                        const2 = Vec2::new(constraint.x,add_offset(constraint.y/2, -root_data.split_ratio_offset));
+                    },
+                }
+                self.rec_layout(left, const1);
+                self.rec_layout(right, const2);
+            },
+            0 => {
+                self.tree.get_mut(root).unwrap().data.layout_view(constraint);
+            },
+            _ => {debug!("Illegal Number of Child Nodes")},
+        }
     }
 
     fn rec_draw(&self, printer: &Printer, root: Id) {

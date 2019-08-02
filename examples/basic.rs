@@ -20,7 +20,7 @@ Morbi id velit a nisi convallis malesuada eget a lorem. Integer gravida varius v
 
 Integer sit amet eleifend ex. Vivamus aliquam eros et massa pellentesque gravida. Nam ullamcorper in urna eget condimentum. Integer tincidunt cursus purus, non egestas erat ultrices a. Pellentesque id leo tristique, tincidunt nunc nec, iaculis nisl. Etiam sit amet ex vitae nunc facilisis auctor. Mauris ultrices lobortis purus, eget venenatis odio. Donec vulputate arcu nunc, quis posuere eros vestibulum non. Nullam aliquam ex ac mi varius, non sodales enim ultricies. Phasellus nec feugiat enim, at vestibulum enim. Nulla fermentum velit sem, ac dapibus nisi lobortis eu. Nulla eget consectetur massa, sed eleifend lorem. Ut convallis erat nec sapien facilisis posuere. Nam sit amet mollis tortor. Donec posuere neque eu risus sodales, vitae maximus erat sagittis. ";
 
-    let (mut mux, node1) = MuxBuilder::new().build(cursive::views::TextView::new(text).scrollable());
+    let (mut mux, node1) = MuxBuilder::new().build(cursive::views::ScrollView::new(cursive::views::TextView::new(text)));
 
     let node2 = mux.add_horizontal_id(cursive::views::TextArea::new(), node1).unwrap();
     let node3 = mux.add_vertical_id(cursive::views::TextArea::new(), node2).unwrap();
