@@ -344,35 +344,26 @@ impl Mux {
                 let const1;
                 let const2;
                 let root_data = &self.tree.get(root).unwrap().data;
-                let add_offset = |split: usize, offset: i16| -> usize {
-                    if offset < 0 {
-                        match usize::try_from(offset.abs()) {
-                            Ok(u) => {
-                                split - u
-                            },
-                            Err(_) => {
-                                split
-                            },
-                        }
-                    } else {
-                        match usize::try_from(offset) {
-                            Ok(u) => {
-                                split + u
-                            },
-                            Err(_) => {
-                                split
-                            },
-                        }
-                    }
-                };
                 match root_data.orientation {
                     Orientation::Horizontal => {
-                        const1 = Vec2::new(add_offset(constraint.x/2, root_data.split_ratio_offset), constraint.y);
-                        const2 = Vec2::new(add_offset(constraint.x/2, -root_data.split_ratio_offset), constraint.y);
+                        const1 = Vec2::new(Mux::add_offset(constraint.x/2, root_data.split_ratio_offset), constraint.y);
+                        const2 = Vec2::new(Mux::add_offset(constraint.x/2, -root_data.split_ratio_offset)+1, constraint.y);
+                        // Precautions have to be taken here as modification of the split is not possible elsewhere
+                        if const1.x <= 3 {
+                            self.tree.get_mut(root).unwrap().data.split_ratio_offset += 1;
+                        } else if const1.x >= constraint.x - 3 {
+                            self.tree.get_mut(root).unwrap().data.split_ratio_offset -= 1;
+                        }
                     },
                     Orientation::Vertical => {
-                        const1 = Vec2::new(constraint.x, add_offset(constraint.y/2, root_data.split_ratio_offset));
-                        const2 = Vec2::new(constraint.x,add_offset(constraint.y/2, -root_data.split_ratio_offset));
+                        const1 = Vec2::new(constraint.x, Mux::add_offset(constraint.y/2, root_data.split_ratio_offset));
+                        const2 = Vec2::new(constraint.x,Mux::add_offset(constraint.y/2, -root_data.split_ratio_offset)+1);
+                        // Precautions have to be taken here as modification of the split is not possible elsewhere
+                        if const1.y <= 3 {
+                            self.tree.get_mut(root).unwrap().data.split_ratio_offset += 1;
+                        } else if const1.y >= constraint.y - 3 {
+                            self.tree.get_mut(root).unwrap().data.split_ratio_offset -= 1;
+                        }
                     },
                 }
                 self.rec_layout(left, const1);
@@ -382,6 +373,28 @@ impl Mux {
                 self.tree.get_mut(root).unwrap().data.layout_view(constraint);
             },
             _ => {debug!("Illegal Number of Child Nodes")},
+        }
+    }
+
+    fn add_offset(split: usize, offset: i16) -> usize {
+        if offset < 0 {
+            match usize::try_from(offset.abs()) {
+                Ok(u) => {
+                    split - u
+                },
+                Err(_) => {
+                    split
+                },
+            }
+        } else {
+            match usize::try_from(offset) {
+                Ok(u) => {
+                    split + u
+                },
+                Err(_) => {
+                    split
+                },
+            }
         }
     }
 
@@ -395,47 +408,26 @@ impl Mux {
                 let printer1;
                 let printer2;
                 let root_data = &self.tree.get(root).unwrap().data;
-                let add_offset = |split: usize, offset: i16| -> usize {
-                    if offset < 0 {
-                        match usize::try_from(offset.abs()) {
-                            Ok(u) => {
-                                split - u
-                            },
-                            Err(_) => {
-                                split
-                            },
-                        }
-                    } else {
-                        match usize::try_from(offset) {
-                            Ok(u) => {
-                                split + u
-                            },
-                            Err(_) => {
-                                split
-                            },
-                        }
-                    }
-                };
                 match root_data.orientation {
                     Orientation::Horizontal => {
-                        printer1 = printer.cropped(Vec2::new(add_offset(printer.size.x/2, root_data.split_ratio_offset), printer.size.y));
-                        printer2 = printer.offset(Vec2::new(add_offset(printer.size.x/2 + 1, root_data.split_ratio_offset), 0)).cropped(Vec2::new(add_offset(printer.size.x/2, -root_data.split_ratio_offset), printer.size.y));
+                        printer1 = printer.cropped(Vec2::new(Mux::add_offset(printer.size.x/2, root_data.split_ratio_offset), printer.size.y));
+                        printer2 = printer.offset(Vec2::new(Mux::add_offset(printer.size.x/2, root_data.split_ratio_offset)+1, 0)).cropped(Vec2::new(Mux::add_offset(printer.size.x/2, -root_data.split_ratio_offset), printer.size.y));
                     },
                     Orientation::Vertical => {
-                        printer1 = printer.cropped(Vec2::new(printer.size.x, add_offset(printer.size.y/2, root_data.split_ratio_offset)));
-                        printer2 = printer.offset(Vec2::new(0, add_offset(printer.size.y/2+1, root_data.split_ratio_offset))).cropped(Vec2::new(printer.size.x,add_offset(printer.size.y/2, -root_data.split_ratio_offset)));
+                        printer1 = printer.cropped(Vec2::new(printer.size.x, Mux::add_offset(printer.size.y/2, root_data.split_ratio_offset)));
+                        printer2 = printer.offset(Vec2::new(0, Mux::add_offset(printer.size.y/2, root_data.split_ratio_offset)+1)).cropped(Vec2::new(printer.size.x,Mux::add_offset(printer.size.y/2, -root_data.split_ratio_offset)));
                     },
                 }
                 self.rec_draw(&printer1, left);
                 match self.tree.get(root).unwrap().data.orientation {
                     Orientation::Vertical => {
                         if printer.size.y > 1 {
-                            printer.print_hline(Vec2::new(0, add_offset(printer.size.y/2, root_data.split_ratio_offset)), printer.size.x, "─");
+                            printer.print_hline(Vec2::new(0, Mux::add_offset(printer.size.y/2, root_data.split_ratio_offset)), printer.size.x, "─");
                         }
                     },
                     Orientation::Horizontal => {
                         if printer.size.x > 1 {
-                            printer.print_vline(Vec2::new(add_offset(printer.size.x/2, root_data.split_ratio_offset), 0), printer.size.y, "│");
+                            printer.print_vline(Vec2::new(Mux::add_offset(printer.size.x/2, root_data.split_ratio_offset), 0), printer.size.y, "│");
                         }
                     },
                 }
