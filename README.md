@@ -42,7 +42,7 @@ let builder = cursive_multiplex::MuxBuilder::new();
 let (mut mux, root_node)_= builder.build(cursive::views::TextView::new("Hello World!".to_string()));
 ```
 
-> With the MuxBuilder defaults are automatically set for controls of course you can still change them, have a look at the [docs](). TODO
+> With the MuxBuilder defaults are automatically set for controls of course you can still change them, have a look at the [docs](https://docs.rs/cursive-multiplex).
 
 ###  Adding views
 
