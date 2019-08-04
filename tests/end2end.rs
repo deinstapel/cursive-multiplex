@@ -1,6 +1,6 @@
-use std::process::{Command, Stdio};
-use std::fs;
 use serde_json::{json, Value};
+use std::fs;
+use std::process::{Command, Stdio};
 
 #[test]
 fn test_end2end() {
@@ -14,8 +14,8 @@ fn test_end2end() {
 
     assert!(jest.status.success());
 
-    let result: Value = serde_json::from_slice(&jest.stdout[..])
-        .expect("failed to read end2end tests result");
+    let result: Value =
+        serde_json::from_slice(&jest.stdout[..]).expect("failed to read end2end tests result");
     let passed = result["numPassedTests"].as_i64().unwrap();
     let total = result["numTotalTests"].as_i64().unwrap();
     let color = match passed as f32 / total as f32 {
@@ -36,5 +36,6 @@ fn test_end2end() {
     fs::write(
         "./target/shields/shellshot.json",
         serde_json::to_string_pretty(&shield).expect("failed to generate shields endpoint"),
-    ).expect("failed to save shields endpoint");
+    )
+    .expect("failed to save shields endpoint");
 }

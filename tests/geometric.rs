@@ -1,8 +1,8 @@
-use cursive::Cursive;
-use cursive::traits::View;
 use cursive::event::{Event, Key};
-use cursive::views::{TextArea, IdView};
-use cursive_multiplex::{MuxBuilder, Mux};
+use cursive::traits::View;
+use cursive::views::{IdView, TextArea};
+use cursive::Cursive;
+use cursive_multiplex::{Mux, MuxBuilder};
 
 #[test]
 fn test_line_vertical() {
@@ -27,10 +27,10 @@ fn test_line_vertical() {
     mux.on_event(Event::Shift(Key::Down));
     assert_eq!(node3, mux.get_focus());
     match mux.on_event(Event::Shift(Key::Left)) {
-        cursive::event::EventResult::Ignored => {},
+        cursive::event::EventResult::Ignored => {}
         _ => {
             assert!(false);
-        },
+        }
     }
 }
 
@@ -53,11 +53,14 @@ fn test_triangle() {
     match mux.on_event(Event::Shift(Key::Left)) {
         cursive::event::EventResult::Consumed(_) => {
             assert_eq!(mux.get_focus(), node1);
-        },
+        }
         cursive::event::EventResult::Ignored => {
-            println!("Not to be ignored Event ignored, Focus was at: {}", mux.get_focus());
+            println!(
+                "Not to be ignored Event ignored, Focus was at: {}",
+                mux.get_focus()
+            );
             assert!(false);
-        },
+        }
     }
 }
 
@@ -70,7 +73,9 @@ fn test_diagonal() {
     let _ = mux.add_vertical_id(TextArea::new(), node2).unwrap();
     let upper_right_corner = mux.add_horizontal_id(TextArea::new(), node2).unwrap();
     let bottom_left_corner = mux.add_vertical_id(TextArea::new(), node1).unwrap();
-    let bottom_left_middle = mux.add_horizontal_id(TextArea::new(), bottom_left_corner).unwrap();
+    let bottom_left_middle = mux
+        .add_horizontal_id(TextArea::new(), bottom_left_corner)
+        .unwrap();
 
     let id = IdView::new("mux".to_string(), mux);
     siv.add_fullscreen_layer(id);
@@ -101,13 +106,25 @@ fn test_quadratic() {
     let mut siv = Cursive::dummy();
     let (mut mux, top_left_corner) = MuxBuilder::new().build(TextArea::new());
 
-    let top_right_mid = mux.add_horizontal_id(TextArea::new(), top_left_corner).unwrap();
+    let top_right_mid = mux
+        .add_horizontal_id(TextArea::new(), top_left_corner)
+        .unwrap();
     let bottom_right_mid = mux.add_vertical_id(TextArea::new(), top_right_mid).unwrap();
-    let bottom_right_corner = mux.add_horizontal_id(TextArea::new(), bottom_right_mid).unwrap();
-    let bottom_left_corner = mux.add_vertical_id(TextArea::new(), top_left_corner).unwrap();
-    let top_left_mid = mux.add_horizontal_id(TextArea::new(), top_left_corner).unwrap();
-    let bottom_left_mid = mux.add_horizontal_id(TextArea::new(), bottom_left_corner).unwrap();
-    let top_right_corner = mux.add_horizontal_id(TextArea::new(), top_right_mid).unwrap();
+    let bottom_right_corner = mux
+        .add_horizontal_id(TextArea::new(), bottom_right_mid)
+        .unwrap();
+    let bottom_left_corner = mux
+        .add_vertical_id(TextArea::new(), top_left_corner)
+        .unwrap();
+    let top_left_mid = mux
+        .add_horizontal_id(TextArea::new(), top_left_corner)
+        .unwrap();
+    let bottom_left_mid = mux
+        .add_horizontal_id(TextArea::new(), bottom_left_corner)
+        .unwrap();
+    let top_right_corner = mux
+        .add_horizontal_id(TextArea::new(), top_right_mid)
+        .unwrap();
 
     let id = IdView::new("mux".to_string(), mux);
 

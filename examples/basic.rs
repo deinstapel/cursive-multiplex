@@ -1,13 +1,12 @@
 extern crate cursive;
 
-use cursive::Cursive;
 use cursive::traits::Scrollable;
-use cursive_multiplex::{Mux, Path, Id, MuxBuilder};
+use cursive::Cursive;
+use cursive_multiplex::{Id, Mux, MuxBuilder, Path};
 
 fn main() {
     let mut siv = Cursive::default();
     // siv.show_debug_console();
-
 
     let text = "
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec congue porttitor pellentesque. Vestibulum a tellus sagittis, blandit erat ac, finibus eros. Praesent cursus at ligula laoreet congue. Proin vehicula diam mattis metus aliquet aliquam. Nullam finibus tellus id dolor porta venenatis. Cras vestibulum leo sit amet congue ultrices. Phasellus convallis ut enim tincidunt interdum.
@@ -20,14 +19,20 @@ Morbi id velit a nisi convallis malesuada eget a lorem. Integer gravida varius v
 
 Integer sit amet eleifend ex. Vivamus aliquam eros et massa pellentesque gravida. Nam ullamcorper in urna eget condimentum. Integer tincidunt cursus purus, non egestas erat ultrices a. Pellentesque id leo tristique, tincidunt nunc nec, iaculis nisl. Etiam sit amet ex vitae nunc facilisis auctor. Mauris ultrices lobortis purus, eget venenatis odio. Donec vulputate arcu nunc, quis posuere eros vestibulum non. Nullam aliquam ex ac mi varius, non sodales enim ultricies. Phasellus nec feugiat enim, at vestibulum enim. Nulla fermentum velit sem, ac dapibus nisi lobortis eu. Nulla eget consectetur massa, sed eleifend lorem. Ut convallis erat nec sapien facilisis posuere. Nam sit amet mollis tortor. Donec posuere neque eu risus sodales, vitae maximus erat sagittis. ";
 
-    let (mut mux, node1) = MuxBuilder::new().build(cursive::views::ScrollView::new(cursive::views::TextView::new(text)));
+    let (mut mux, node1) = MuxBuilder::new().build(cursive::views::ScrollView::new(
+        cursive::views::TextView::new(text),
+    ));
 
     let mut menubar = cursive::views::Menubar::new();
-    menubar.add_leaf("Hello from cursive_multiplex", |_|{});
+    menubar.add_leaf("Hello from cursive_multiplex", |_| {});
     menubar.add_leaf("Feel free to try out the examples simply with `cargo run --example=basic` or `cargo run --example=tily`", |_|{});
 
-    let node2 = mux.add_horizontal_id(cursive::views::TextArea::new(), node1).unwrap();
-    let node3 = mux.add_vertical_id(cursive::views::TextArea::new(), node2).unwrap();
+    let node2 = mux
+        .add_horizontal_id(cursive::views::TextArea::new(), node1)
+        .unwrap();
+    let node3 = mux
+        .add_vertical_id(cursive::views::TextArea::new(), node2)
+        .unwrap();
 
     let idlayer = cursive::views::IdView::new("Mux", mux);
     let mut linear = cursive::views::LinearLayout::new(cursive::direction::Orientation::Vertical);
@@ -36,12 +41,18 @@ Integer sit amet eleifend ex. Vivamus aliquam eros et massa pellentesque gravida
     linear.add_child(menubar);
     siv.add_fullscreen_layer(linear);
     siv.add_global_callback('q', Cursive::quit);
-    siv.add_global_callback(cursive::event::Event::Alt(cursive::event::Key::Ins), move |ref mut siv| {
-        add_pane(siv);
-    });
-    siv.add_global_callback(cursive::event::Event::Alt(cursive::event::Key::Del), move |ref mut siv| {
-        remove_pane(siv);
-    });
+    siv.add_global_callback(
+        cursive::event::Event::Alt(cursive::event::Key::Ins),
+        move |ref mut siv| {
+            add_pane(siv);
+        },
+    );
+    siv.add_global_callback(
+        cursive::event::Event::Alt(cursive::event::Key::Del),
+        move |ref mut siv| {
+            remove_pane(siv);
+        },
+    );
     cursive::logger::init();
     siv.run();
 }

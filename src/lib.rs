@@ -27,21 +27,22 @@
 //! ```
 
 extern crate cursive;
-extern crate indextree;
 extern crate failure;
-#[macro_use] extern crate failure_derive;
-#[macro_use] extern crate log;
+extern crate indextree;
+#[macro_use]
+extern crate failure_derive;
+#[macro_use]
+extern crate log;
 
 mod error;
 
-use cursive::view::{View, Selector};
-use std::convert::TryFrom;
-use cursive::event::{Event, EventResult, Key};
 use cursive::direction::{Absolute, Direction};
-use cursive::Vec2;
+use cursive::event::{Event, EventResult, Key};
+use cursive::view::{Selector, View};
 use cursive::Printer;
+use cursive::Vec2;
 use error::{AddViewError, RemoveViewError, SwitchError};
-
+use std::convert::TryFrom;
 
 /// Path is a recursive enum made to be able to identify a pane by it's actual location in the multiplexer. An upper Pane on the left side for example would have the path `Path::LeftOrUp(Box::new(Some(Path::LeftOrUp(Box::new(None)))))`.
 #[derive(Debug)]
@@ -50,13 +51,13 @@ pub enum Path {
     RightOrDown(Box<Option<Path>>),
 }
 
-#[derive(Debug,PartialEq)]
+#[derive(Debug, PartialEq)]
 enum Orientation {
     Vertical,
     Horizontal,
 }
 
-#[derive(Debug,PartialEq)]
+#[derive(Debug, PartialEq)]
 enum SearchPath {
     Left,
     Right,
@@ -101,7 +102,7 @@ pub struct MuxBuilder {
 
 impl MuxBuilder {
     pub fn new() -> Self {
-        MuxBuilder{
+        MuxBuilder {
             focus_up: Event::Shift(Key::Up),
             focus_down: Event::Shift(Key::Down),
             focus_left: Event::Shift(Key::Left),
@@ -126,7 +127,7 @@ impl MuxBuilder {
     /// ```
     pub fn build<T>(&self, v: T) -> (Mux, Id)
     where
-        T: View
+        T: View,
     {
         let root_node = Node {
             view: None,
@@ -136,7 +137,7 @@ impl MuxBuilder {
         let mut new_tree = indextree::Arena::new();
         let new_root = new_tree.new_node(root_node);
 
-        let mut new_mux = Mux{
+        let mut new_mux = Mux {
             tree: new_tree,
             root: new_root,
             focus: new_root,
@@ -195,7 +196,6 @@ impl View for Mux {
         self.rec_draw(printer, self.root)
     }
 
-
     fn needs_relayout(&self) -> bool {
         true
     }
@@ -217,38 +217,23 @@ impl View for Mux {
     }
 
     fn on_event(&mut self, evt: Event) -> EventResult {
-        let result = self.tree.get_mut(self.focus).unwrap().data.on_event(evt.relativized(Vec2::new(0, 0)));
+        let result = self
+            .tree
+            .get_mut(self.focus)
+            .unwrap()
+            .data
+            .on_event(evt.relativized(Vec2::new(0, 0)));
         match result {
-            EventResult::Ignored => {
-                match evt {
-                    _ if self.focus_left == evt => {
-                        self.move_focus(Absolute::Left)
-                    },
-                    _ if self.focus_right == evt => {
-                        self.move_focus(Absolute::Right)
-                    },
-                    _ if self.focus_up == evt => {
-                        self.move_focus(Absolute::Up)
-                    },
-                    _ if self.focus_down == evt => {
-                        self.move_focus(Absolute::Down)
-                    },
-                    _ if self.resize_left == evt => {
-                        self.resize(Absolute::Left)
-                    },
-                    _ if self.resize_right == evt => {
-                        self.resize(Absolute::Right)
-                    },
-                    _ if self.resize_up == evt => {
-                        self.resize(Absolute::Up)
-                    },
-                    _ if self.resize_down == evt => {
-                        self.resize(Absolute::Down)
-                    },
-                    _ => {
-                        EventResult::Ignored
-                    },
-                }
+            EventResult::Ignored => match evt {
+                _ if self.focus_left == evt => self.move_focus(Absolute::Left),
+                _ if self.focus_right == evt => self.move_focus(Absolute::Right),
+                _ if self.focus_up == evt => self.move_focus(Absolute::Up),
+                _ if self.focus_down == evt => self.move_focus(Absolute::Down),
+                _ if self.resize_left == evt => self.resize(Absolute::Left),
+                _ if self.resize_right == evt => self.resize(Absolute::Right),
+                _ if self.resize_up == evt => self.resize(Absolute::Up),
+                _ if self.resize_down == evt => self.resize(Absolute::Down),
+                _ => EventResult::Ignored,
             },
             result => result,
         }
@@ -264,7 +249,7 @@ struct Node {
 impl Node {
     fn new<T>(v: T, orit: Orientation) -> Self
     where
-        T: View
+        T: View,
     {
         Self {
             view: Some(Box::new(v)),
@@ -298,8 +283,8 @@ impl Node {
         match self.view {
             Some(ref view) => {
                 view.draw(printer);
-            },
-            None => {},
+            }
+            None => {}
         }
     }
 
@@ -332,15 +317,9 @@ impl Mux {
     fn resize(&mut self, direction: Absolute) -> EventResult {
         let orit = {
             match direction {
-                Absolute::Left | Absolute::Right => {
-                    Orientation::Horizontal
-                },
-                Absolute::Up | Absolute::Down => {
-                    Orientation::Vertical
-                },
-                _ => {
-                    Orientation::Horizontal
-                }
+                Absolute::Left | Absolute::Right => Orientation::Horizontal,
+                Absolute::Up | Absolute::Down => Orientation::Vertical,
+                _ => Orientation::Horizontal,
             }
         };
 
@@ -351,13 +330,13 @@ impl Mux {
                     match direction {
                         Absolute::Left | Absolute::Up => {
                             view.data.split_ratio_offset -= 1;
-                            return EventResult::Consumed(None)
-                        },
+                            return EventResult::Consumed(None);
+                        }
                         Absolute::Right | Absolute::Down => {
                             view.data.split_ratio_offset += 1;
-                            return EventResult::Consumed(None)
-                        },
-                        _ => {},
+                            return EventResult::Consumed(None);
+                        }
+                        _ => {}
                     }
                 } else {
                     parent = parent.unwrap().ancestors(&self.tree).nth(1);
@@ -378,33 +357,49 @@ impl Mux {
                 let root_data = &self.tree.get(root).unwrap().data;
                 match root_data.orientation {
                     Orientation::Horizontal => {
-                        const1 = Vec2::new(Mux::add_offset(constraint.x/2, root_data.split_ratio_offset), constraint.y);
-                        const2 = Vec2::new(Mux::add_offset(constraint.x/2, -root_data.split_ratio_offset)+1, constraint.y);
+                        const1 = Vec2::new(
+                            Mux::add_offset(constraint.x / 2, root_data.split_ratio_offset),
+                            constraint.y,
+                        );
+                        const2 = Vec2::new(
+                            Mux::add_offset(constraint.x / 2, -root_data.split_ratio_offset) + 1,
+                            constraint.y,
+                        );
                         // Precautions have to be taken here as modification of the split is not possible elsewhere
                         if const1.x <= 3 {
                             self.tree.get_mut(root).unwrap().data.split_ratio_offset += 1;
                         } else if const1.x >= constraint.x - 3 {
                             self.tree.get_mut(root).unwrap().data.split_ratio_offset -= 1;
                         }
-                    },
+                    }
                     Orientation::Vertical => {
-                        const1 = Vec2::new(constraint.x, Mux::add_offset(constraint.y/2, root_data.split_ratio_offset));
-                        const2 = Vec2::new(constraint.x,Mux::add_offset(constraint.y/2, -root_data.split_ratio_offset)+1);
+                        const1 = Vec2::new(
+                            constraint.x,
+                            Mux::add_offset(constraint.y / 2, root_data.split_ratio_offset),
+                        );
+                        const2 = Vec2::new(
+                            constraint.x,
+                            Mux::add_offset(constraint.y / 2, -root_data.split_ratio_offset) + 1,
+                        );
                         // Precautions have to be taken here as modification of the split is not possible elsewhere
                         if const1.y <= 3 {
                             self.tree.get_mut(root).unwrap().data.split_ratio_offset += 1;
                         } else if const1.y >= constraint.y - 3 {
                             self.tree.get_mut(root).unwrap().data.split_ratio_offset -= 1;
                         }
-                    },
+                    }
                 }
                 self.rec_layout(left, const1);
                 self.rec_layout(right, const2);
-            },
+            }
             0 => {
-                self.tree.get_mut(root).unwrap().data.layout_view(constraint);
-            },
-            _ => {debug!("Illegal Number of Child Nodes")},
+                self.tree
+                    .get_mut(root)
+                    .unwrap()
+                    .data
+                    .layout_view(constraint);
+            }
+            _ => debug!("Illegal Number of Child Nodes"),
         }
     }
 
@@ -417,19 +412,13 @@ impl Mux {
                     } else {
                         split - u
                     }
-                },
-                Err(_) => {
-                    split
-                },
+                }
+                Err(_) => split,
             }
         } else {
             match usize::try_from(offset) {
-                Ok(u) => {
-                    split + u
-                },
-                Err(_) => {
-                    split
-                },
+                Ok(u) => split + u,
+                Err(_) => split,
             }
         }
     }
@@ -446,33 +435,81 @@ impl Mux {
                 let root_data = &self.tree.get(root).unwrap().data;
                 match root_data.orientation {
                     Orientation::Horizontal => {
-                        printer1 = printer.cropped(Vec2::new(Mux::add_offset(printer.size.x/2, root_data.split_ratio_offset), printer.size.y));
-                        printer2 = printer.offset(Vec2::new(Mux::add_offset(printer.size.x/2, root_data.split_ratio_offset)+1, 0)).cropped(Vec2::new(Mux::add_offset(printer.size.x/2, -root_data.split_ratio_offset), printer.size.y));
-                    },
+                        printer1 = printer.cropped(Vec2::new(
+                            Mux::add_offset(printer.size.x / 2, root_data.split_ratio_offset),
+                            printer.size.y,
+                        ));
+                        printer2 = printer
+                            .offset(Vec2::new(
+                                Mux::add_offset(printer.size.x / 2, root_data.split_ratio_offset)
+                                    + 1,
+                                0,
+                            ))
+                            .cropped(Vec2::new(
+                                Mux::add_offset(printer.size.x / 2, -root_data.split_ratio_offset),
+                                printer.size.y,
+                            ));
+                    }
                     Orientation::Vertical => {
-                        printer1 = printer.cropped(Vec2::new(printer.size.x, Mux::add_offset(printer.size.y/2, root_data.split_ratio_offset)));
-                        printer2 = printer.offset(Vec2::new(0, Mux::add_offset(printer.size.y/2, root_data.split_ratio_offset)+1)).cropped(Vec2::new(printer.size.x,Mux::add_offset(printer.size.y/2, -root_data.split_ratio_offset)));
-                    },
+                        printer1 = printer.cropped(Vec2::new(
+                            printer.size.x,
+                            Mux::add_offset(printer.size.y / 2, root_data.split_ratio_offset),
+                        ));
+                        printer2 = printer
+                            .offset(Vec2::new(
+                                0,
+                                Mux::add_offset(printer.size.y / 2, root_data.split_ratio_offset)
+                                    + 1,
+                            ))
+                            .cropped(Vec2::new(
+                                printer.size.x,
+                                Mux::add_offset(printer.size.y / 2, -root_data.split_ratio_offset),
+                            ));
+                    }
                 }
                 self.rec_draw(&printer1, left);
                 match self.tree.get(root).unwrap().data.orientation {
                     Orientation::Vertical => {
                         if printer.size.y > 1 {
-                            printer.print_hline(Vec2::new(0, Mux::add_offset(printer.size.y/2, root_data.split_ratio_offset)), printer.size.x, "─");
+                            printer.print_hline(
+                                Vec2::new(
+                                    0,
+                                    Mux::add_offset(
+                                        printer.size.y / 2,
+                                        root_data.split_ratio_offset,
+                                    ),
+                                ),
+                                printer.size.x,
+                                "─",
+                            );
                         }
-                    },
+                    }
                     Orientation::Horizontal => {
                         if printer.size.x > 1 {
-                            printer.print_vline(Vec2::new(Mux::add_offset(printer.size.x/2, root_data.split_ratio_offset), 0), printer.size.y, "│");
+                            printer.print_vline(
+                                Vec2::new(
+                                    Mux::add_offset(
+                                        printer.size.x / 2,
+                                        root_data.split_ratio_offset,
+                                    ),
+                                    0,
+                                ),
+                                printer.size.y,
+                                "│",
+                            );
                         }
-                    },
+                    }
                 }
                 self.rec_draw(&printer2, right);
-            },
+            }
             0 => {
-                self.tree.get(root).unwrap().data.draw(&printer.focused(self.focus == root));
-            },
-            _ => {debug!("Illegal Number of Child Nodes")},
+                self.tree
+                    .get(root)
+                    .unwrap()
+                    .data
+                    .draw(&printer.focused(self.focus == root));
+            }
+            _ => debug!("Illegal Number of Child Nodes"),
         }
     }
 
@@ -491,7 +528,7 @@ impl Mux {
     /// ```
     pub fn add_horizontal_path<T>(&mut self, v: T, path: Path) -> Result<Id, AddViewError>
     where
-        T: View
+        T: View,
     {
         self.add_node_path(v, Some(path), Orientation::Horizontal, self.root)
     }
@@ -511,74 +548,81 @@ impl Mux {
     /// ```
     pub fn add_vertical_path<T>(&mut self, v: T, path: Path) -> Result<Id, AddViewError>
     where
-        T: View
+        T: View,
     {
         self.add_node_path(v, Some(path), Orientation::Vertical, self.root)
     }
 
-    fn add_node_path<T>(&mut self, v: T, path: Option<Path>, orientation: Orientation, cur_node: indextree::NodeId) -> Result<Id, AddViewError>
+    fn add_node_path<T>(
+        &mut self,
+        v: T,
+        path: Option<Path>,
+        orientation: Orientation,
+        cur_node: indextree::NodeId,
+    ) -> Result<Id, AddViewError>
     where
-        T: View
+        T: View,
     {
-            match path {
-                Some(path_val) => {
-                    match path_val {
-                        Path::LeftOrUp(ch)=> {
-                            match cur_node.children(&self.tree).nth(0) {
+        match path {
+            Some(path_val) => {
+                match path_val {
+                    Path::LeftOrUp(ch) => {
+                        match cur_node.children(&self.tree).nth(0) {
+                            Some(node) => self.add_node_path(v, *ch, orientation, node),
+                            None => {
+                                // Truncate
+                                self.add_node_path(v, None, orientation, cur_node)
+                            }
+                        }
+                    }
+                    Path::RightOrDown(ch) => {
+                        if cur_node.children(&self.tree).count() < 2 {
+                            match cur_node.children(&self.tree).last() {
                                 Some(node) => {
                                     self.add_node_path(v, *ch, orientation, node)
-                                },
-                                None => {
-                                    // Truncate
-                                    self.add_node_path(v, None, orientation, cur_node)
-                                },
-                            }
-                        },
-                        Path::RightOrDown(ch) => {
-                            if cur_node.children(&self.tree).count() < 2 {
-                                match cur_node.children(&self.tree).last() {
-                                    Some(node) => {
-                                        self.add_node_path(v, *ch, orientation, node)
-                                        // Ok(self)
-                                    },
-                                    None => {
-                                        // Truncate, if too specific
-                                        self.add_node_path(v, None, orientation, cur_node)
-                                    },
+                                    // Ok(self)
                                 }
-                            } else {
-                                Err(AddViewError::InvalidPath{path: ch.unwrap()})
+                                None => {
+                                    // Truncate, if too specific
+                                    self.add_node_path(v, None, orientation, cur_node)
+                                }
                             }
-                        },
+                        } else {
+                            Err(AddViewError::InvalidPath { path: ch.unwrap() })
+                        }
                     }
-                },
-                None if cur_node.following_siblings(&self.tree, ).count() + cur_node.preceding_siblings(&self.tree, ).count() < 2 => {
-                    let new_node = self.tree.new_node(Node::new(v, Orientation::Horizontal));
-                    cur_node.insert_after(new_node, &mut self.tree, )?;
-                    self.focus = new_node;
-                    debug!("Changed Focus: {}", new_node);
-                    Ok(new_node)
-                },
-                None => {
-                    // First element is node itself, second direct parent
-                    let parent = cur_node.ancestors(&self.tree).nth(1).unwrap();
-                    cur_node.detach(&mut self.tree);
-
-                    let new_intermediate = self.tree.new_node(Node{
-                        view: None,
-                        split_ratio_offset: 0,
-                        orientation: Orientation::Horizontal,
-                    });
-
-                    parent.append(new_intermediate, &mut self.tree)?;
-                    new_intermediate.append(cur_node, &mut self.tree, )?;
-                    let new_node = self.tree.new_node(Node::new(v, Orientation::Horizontal));
-                    new_intermediate.append(new_node, &mut self.tree, )?;
-                    self.focus = new_node;
-                    debug!("Changed Focus: {}", new_node);
-                    Ok(new_node)
-                },
+                }
             }
+            None if cur_node.following_siblings(&self.tree).count()
+                + cur_node.preceding_siblings(&self.tree).count()
+                < 2 =>
+            {
+                let new_node = self.tree.new_node(Node::new(v, Orientation::Horizontal));
+                cur_node.insert_after(new_node, &mut self.tree)?;
+                self.focus = new_node;
+                debug!("Changed Focus: {}", new_node);
+                Ok(new_node)
+            }
+            None => {
+                // First element is node itself, second direct parent
+                let parent = cur_node.ancestors(&self.tree).nth(1).unwrap();
+                cur_node.detach(&mut self.tree);
+
+                let new_intermediate = self.tree.new_node(Node {
+                    view: None,
+                    split_ratio_offset: 0,
+                    orientation: Orientation::Horizontal,
+                });
+
+                parent.append(new_intermediate, &mut self.tree)?;
+                new_intermediate.append(cur_node, &mut self.tree)?;
+                let new_node = self.tree.new_node(Node::new(v, Orientation::Horizontal));
+                new_intermediate.append(new_node, &mut self.tree)?;
+                self.focus = new_node;
+                debug!("Changed Focus: {}", new_node);
+                Ok(new_node)
+            }
+        }
     }
 
     /// Add the given view to the tree based on the path, if the path is too specific it will be truncated, if not specific enough an error will be returned.
@@ -594,14 +638,14 @@ impl Mux {
     /// ```
     pub fn add_horizontal_id<T>(&mut self, v: T, id: Id) -> Result<Id, AddViewError>
     where
-        T: View
+        T: View,
     {
         self.add_node_id(v, id, Orientation::Horizontal)
     }
 
     fn add_node_id<T>(&mut self, v: T, id: Id, orientation: Orientation) -> Result<Id, AddViewError>
     where
-        T: View
+        T: View,
     {
         let new_node = self.tree.new_node(Node::new(v, Orientation::Horizontal));
 
@@ -612,7 +656,9 @@ impl Mux {
             node_id = id;
         }
 
-        if node_id.children(&self.tree).count() < 2 && !self.tree.get(node_id).unwrap().data.has_view() {
+        if node_id.children(&self.tree).count() < 2
+            && !self.tree.get(node_id).unwrap().data.has_view()
+        {
             node_id.append(new_node, &mut self.tree)?;
             self.tree.get_mut(node_id).unwrap().data.orientation = orientation;
         } else {
@@ -629,7 +675,7 @@ impl Mux {
 
             node_id.detach(&mut self.tree);
 
-            let new_intermediate = self.tree.new_node(Node{
+            let new_intermediate = self.tree.new_node(Node {
                 view: None,
                 split_ratio_offset: 0,
                 orientation: orientation,
@@ -637,13 +683,13 @@ impl Mux {
             match position {
                 Path::RightOrDown(_) => {
                     parent.append(new_intermediate, &mut self.tree)?;
-                },
+                }
                 Path::LeftOrUp(_) => {
                     parent.prepend(new_intermediate, &mut self.tree)?;
                 }
             }
-            new_intermediate.append(node_id, &mut self.tree, )?;
-            new_intermediate.append(new_node, &mut self.tree, )?;
+            new_intermediate.append(node_id, &mut self.tree)?;
+            new_intermediate.append(new_node, &mut self.tree)?;
             debug!("Changed order");
         }
 
@@ -665,7 +711,7 @@ impl Mux {
     /// ```
     pub fn add_vertical_id<T>(&mut self, v: T, id: Id) -> Result<Id, AddViewError>
     where
-        T: View
+        T: View,
     {
         self.add_node_id(v, id, Orientation::Vertical)
     }
@@ -686,12 +732,12 @@ impl Mux {
         let desc: Vec<Id> = self.root.descendants(&self.tree).collect();
         if desc.contains(&id) {
             let sib_id: Id;
-            if id.preceding_siblings(&self.tree,).count() > 1 {
-                sib_id = id.preceding_siblings(&self.tree, ).nth(1).unwrap();
-            } else if id.following_siblings(&self.tree, ).count() > 1 {
-                sib_id = id.following_siblings(&self.tree, ).nth(1).unwrap();
+            if id.preceding_siblings(&self.tree).count() > 1 {
+                sib_id = id.preceding_siblings(&self.tree).nth(1).unwrap();
+            } else if id.following_siblings(&self.tree).count() > 1 {
+                sib_id = id.following_siblings(&self.tree).nth(1).unwrap();
             } else {
-                return Err(RemoveViewError::Generic{})
+                return Err(RemoveViewError::Generic {});
             }
             let parent = id.ancestors(&self.tree).nth(1).unwrap();
             id.detach(&mut self.tree);
@@ -714,10 +760,9 @@ impl Mux {
                 Ok(id)
             }
         } else {
-            Err(RemoveViewError::InvalidId{id: id})
+            Err(RemoveViewError::InvalidId { id: id })
         }
     }
-
 
     /// Allows for position switching of two views, returns error if ids not in multiplexer.
     /// When successful empty `Ok(())`
@@ -764,35 +809,33 @@ impl Mux {
                     }
                 }
             } else {
-                Err(SwitchError::NoParent{
-                    from: snd,
-                    to: fst,
-                })
+                Err(SwitchError::NoParent { from: snd, to: fst })
             }
         } else {
-            Err(SwitchError::NoParent{
-                from: fst,
-                to: snd,
-            })
+            Err(SwitchError::NoParent { from: fst, to: snd })
         }
     }
 
     fn move_focus(&mut self, direction: Absolute) -> EventResult {
-        match self.search_focus_path(direction, self.focus.ancestors(&self.tree).nth(1).unwrap(), self.focus) {
+        match self.search_focus_path(
+            direction,
+            self.focus.ancestors(&self.tree).nth(1).unwrap(),
+            self.focus,
+        ) {
             Ok((path, turn_point)) => {
                 // Traverse the path down again
                 if let Some(focus) = self.traverse_search_path(path, turn_point) {
                     if self.tree.get_mut(focus).unwrap().data.take_focus() {
                         self.focus = focus;
                         EventResult::Consumed(None)
-                    }else {
+                    } else {
                         debug!("Focus rejected by {}", focus);
                         EventResult::Ignored
                     }
                 } else {
                     EventResult::Ignored
                 }
-            },
+            }
             Err(_) => EventResult::Ignored,
         }
     }
@@ -807,12 +850,12 @@ impl Mux {
                 Some(node) => {
                     // println!("{}", node);
                     cur_node = node;
-                },
+                }
                 None => {
                     // Truncate remaining path
                     // cur_node = cur_node.children(&self.tree).next().unwrap();
-                    break
-                },
+                    break;
+                }
             }
         }
 
@@ -825,7 +868,6 @@ impl Mux {
 
         Some(cur_node)
     }
-
 
     fn traverse_single_node(&self, action: SearchPath, turn_point: Id, cur_node: Id) -> Option<Id> {
         let left = || -> Option<Id> {
@@ -850,46 +892,74 @@ impl Mux {
             Orientation::Horizontal => {
                 match action {
                     // Switching Sides for Left & Right
-                    SearchPath::Right if self.tree.get(cur_node).unwrap().data.orientation == Orientation::Horizontal => {
+                    SearchPath::Right
+                        if self.tree.get(cur_node).unwrap().data.orientation
+                            == Orientation::Horizontal =>
+                    {
                         left()
-                    },
-                    SearchPath::Left if self.tree.get(cur_node).unwrap().data.orientation == Orientation::Horizontal => {
+                    }
+                    SearchPath::Left
+                        if self.tree.get(cur_node).unwrap().data.orientation
+                            == Orientation::Horizontal =>
+                    {
                         right()
-                    },
+                    }
                     // Remain for Up & Down
-                    SearchPath::Up if self.tree.get(cur_node).unwrap().data.orientation == Orientation::Vertical => {
+                    SearchPath::Up
+                        if self.tree.get(cur_node).unwrap().data.orientation
+                            == Orientation::Vertical =>
+                    {
                         up()
-                    },
-                    SearchPath::Down if self.tree.get(cur_node).unwrap().data.orientation == Orientation::Vertical => {
+                    }
+                    SearchPath::Down
+                        if self.tree.get(cur_node).unwrap().data.orientation
+                            == Orientation::Vertical =>
+                    {
                         down()
-                    },
+                    }
                     _ => None,
                 }
-            },
+            }
             Orientation::Vertical => {
                 match action {
                     // Remain for Left & Right
-                    SearchPath::Right if self.tree.get(cur_node).unwrap().data.orientation == Orientation::Horizontal => {
+                    SearchPath::Right
+                        if self.tree.get(cur_node).unwrap().data.orientation
+                            == Orientation::Horizontal =>
+                    {
                         right()
-                    },
-                    SearchPath::Left if self.tree.get(cur_node).unwrap().data.orientation == Orientation::Horizontal => {
+                    }
+                    SearchPath::Left
+                        if self.tree.get(cur_node).unwrap().data.orientation
+                            == Orientation::Horizontal =>
+                    {
                         left()
-                    },
+                    }
                     // Switch for Up & Down
-                    SearchPath::Up if self.tree.get(cur_node).unwrap().data.orientation == Orientation::Vertical => {
+                    SearchPath::Up
+                        if self.tree.get(cur_node).unwrap().data.orientation
+                            == Orientation::Vertical =>
+                    {
                         down()
-                    },
-                    SearchPath::Down if self.tree.get(cur_node).unwrap().data.orientation == Orientation::Vertical => {
+                    }
+                    SearchPath::Down
+                        if self.tree.get(cur_node).unwrap().data.orientation
+                            == Orientation::Vertical =>
+                    {
                         up()
-                    },
+                    }
                     _ => None,
                 }
-            },
+            }
         }
     }
 
-    fn search_focus_path(&self, direction: Absolute, nodeid: Id, fromid: Id) -> Result<(Vec<SearchPath>, Id), ()>  {
-
+    fn search_focus_path(
+        &self,
+        direction: Absolute,
+        nodeid: Id,
+        fromid: Id,
+    ) -> Result<(Vec<SearchPath>, Id), ()> {
         let mut cur_node = Some(nodeid);
         let mut from_node = fromid;
 
@@ -899,7 +969,9 @@ impl Mux {
             // println!("Current node in search path: {}", cur_node.unwrap());
             // println!("Originating from node: {}", from_node);
             match self.tree.get(cur_node.unwrap()).unwrap().data.orientation {
-                Orientation::Horizontal if direction == Absolute::Left || direction == Absolute::Right => {
+                Orientation::Horizontal
+                    if direction == Absolute::Left || direction == Absolute::Right =>
+                {
                     if cur_node.unwrap().children(&self.tree).next().unwrap() == from_node {
                         // Originated from left
                         path.push(SearchPath::Left);
@@ -920,9 +992,10 @@ impl Mux {
                             cur_node = None;
                         }
                     }
-                },
-                Orientation::Vertical if direction == Absolute::Up || direction == Absolute::Down => {
-
+                }
+                Orientation::Vertical
+                    if direction == Absolute::Up || direction == Absolute::Down =>
+                {
                     if cur_node.unwrap().children(&self.tree).next().unwrap() == from_node {
                         // Originated from up
                         path.push(SearchPath::Up);
@@ -943,7 +1016,7 @@ impl Mux {
                             cur_node = None;
                         }
                     }
-                },
+                }
                 Orientation::Horizontal => {
                     if cur_node.unwrap().children(&self.tree).next().unwrap() == from_node {
                         path.push(SearchPath::Left);
@@ -954,7 +1027,7 @@ impl Mux {
                         from_node = cur_node.unwrap();
                         cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
                     }
-                },
+                }
                 Orientation::Vertical => {
                     if cur_node.unwrap().children(&self.tree).next().unwrap() == from_node {
                         path.push(SearchPath::Up);
@@ -972,25 +1045,23 @@ impl Mux {
         match self.tree.get(from_node).unwrap().data.orientation {
             Orientation::Horizontal if direction == Absolute::Up || direction == Absolute::Down => {
                 Err(())
-            },
-            Orientation::Vertical if direction == Absolute::Left || direction == Absolute::Right => {
-                Err(())
-            },
-            _ => {
-                Ok((path, from_node))
             }
+            Orientation::Vertical
+                if direction == Absolute::Left || direction == Absolute::Right =>
+            {
+                Err(())
+            }
+            _ => Ok((path, from_node)),
         }
     }
 }
 
-
 #[cfg(test)]
 mod tree {
-    use cursive::views::{DummyView, TextArea};
-    use cursive::event::{Key, Event};
+    use super::{Mux, MuxBuilder};
+    use cursive::event::{Event, Key};
     use cursive::traits::View;
-    use super::{MuxBuilder, Mux};
-
+    use cursive::views::{DummyView, TextArea};
 
     #[test]
     fn test_remove() {
@@ -1007,12 +1078,10 @@ mod tree {
                 print_tree(&test_mux);
                 println!("Delete should have removed: {}", node3);
                 assert!(false);
-            },
-            Err(_) => {},
+            }
+            Err(_) => {}
         }
     }
-
-
 
     #[test]
     fn test_switch() {
@@ -1033,21 +1102,28 @@ mod tree {
 
         for _ in 0..10 {
             print_tree(&mux);
-            match mux.add_horizontal_id(DummyView, if let Some(x) = nodes.last() {*x} else {mux.root}) {
+            match mux.add_horizontal_id(
+                DummyView,
+                if let Some(x) = nodes.last() {
+                    *x
+                } else {
+                    mux.root
+                },
+            ) {
                 Ok(node) => {
                     nodes.push(node);
-                },
+                }
                 Err(_) => {
                     assert!(false);
-                },
+                }
             }
             match mux.add_vertical_id(DummyView, *nodes.last().unwrap()) {
                 Ok(node) => {
                     nodes.push(node);
-                },
+                }
                 Err(_) => {
                     assert!(false);
-                },
+                }
             }
         }
 
