@@ -1,3 +1,31 @@
+//! # cursive view multiplexer
+//!
+//! This crate provides a view for the [cursive tui crate](https://github.com/gyscos/cursive).
+//! It provides an easier way to display nesting view structures as for example in tmux in cursive.
+//! All that has to be done is to insert the view into cursive and later to operate on the reference of it, to add, remove, switch views.
+//!
+//! Similar to tmux the user is able to resize, and switch between the current views, given they are focusable.
+//!
+//! # Usage example
+//! ```rust
+//! extern crate cursive;
+//! extern crate cursive_multiplex;
+//!
+//! use cursive_multiplex::{MuxBuilder, Mux};
+//! use cursive::views::TextView;
+//! use cursive::Cursive;
+//!
+//! fn main() {
+//!     let (mut mux, node1) = MuxBuilder::new().build(TextView::new("Hello World".to_string()));
+//!     let mut siv = Cursive::default();
+//!     mux.add_horizontal_id(TextView::new("Hello from me too!".to_string()), node1);
+//!     siv.add_fullscreen_layer(mux);
+//!
+//!     // When your finished setting up
+//!     // siv.run();
+//! }
+//! ```
+
 extern crate cursive;
 extern crate indextree;
 extern crate failure;
@@ -36,7 +64,7 @@ enum SearchPath {
     Down,
 }
 
-/// Identifier for views in binary tree of mux.
+/// Identifier for views in binary tree of mux, typically returned after adding a new view to the multiplexer.
 pub type Id = indextree::NodeId;
 
 /// View holding information and managing multiplexer.
@@ -54,6 +82,12 @@ pub struct Mux {
     resize_down: Event,
 }
 
+/// Builder for the multiplexer, default values for actions are set, but can be modified by calling the corresponding methods of the builder instance.
+/// ```rust
+/// # fn main() {
+/// let builder = cursive_multiplex::MuxBuilder::new();
+/// # }
+/// ```
 pub struct MuxBuilder {
     focus_up: Event,
     focus_down: Event,
@@ -279,8 +313,6 @@ impl Node {
 }
 
 impl Mux {
-
-
     /// Returns the current focused view id.
     /// By default the newest node added to the multiplexer gets focused.
     /// Focus can also be changed by the user.
@@ -380,7 +412,11 @@ impl Mux {
         if offset < 0 {
             match usize::try_from(offset.abs()) {
                 Ok(u) => {
-                    split - u
+                    if split < u {
+                        split
+                    } else {
+                        split - u
+                    }
                 },
                 Err(_) => {
                     split

@@ -9,6 +9,12 @@
   <a href="https://github.com/deinstapel/cursive-multiplex/blob/master/LICENSE">
     <img alt="GitHub" src="https://img.shields.io/github/license/deinstapel/cursive-multiplex.svg">
   </a>
+  <a href="https://docs.rs/cursive-multiplex">
+    <img alt="Docs.rs" src="https://docs.rs/cursive-multiplex/badge.svg">
+  </a>
+  <a href="https://crates.io/crates/cursive-multiplex">
+    <img alt="crates.io" src="https://img.shields.io/crates/v/cursive-multiplex.svg">
+  </a>
   <a href="http://makeapullrequest.com">
     <img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" target="_blank" />
   </a>
@@ -22,15 +28,68 @@
 
 ## How to use
 
-> TBD
+![](demo.gif)
 
-## Installation
+To use cursive-multiplex in your cursive application add to your crate root
 
-> TBD
+```rust
+extern crate cursive_multiplex;
+```
+
+And then use the `MuxBuilder` to build a new Mux View
+```rust
+let builder = cursive_multiplex::MuxBuilder::new();
+let (mut mux, root_node)_= builder.build(cursive::views::TextView::new("Hello World!".to_string()));
+```
+
+> With the MuxBuilder defaults are automatically set for controls of course you can still change them, have a look at the [docs](). TODO
+
+###  Adding views
+
+You can add views by giving a path or an id to an existing node e.g.
+
+```rust
+let new_node = mux.add_horizontal_id(cursive::views::TextView::new("Foo"), node1).unwrap();
+```
+
+Its also possible to add views by their path.
+```rust
+let new_node = mux.add_horizontal_path(cursive::views::TextView::new("Foo", Path::LeftOrUp(Box::new(None))));
+```
+
+Returned will be a Result Ok contains the new id assigned to the view, or an error in case of failure.
+
+### Removing Views
+
+You can also remove views, by giving the id of the views.
+
+```rust
+mux.remove_id(new_node)?;
+```
+
+On success the id of the removed node is returned.
+
+### Switch Views
+
+If you want to reorder your views you can easily switch them by using
+
+```rust
+mux.switch_views(new_node, old_node)?;
+```
+
+
+## Add to your project
+
+Add the crate to your `Cargo.toml` under `dependencies`
+
+```Cargo
+[dependencies]
+cursive-multiplex = "0.1.0"
+```
 
 ## Troubleshooting
 
-> TBD
+If you find any bugs/unexpected behaviour or you have a proposition for future changes open an issue describing the current behaviour and what you expected.
 
 ## Development
 
