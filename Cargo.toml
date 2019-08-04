@@ -3,6 +3,8 @@ name = "cursive-multiplex"
 version = "0.1.0"
 authors = ["Johannes Wünsche <johannes.wuensche97@gmail.com>"]
 edition = "2018"
+description = "A tmux like multiplexer for gyscos/cursive views"
+license = "BSD-3-Clause"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
