@@ -3,9 +3,9 @@ const { setup } = require('shellshot');
 setup();
 
 it(
-    'checks if the files in this directory are the same',
+    'checks if the basic example produces the same output',
     async () => {
-        await expect.command('cargo run --example=basic')
-            .forStdout(expectation => expectation.toMatchSnapshot());
+        await expect.command('script -qc "cargo run --example basic" out || less out | sha1sum')
+          .forStdout(exp => exp.toMatchSnapshot());
     },
 );
