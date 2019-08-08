@@ -28,7 +28,7 @@
 
 ## How to use
 
-![](demo.gif)
+![](assets/demo.gif)
 
 Simply add to your `Cargo.toml`
 ```Cargo

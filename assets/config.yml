@@ -2,11 +2,11 @@
   # like `/bin/bash -l`, `ls`, or any other commands
   # the default is bash for Linux
   # or powershell.exe for Windows
-  command: ./target/debug/examples/basic 1> log
+  command: ../target/debug/examples/basic
   
   # Specify the current working directory path
   # the default is the current working directory path
-  cwd: /home/jwuensch/Projects/cursive-multiplex
+  cwd: null
   
   # Export additional ENV variables
   env:
@@ -15,12 +15,12 @@
   # Explicitly set the number of columns
   # or use `auto` to take the current
   # number of columns of your shell
-  cols: 159
+  cols: 80
   
   # Explicitly set the number of rows
   # or use `auto` to take the current
   # number of rows of your shell
-  rows: 40
+  rows: 24
   
   # Amount of times to repeat GIF
   # If value is -1, play once
