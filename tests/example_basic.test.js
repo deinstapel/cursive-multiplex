@@ -7,7 +7,7 @@ it(
     async () => {
         await expect.command('cargo build --example basic');
         await expect.command('tmux new-session -x 80 -y 24 -d ./target/debug/examples/basic');
-        await expect.command('tmux capture-pane -J -p -e -t %0')
+        await expect.command('tmux capture-pane -J -p -t %0')
             .forStdout(expectation => expectation.toMatchSnapshot());
     },
 );

@@ -1,29 +1,3 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`checks if the basic example produces the same output 1`] = `
-"[30m[47m                                       [37m[44m▒[30m[47m│[7m[34m                                       
-[0m[30m[47mLorem ipsum dolor sit amet,            [37m[44m▒[30m[47m│[7m[34m                                       
-[0m[30m[47mconsectetur adipiscing elit. Donec     [37m[44m▒[30m[47m│[7m[34m                                       
-[0m[30m[47mcongue porttitor pellentesque.         [37m[44m▒[30m[47m│[7m[34m                                       
-[0m[30m[47mVestibulum a tellus sagittis, blandit  [37m[44m▒[30m[47m│[7m[34m                                       
-[0m[30m[47merat ac, finibus eros. Praesent cursus [37m[44m▒[30m[47m│[7m[34m                                       
-[0m[30m[47mat ligula laoreet congue. Proin        |│[7m[34m                                       
-[0m[30m[47mvehicula diam mattis metus aliquet     |│[7m[34m                                       
-[0m[30m[47maliquam. Nullam finibus tellus id      |│[7m[34m                                       
-[0m[30m[47mdolor porta venenatis. Cras vestibulum |│[7m[34m                                       
-[0m[30m[47mleo sit amet congue ultrices.          |│[7m[34m                                       
-[0m[30m[47mPhasellus convallis ut enim tincidunt  |│───────────────────────────────────────
-interdum.                              |│[34m_[7m                                      
-[0m[30m[47m                                       |│[7m[34m                                       
-[0m[30m[47mIn velit felis, consectetur quis       |│[7m[34m                                       
-[0m[30m[47mfringilla id, interdum congue metus.   |│[7m[34m                                       
-[0m[30m[47mMauris tincidunt, nibh a fermentum     |│[7m[34m                                       
-[0m[30m[47mposuere, nibh elit auctor lacus,       |│[7m[34m                                       
-[0m[30m[47msollicitudin lobortis nisi arcu quis   |│[7m[34m                                       
-[0m[30m[47mmassa. Ut id augue malesuada justo     |│[7m[34m                                       
-[0m[30m[47mvenenatis pellentesque. Donec egestas  |│[7m[34m                                       
-[0m[30m[47mnec purus sit amet euismod. Integer    |│[7m[34m                                       
-[0m[30m[47maliquet sollicitudin ex id viverra.    |│[7m[34m                                       
-[0m[30m[47m  Hello from cursive_multiplex  Feel free to try out the examples simply with \`c
-"
-`;
+exports[`checks if the basic example produces the same output 1`] = `""`;
