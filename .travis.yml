@@ -5,8 +5,6 @@ rust:
 install:
   - nvm install 10
   - ./scripts/prepare-end2end-tests.sh
-  - apt update
-  - apt install tmux
 
 deploy:
   provider: pages
