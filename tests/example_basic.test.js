@@ -5,12 +5,9 @@ setup();
 it(
     'checks if the basic example produces the same output',
     async () => {
-        await expect.command('timeout 1 script --quiet --command ../target/debug/examples/basic /dev/null')
-            .withEnv({
-                TERM: "xterm-256color",
-                LINES: 24,
-                COLUMNS: 80,
-            })
+        await expect.command('cargo build --example basic');
+        await expect.command('tmux new-session -x 80 -y 24 -d ./target/debug/examples/basic');
+        await expect.command('tmux capture-pane -J -p -e -t %0')
             .forStdout(expectation => expectation.toMatchSnapshot());
     },
 );

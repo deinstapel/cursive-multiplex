@@ -30,10 +30,10 @@
 
 ![](demo.gif)
 
-To use cursive-multiplex in your cursive application add to your crate root
-
-```rust
-extern crate cursive_multiplex;
+Simply add to your `Cargo.toml`
+```Cargo
+[dependencies]
+cursive-multiplex = "0.1.0"
 ```
 
 And then use the `MuxBuilder` to build a new Mux View
