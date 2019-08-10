@@ -33,7 +33,7 @@
 Simply add to your `Cargo.toml`
 ```Cargo
 [dependencies]
-cursive-multiplex = "0.1.0"
+cursive-multiplex = "^0.1.2
 ```
 
 And then use the `MuxBuilder` to build a new Mux View
