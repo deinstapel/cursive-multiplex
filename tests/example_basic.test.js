@@ -5,6 +5,11 @@ setup();
 it(
     'checks if the basic example produces the same output',
     async () => {
-      await expect.command('sh ../scripts/tests/example_basic_snapshot.sh').forStdout(exp => exp.toMatchSnapshot());
+        await expect.command('cargo build --example basic --verbose')
+            .forExitCode(exp => exp.toBe(0));
+        await expect.command('tmux new-session -x 80 -y 24 -d ../target/debug/examples/basic && sleep 1')
+            .forExitCode(exp => exp.toBe(0));
+        await expect.command('tmux capture-pane -J -p -t %0')
+            .forStdout(exp => exp.toMatchSnapshot());
     },
 );

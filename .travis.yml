@@ -1,10 +1,14 @@
 language: rust
 rust:
+  - stable
   - nightly
 
 install:
   - nvm install 10
   - ./scripts/prepare-end2end-tests.sh
+
+script:
+  - cargo test --verbose --no-fail-fast
 
 deploy:
   provider: pages
