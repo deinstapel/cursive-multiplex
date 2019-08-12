@@ -9,6 +9,7 @@ addons:
     packages:
       - tmux
 install:
+  - tmux -V
   - nvm install 10
   - ./scripts/prepare-end2end-tests.sh
 script:
