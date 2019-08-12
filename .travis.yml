@@ -1,8 +1,10 @@
 dist: bionic
+language: minimal
 install:
   - tmux -V
-  - nvm install 10
   - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain=stable --default-host=x86_64-unknown-linux-gnu -y
+  - source $HOME/.cargo/env
+  - nvm install 10
   - ./scripts/prepare-end2end-tests.sh
 script:
   - cargo test --verbose --no-fail-fast
