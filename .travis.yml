@@ -9,6 +9,8 @@ addons:
     packages:
       - tmux
 install:
+  - sudo apt-get update
+  - sudo apt-get install tmux -y
   - tmux -V
   - nvm install 10
   - ./scripts/prepare-end2end-tests.sh
