@@ -8,6 +8,7 @@ addons:
     update: true
     packages:
       - tmux
+      - libevent-dev
 install:
   - tmux -V
   - nvm install 10
