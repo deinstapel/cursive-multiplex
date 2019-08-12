@@ -1,17 +1,8 @@
 dist: bionic
-language: rust
-rust:
-  - stable
-  - nightly
-addons:
-  apt:
-    update: true
-    packages:
-      - tmux
-      - libevent-dev
 install:
   - tmux -V
   - nvm install 10
+  - rustup toolchain install stable
   - ./scripts/prepare-end2end-tests.sh
 script:
   - cargo test --verbose --no-fail-fast
