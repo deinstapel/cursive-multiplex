@@ -7,6 +7,7 @@ rust:
 install:
   - nvm install 10
   - ./scripts/prepare-end2end-tests.sh
+  - tmux -V
 
 script:
   - cargo test --verbose --no-fail-fast
