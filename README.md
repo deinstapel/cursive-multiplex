@@ -3,6 +3,9 @@
   <a href="https://travis-ci.org/deinstapel/cursive-multiplex">
     <img src="https://travis-ci.org/deinstapel/cursive-multiplex.svg?branch=master">
   </a>
+  <a href="https://travis-ci.org/deinstapel/cursive-multiplex">
+    <img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fcargo-test.json">
+  </a>
   <a href="https://github.com/fin-ger/shellshot">
     <img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fshellshot.json">
   </a>
