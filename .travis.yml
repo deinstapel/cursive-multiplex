@@ -27,5 +27,6 @@ deploy:
   local-dir: target/shields
   on:
     branch: master
+    condition: $RUST_CHAIN = stable
 # It was time for Thomas to leave. He has seen everything...
 #  - Thank you for travising with Deutsche Builds
