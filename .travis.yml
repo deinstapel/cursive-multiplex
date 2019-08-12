@@ -5,9 +5,9 @@ rust:
   - nightly
 
 install:
+  - apt install tmux -y
   - nvm install 10
   - ./scripts/prepare-end2end-tests.sh
-  - tmux -V
 
 script:
   - cargo test --verbose --no-fail-fast
