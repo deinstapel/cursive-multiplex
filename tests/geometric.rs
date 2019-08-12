@@ -35,11 +35,6 @@ fn test_line_vertical() {
 }
 
 #[test]
-fn fail() {
-    assert!(false);
-}
-
-#[test]
 fn test_triangle() {
     let (mut mux, node1) = MuxBuilder::new().build(TextArea::new());
     let mut siv = Cursive::dummy();
