@@ -3,15 +3,16 @@ language: rust
 rust:
   - stable
   - nightly
-
+addons:
+  apt:
+    update: true
+    packages:
+      - tmux
 install:
-  - apt install tmux -y
   - nvm install 10
   - ./scripts/prepare-end2end-tests.sh
-
 script:
   - cargo test --verbose --no-fail-fast
-
 deploy:
   provider: pages
   skip-cleanup: true
