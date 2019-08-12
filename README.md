@@ -1,13 +1,13 @@
 <h1 align="center">Welcome to cursive-multiplex 👋</h1>
 <p align="center">
   <a href="https://travis-ci.org/deinstapel/cursive-multiplex">
-    <img src="https://travis-ci.org/deinstapel/cursive-multiplex.svg?branch=master">
+    <img src="https://travis-ci.org/deinstapel/cursive-multiplex.svg?branch=master" alt="Travis CI">
   </a>
   <a href="https://travis-ci.org/deinstapel/cursive-multiplex">
-    <img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fcargo-test.json">
+    <img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fcargo-test.json" alt="cargo test">
   </a>
   <a href="https://github.com/fin-ger/shellshot">
-    <img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fshellshot.json">
+    <img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fshellshot.json" alt="shellshot">
   </a>
   <a href="https://github.com/deinstapel/cursive-multiplex/blob/master/LICENSE">
     <img alt="GitHub" src="https://img.shields.io/github/license/deinstapel/cursive-multiplex.svg">
@@ -110,7 +110,7 @@ After `npm` is installed, install required dependencies:
 $ ./scripts/prepare-end2end-tests.sh
 ```
 
-This will use `npm` to install `jest` and `shellshot` in the `tests** folder.
+This will use `npm` to install `jest` and `shellshot` in the `test` folder.
 
 #### Running all test suites
 
