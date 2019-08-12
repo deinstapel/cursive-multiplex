@@ -2,6 +2,7 @@ dist: bionic
 install:
   - tmux -V
   - nvm install 10
+  - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
   - rustup toolchain install stable
   - ./scripts/prepare-end2end-tests.sh
 script:
