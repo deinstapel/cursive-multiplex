@@ -4,9 +4,14 @@ install:
   - tmux -V
   - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain=stable --default-host=x86_64-unknown-linux-gnu -y
   - source $HOME/.cargo/env
+  - rustup toolchain install nightly
   - nvm install 10
   - ./scripts/prepare-end2end-tests.sh
+env:
+  - RUST_CHAIN=stable
+  - RUST_CHAIN=nightly
 script:
+  - rustup default $RUST_CHAIN
   - cargo test --verbose --no-fail-fast
 deploy:
   provider: pages
