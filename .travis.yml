@@ -17,7 +17,8 @@ script:
   # only run the tests, do not fail build when a test fails
   - cargo test --no-fail-fast || true
   # create badge for `cargo test`
-  - cargo test --no-fail-fast -- -Z unstable-options --format json | jq -s '{ "passed": map(select(.type == "suite" and has("passed")) | .passed) | add, "total": map(select(.type == "suite" and has("test_count")) | .test_count) | add } | . + { "factor": (.passed / .total) } | { "color": (if .factor < 0.33 then "red" elif .factor < 0.66 then "orange" elif .factor < 1.0 then "yellow" else "brightgreen" end), "isError": true, "label": "cargo test", "message": "\(.passed) / \(.total) tests", "schemaVersion": 1 }' > ./target/shields/cargo-test.json
+  - >
+      cargo test --no-fail-fast -- -Z unstable-options --format json | jq -s '{ "passed": map(select(.type == "suite" and has("passed")) | .passed) | add, "total": map(select(.type == "suite" and has("test_count")) | .test_count) | add } | . + { "factor": (.passed / .total) } | { "color": (if .factor < 0.33 then "red" elif .factor < 0.66 then "orange" elif .factor < 1.0 then "yellow" else "brightgreen" end), "isError": true, "label": "cargo test", "message": "\(.passed) / \(.total) tests", "schemaVersion": 1 }' > ./target/shields/cargo-test.json
 deploy:
   provider: pages
   skip-cleanup: true
