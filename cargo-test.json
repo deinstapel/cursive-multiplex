@@ -1,0 +1,7 @@
+{
+  "color": "brightgreen",
+  "isError": true,
+  "label": "cargo test",
+  "message": "18 / 18 tests",
+  "schemaVersion": 1
+}
