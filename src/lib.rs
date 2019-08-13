@@ -251,6 +251,7 @@ impl Node {
     where
         T: View,
     {
+        this is a syntax error
         Self {
             view: Some(Box::new(v)),
             orientation: orit,

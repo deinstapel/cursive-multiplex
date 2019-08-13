@@ -9,12 +9,6 @@
   <a href="https://travis-ci.org/deinstapel/cursive-multiplex">
     <img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fnightly-build.json" alt="nightly build">
   </a>
-  <a href="https://travis-ci.org/deinstapel/cursive-multiplex">
-    <img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fcargo-test.json" alt="cargo test">
-  </a>
-  <a href="https://github.com/fin-ger/shellshot">
-    <img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fshellshot.json" alt="shellshot">
-  </a>
   <a href="https://crates.io/crates/cursive-multiplex">
     <img alt="crates.io" src="https://img.shields.io/crates/v/cursive-multiplex.svg">
   </a>
@@ -105,7 +99,7 @@ cursive-multiplex = "0.1.0"
 
 If you find any bugs/unexpected behaviour or you have a proposition for future changes open an issue describing the current behaviour and what you expected.
 
-## Development
+## Development [![cargo test](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fcargo-test.json)](https://travis-ci.org/deinstapel/cursive-multiplex) [![shellshot](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fshellshot.json)](https://github.com/fin-ger/shellshot)
 
 > TBD
 
