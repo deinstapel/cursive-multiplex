@@ -13,7 +13,6 @@ env:
   - RUST_CHAIN=stable
   - RUST_CHAIN=nightly
 script:
-  - rustup default $RUST_CHAIN
   - ./scripts/ci-build.sh
 deploy:
   provider: script

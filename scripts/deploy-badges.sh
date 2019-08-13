@@ -1,7 +1,5 @@
 #! /bin/sh
 
-set -e
-
 die() {
     printf "\e[31:1mError: %s\e[0m\n" "$1" >&2
     exit 1
@@ -24,7 +22,7 @@ fi
 
 (
     cd "$(git rev-parse --show-toplevel)/target/shields" || die "cannot find project root!"
-    repo="https://${GITHUB_USERNAME}:${GITHUB_PASSWORD}@github.com/${GITHUB_REPO_SLUG}.git"
+    repo="https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GITHUB_REPO_SLUG}.git"
     tmp_dir=$(mktemp -d -t cursive-multiplex-deploy-XXXXXXXX)
 
     try=0
@@ -33,14 +31,13 @@ fi
         cp -ar ./* "$tmp_dir"
 
         (
-            cd "$tmp_dir"
+            cd "$tmp_dir" || die "failed to enter temporary directory"
             git add -A
             git commit -m "Travis CI badge deployment"
             git push
         )
 
         result=$?
-        cd -
         rm -rf "$tmp_dir"
 
         if [ "$result" -eq 0 ] || [ "$try" -ge 5 ]
