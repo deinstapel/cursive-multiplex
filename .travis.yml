@@ -18,8 +18,8 @@ script:
 # do not use deploy here as deploy scripts are not executed for failed builds
 after_script:
   - >
-    [ "$TRAVIS_PULL_REQUEST" == false ] && \
-    [ "$TRAVIS_BRANCH" == master ] && \
+    test "$TRAVIS_PULL_REQUEST" == false && \
+    test "$TRAVIS_BRANCH" == master && \
     GITHUB_REPO_SLUG="$TRAVIS_REPO_SLUG" ./scripts/deploy-badges.sh
 # It was time for Thomas to leave. He has seen everything...
 #  - Thank you for travising with Deutsche Builds
