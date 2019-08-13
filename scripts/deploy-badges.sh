@@ -7,9 +7,24 @@ die() {
     exit 1
 }
 
+if [ -z "$GITHUB_USERNAME" ]
+then
+    die "the GITHUB_USERNAME environment variable is not set"
+fi
+
+if [ -z "$GITHUB_TOKEN" ]
+then
+    die "the GITHUB_TOKEN environment variable is not set"
+fi
+
+if [ -z "$GITHUB_REPO_SLUG" ]
+then
+    die "the GITHUB_REPO_SLUG environment variable is not set"
+fi
+
 (
     cd "$(git rev-parse --show-toplevel)/target/shields" || die "cannot find project root!"
-    repo=$(git remote get-url origin)
+    repo="https://${GITHUB_USERNAME}:${GITHUB_PASSWORD}@github.com/${GITHUB_REPO_SLUG}.git"
     tmp_dir=$(mktemp -d -t cursive-multiplex-deploy-XXXXXXXX)
 
     try=0
@@ -21,10 +36,7 @@ die() {
             cd "$tmp_dir"
             git add -A
             git commit -m "Travis CI badge deployment"
-            cat <<EOF | git push
-$GITHUB_USERNAME
-$GITHUB_TOKEN
-EOF
+            git push
         )
 
         result=$?

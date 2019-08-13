@@ -4,7 +4,10 @@
 <h1 align="center">Welcome to cursive-multiplex 👋</h1>
 <p align="center">
   <a href="https://travis-ci.org/deinstapel/cursive-multiplex">
-    <img src="https://travis-ci.org/deinstapel/cursive-multiplex.svg?branch=master" alt="Travis CI">
+    <img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fstable-build.json" alt="stable build">
+  </a>
+  <a href="https://travis-ci.org/deinstapel/cursive-multiplex">
+    <img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fnightly-build.json" alt="nightly build">
   </a>
   <a href="https://travis-ci.org/deinstapel/cursive-multiplex">
     <img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fcargo-test.json" alt="cargo test">

@@ -17,7 +17,7 @@ script:
   - ./scripts/ci-build.sh
 deploy:
   provider: script
-  script: ./scripts/deploy-badges.sh $GITHUB_USERNAME $GITHUB_TOKEN
+  script: GITHUB_REPO_SLUG="$TRAVIS_REPO_SLUG" ./scripts/deploy-badges.sh
   skip_cleanup: true
   on:
     branch: master
