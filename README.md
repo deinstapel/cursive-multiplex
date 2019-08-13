@@ -29,7 +29,7 @@
 
 > This project is work-in-progress
 
-## How does it look like?
+## How does it look like? [![terminalizer](https://img.shields.io/badge/GIF-terminalizer-blueviolet.svg)](https://github.com/faressoft/terminalizer)
 
 <details>
   <summary>Expand to view</summary>
