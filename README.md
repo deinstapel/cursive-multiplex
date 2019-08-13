@@ -9,14 +9,14 @@
   <a href="https://github.com/fin-ger/shellshot">
     <img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fshellshot.json" alt="shellshot">
   </a>
-  <a href="https://github.com/deinstapel/cursive-multiplex/blob/master/LICENSE">
-    <img alt="GitHub" src="https://img.shields.io/github/license/deinstapel/cursive-multiplex.svg">
+  <a href="https://crates.io/crates/cursive-multiplex">
+    <img alt="crates.io" src="https://img.shields.io/crates/v/cursive-multiplex.svg">
   </a>
   <a href="https://docs.rs/cursive-multiplex">
     <img alt="Docs.rs" src="https://docs.rs/cursive-multiplex/badge.svg">
   </a>
-  <a href="https://crates.io/crates/cursive-multiplex">
-    <img alt="crates.io" src="https://img.shields.io/crates/v/cursive-multiplex.svg">
+  <a href="https://github.com/deinstapel/cursive-multiplex/blob/master/LICENSE">
+    <img alt="GitHub" src="https://img.shields.io/github/license/deinstapel/cursive-multiplex.svg">
   </a>
   <a href="http://makeapullrequest.com">
     <img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" target="_blank" />
@@ -29,9 +29,14 @@
 
 > This project is work-in-progress
 
-## How to use
+## How does it look like?
 
-![](assets/demo.gif)
+<details>
+  <summary>Expand to view</summary>
+  <img src="assets/demo.gif" alt="Demo GIF">
+</details>
+
+## Usage
 
 Simply add to your `Cargo.toml`
 ```Cargo
@@ -110,7 +115,7 @@ After `npm` is installed, install required dependencies:
 $ ./scripts/prepare-end2end-tests.sh
 ```
 
-This will use `npm` to install `jest` and `shellshot` in the `test` folder.
+This will use `npm` to install `jest` and `shellshot` in the `tests` folder.
 
 #### Running all test suites
 
