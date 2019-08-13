@@ -1,5 +1,6 @@
 # such config, much build...
 dist: bionic
+# we are not using `language: rust` here as travis does not support bionic for rust builds yet
 language: minimal
 install:
   # tmux version should be >=2.6
@@ -14,11 +15,11 @@ env:
   - RUST_CHAIN=nightly
 script:
   - ./scripts/ci-build.sh
-deploy:
-  provider: script
-  script: GITHUB_REPO_SLUG="$TRAVIS_REPO_SLUG" ./scripts/deploy-badges.sh
-  skip_cleanup: true
-  on:
-    branch: master
+# do not use deploy here as deploy scripts are not executed for failed builds
+after_script:
+  - >
+    [ "$TRAVIS_PULL_REQUEST" == false ] && \
+    [ "$TRAVIS_BRANCH" == master ] && \
+    GITHUB_REPO_SLUG="$TRAVIS_REPO_SLUG" ./scripts/deploy-badges.sh
 # It was time for Thomas to leave. He has seen everything...
 #  - Thank you for travising with Deutsche Builds
