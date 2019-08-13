@@ -14,7 +14,7 @@ die() {
 
     try=0
     while :; do
-        git clone "$repo" "$tmp_dir"
+        git clone --branch gh-pages "$repo" "$tmp_dir"
         cp -ar ./* "$tmp_dir"
 
         (
