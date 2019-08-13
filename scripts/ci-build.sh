@@ -11,6 +11,7 @@ die() {
     cd "$(git rev-parse --show-toplevel)" || die "cannot find project root"
 
     # Badges!
+    mkdir -p ./target/shields
     if cargo build --all-targets; then
       cat <<EOF > ./target/shields/$RUST_CHAIN-build.json
 {
