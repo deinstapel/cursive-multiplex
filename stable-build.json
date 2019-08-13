@@ -1,7 +1,7 @@
 {
     "color": "brightgreen",
     "isError": true,
-    "label": "nightly",
+    "label": "stable",
     "message": "passing",
     "schemaVersion": 1
 }
