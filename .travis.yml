@@ -21,8 +21,8 @@ deploy:
   github-token: $GITHUB_TOKEN
   keep-history: true
   local-dir: target/shields
+  verbose: true
   on:
     branch: master
-    condition: $RUST_CHAIN = stable
 # It was time for Thomas to leave. He has seen everything...
 #  - Thank you for travising with Deutsche Builds

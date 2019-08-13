@@ -13,30 +13,28 @@ die() {
     # Badges!
     mkdir -p ./target/shields
     if cargo build --all-targets; then
-      cat <<EOF > ./target/shields/$RUST_CHAIN-build.json
+      cat <<EOF > "./target/shields/$RUST_CHAIN-build.json"
 {
-    "color": "brightgreen", 
-    "isError": true, 
-    "label": "$RUST_CHAIN", 
-    "message": "passing", 
+    "color": "brightgreen",
+    "isError": true,
+    "label": "$RUST_CHAIN",
+    "message": "passing",
     "schemaVersion": 1
 }
 EOF
     else
       PRV_EXIT=$?
-      cat <<EOF > ./target/shields/$RUST_CHAIN-build.json
+      cat <<EOF > "./target/shields/$RUST_CHAIN-build.json"
 {
-    "color": "red", 
-    "isError": true, 
-    "label": "$RUST_CHAIN", 
-    "message": "failed", 
+    "color": "red",
+    "isError": true,
+    "label": "$RUST_CHAIN",
+    "message": "failed",
     "schemaVersion": 1
-} 
+}
 EOF
       exit $PRV_EXIT
     fi
-
-    ls ./target/shields
 
     # only run the tests, do not fail build when a test fails
     cargo test --no-fail-fast || true
