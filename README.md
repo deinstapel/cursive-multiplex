@@ -1,3 +1,6 @@
+<p align="center">
+  <img src="assets/cursive-multiplex.svg" height="128">
+</p>
 <h1 align="center">Welcome to cursive-multiplex 👋</h1>
 <p align="center">
   <a href="https://travis-ci.org/deinstapel/cursive-multiplex">
