@@ -2,7 +2,7 @@ extern crate cursive;
 
 use cursive::views::TextArea;
 use cursive::Cursive;
-use cursive_multiplex::{Id, Mux, MuxBuilder, Path};
+use cursive_multiplex::{Id, Mux, MuxBuilder};
 
 fn main() {
     let mut siv = Cursive::default();
@@ -13,10 +13,10 @@ fn main() {
         .add_horizontal_id(TextArea::new(), top_left_corner)
         .unwrap();
     let bottom_right_mid = mux.add_vertical_id(TextArea::new(), top_right_mid).unwrap();
-    let top_right_corner = mux
+    let _ = mux
         .add_horizontal_id(cursive::views::Panel::new(TextArea::new()), top_right_mid)
         .unwrap();
-    let bottom_right_corner = mux
+    let _ = mux
         .add_horizontal_id(TextArea::new(), bottom_right_mid)
         .unwrap();
     let bottom_left_corner = mux
@@ -25,7 +25,7 @@ fn main() {
     let top_left_mid = mux
         .add_horizontal_id(TextArea::new(), top_left_corner)
         .unwrap();
-    let bottom_left_mid = mux
+    let _ = mux
         .add_horizontal_id(
             cursive::views::Panel::new(TextArea::new()),
             bottom_left_corner,
@@ -51,5 +51,6 @@ fn main() {
 
 fn add_plane(siv: &mut Cursive, node: Id) {
     let mut foo: cursive::views::ViewRef<Mux> = siv.find_id("Steven").unwrap();
-    foo.add_vertical_id(cursive::views::TextView::new("Dynamic!".to_string()), node);
+    foo.add_vertical_id(cursive::views::TextView::new("Dynamic!".to_string()), node)
+        .unwrap();
 }

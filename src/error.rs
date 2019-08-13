@@ -9,12 +9,6 @@ pub enum AddViewError {
 }
 
 #[derive(Debug, Fail)]
-pub enum SearchPathError {
-    #[fail(display = "some error occured")]
-    GenericError {},
-}
-
-#[derive(Debug, Fail)]
 pub enum RemoveViewError {
     #[fail(display = "invalid id given, cannot be removed: {}", id)]
     InvalidId { id: Id },

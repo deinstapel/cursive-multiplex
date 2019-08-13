@@ -367,9 +367,17 @@ impl Mux {
                         );
                         // Precautions have to be taken here as modification of the split is not possible elsewhere
                         if const1.x <= 3 {
-                            self.tree.get_mut(root).unwrap().get_mut().split_ratio_offset += 1;
+                            self.tree
+                                .get_mut(root)
+                                .unwrap()
+                                .get_mut()
+                                .split_ratio_offset += 1;
                         } else if const1.x >= constraint.x - 3 {
-                            self.tree.get_mut(root).unwrap().get_mut().split_ratio_offset -= 1;
+                            self.tree
+                                .get_mut(root)
+                                .unwrap()
+                                .get_mut()
+                                .split_ratio_offset -= 1;
                         }
                     }
                     Orientation::Vertical => {
@@ -383,9 +391,17 @@ impl Mux {
                         );
                         // Precautions have to be taken here as modification of the split is not possible elsewhere
                         if const1.y <= 3 {
-                            self.tree.get_mut(root).unwrap().get_mut().split_ratio_offset += 1;
+                            self.tree
+                                .get_mut(root)
+                                .unwrap()
+                                .get_mut()
+                                .split_ratio_offset += 1;
                         } else if const1.y >= constraint.y - 3 {
-                            self.tree.get_mut(root).unwrap().get_mut().split_ratio_offset -= 1;
+                            self.tree
+                                .get_mut(root)
+                                .unwrap()
+                                .get_mut()
+                                .split_ratio_offset -= 1;
                         }
                     }
                 }
@@ -1061,7 +1077,7 @@ mod tree {
     use super::{Mux, MuxBuilder};
     use cursive::event::{Event, Key};
     use cursive::traits::View;
-    use cursive::views::{DummyView, TextArea};
+    use cursive::views::DummyView;
 
     #[test]
     fn test_remove() {

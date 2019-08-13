@@ -1,8 +1,7 @@
 extern crate cursive;
 
-use cursive::traits::Scrollable;
 use cursive::Cursive;
-use cursive_multiplex::{Id, Mux, MuxBuilder, Path};
+use cursive_multiplex::{Mux, MuxBuilder};
 
 fn main() {
     let mut siv = Cursive::default();
@@ -30,7 +29,7 @@ Integer sit amet eleifend ex. Vivamus aliquam eros et massa pellentesque gravida
     let node2 = mux
         .add_horizontal_id(cursive::views::TextArea::new(), node1)
         .unwrap();
-    let node3 = mux
+    let _ = mux
         .add_vertical_id(cursive::views::TextArea::new(), node2)
         .unwrap();
 
@@ -75,11 +74,12 @@ fn add_pane(siv: &mut Cursive) {
 ⣿⣿⣿⣿⣿⣿⣿⣿⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿
 ";
     let id = mux.get_focus();
-    mux.add_vertical_id(cursive::views::TextView::new(surprise), id);
+    mux.add_vertical_id(cursive::views::TextView::new(surprise), id)
+        .unwrap();
 }
 
 fn remove_pane(siv: &mut Cursive) {
     let mut mux: cursive::views::ViewRef<Mux> = siv.find_id("Mux").unwrap();
     let id = mux.get_focus();
-    mux.remove_id(id);
+    mux.remove_id(id).unwrap();
 }
