@@ -3,9 +3,14 @@
 set -e
 
 die() {
-    printf "\e[31:1mError: %s\e[0m" "$1" >&2
+    printf "\e[31:1mError: %s\e[0m\n" "$1" >&2
     exit 1
 }
+
+if [ -z "$RUST_CHAIN" ]
+then
+    die "RUST_CHAIN environment variable is not set! RUST_CHAIN={stable,nightly}"
+fi
 
 (
     cd "$(git rev-parse --show-toplevel)" || die "cannot find project root"
@@ -17,7 +22,7 @@ die() {
 {
     "color": "brightgreen",
     "isError": true,
-    "label": "$RUST_CHAIN",
+    "label": "$RUST_CHAIN build",
     "message": "passing",
     "schemaVersion": 1
 }
@@ -28,7 +33,7 @@ EOF
 {
     "color": "red",
     "isError": true,
-    "label": "$RUST_CHAIN",
+    "label": "$RUST_CHAIN build",
     "message": "failed",
     "schemaVersion": 1
 }
