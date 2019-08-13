@@ -8,7 +8,7 @@ die() {
 }
 
 (
-    cd "./tests" || die "folder not found: ./tests"
+    cd "$(git rev-parse --show-toplevel)/tests" || die "folder not found: tests"
 
     npm install \
         --no-package-lock \
