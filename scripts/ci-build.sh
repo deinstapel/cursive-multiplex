@@ -17,7 +17,7 @@ fi
 
     # Badges!
     mkdir -p ./target/shields
-    if cargo build --all-targets; then
+    if cargo --color=always  build --all-targets; then
       cat <<EOF > "./target/shields/$RUST_CHAIN-build.json"
 {
     "color": "brightgreen",
@@ -42,7 +42,7 @@ EOF
     fi
 
     # only run the tests, do not fail build when a test fails
-    cargo test --no-fail-fast || true
+    cargo --color=always test --no-fail-fast || true
 
     # create badge for `cargo test`
     cargo test --no-fail-fast -- -Z unstable-options --format json | \

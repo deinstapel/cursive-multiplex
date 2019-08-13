@@ -18,6 +18,7 @@ script:
 deploy:
   provider: script
   script: ./scripts/deploy-badges.sh $GITHUB_USERNAME $GITHUB_TOKEN
+  skip_cleanup: true
   on:
     branch: master
 # It was time for Thomas to leave. He has seen everything...
