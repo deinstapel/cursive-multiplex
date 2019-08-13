@@ -20,6 +20,7 @@ deploy:
   skip-cleanup: true
   github-token: $GITHUB_TOKEN
   keep-history: true
+  target-branch: $RUST_CHAIN-badges
   local-dir: target/shields
   verbose: true
   on:
