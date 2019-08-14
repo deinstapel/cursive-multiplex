@@ -2,7 +2,7 @@ use cursive::event::{Event, Key};
 use cursive::traits::View;
 use cursive::views::{IdView, TextArea};
 use cursive::Cursive;
-use cursive_multiplex::{Mux, MuxBuilder};
+use cursive_multiplex::Mux;
 
 #[test]
 fn test_line_vertical() {
@@ -11,7 +11,7 @@ fn test_line_vertical() {
     let mut siv = Cursive::dummy();
 
     println!("Vertical Test");
-    let (mut test_mux, node1) = MuxBuilder::new().build(TextArea::new());
+    let (mut test_mux, node1) = Mux::new(TextArea::new());
     let node2 = test_mux.add_vertical_id(TextArea::new(), node1).unwrap();
     let node3 = test_mux.add_vertical_id(TextArea::new(), node2).unwrap();
 
@@ -22,11 +22,11 @@ fn test_line_vertical() {
 
     let mut mux: cursive::views::ViewRef<Mux> = siv.find_id("mux").unwrap();
     assert_eq!(node3, mux.get_focus());
-    mux.on_event(Event::Shift(Key::Up));
+    mux.on_event(Event::Key(Key::Up));
     assert_eq!(node2, mux.get_focus());
-    mux.on_event(Event::Shift(Key::Down));
+    mux.on_event(Event::Key(Key::Down));
     assert_eq!(node3, mux.get_focus());
-    match mux.on_event(Event::Shift(Key::Left)) {
+    match mux.on_event(Event::Key(Key::Left)) {
         cursive::event::EventResult::Ignored => {}
         _ => {
             assert!(false);
@@ -36,7 +36,7 @@ fn test_line_vertical() {
 
 #[test]
 fn test_triangle() {
-    let (mut mux, node1) = MuxBuilder::new().build(TextArea::new());
+    let (mut mux, node1) = Mux::new(TextArea::new());
     let mut siv = Cursive::dummy();
 
     let node2 = mux.add_horizontal_id(TextArea::new(), node1).unwrap();
@@ -48,9 +48,9 @@ fn test_triangle() {
     let mut mux: cursive::views::ViewRef<Mux> = siv.find_id("mux").unwrap();
 
     assert_eq!(mux.get_focus(), node3);
-    mux.on_event(Event::Shift(Key::Up));
+    mux.on_event(Event::Key(Key::Up));
     assert_eq!(mux.get_focus(), node2);
-    match mux.on_event(Event::Shift(Key::Left)) {
+    match mux.on_event(Event::Key(Key::Left)) {
         cursive::event::EventResult::Consumed(_) => {
             assert_eq!(mux.get_focus(), node1);
         }
@@ -66,7 +66,7 @@ fn test_triangle() {
 
 #[test]
 fn test_diagonal() {
-    let (mut mux, node1) = MuxBuilder::new().build(TextArea::new());
+    let (mut mux, node1) = Mux::new(TextArea::new());
     let mut siv = Cursive::dummy();
 
     let node2 = mux.add_horizontal_id(TextArea::new(), node1).unwrap();
@@ -83,19 +83,19 @@ fn test_diagonal() {
     let mut mux: cursive::views::ViewRef<Mux> = siv.find_id("mux").unwrap();
 
     println!("Moving left...");
-    mux.on_event(Event::Shift(Key::Left));
+    mux.on_event(Event::Key(Key::Left));
     assert_eq!(mux.get_focus(), bottom_left_corner);
     println!("Moving right...");
-    mux.on_event(Event::Shift(Key::Right));
+    mux.on_event(Event::Key(Key::Right));
     assert_eq!(mux.get_focus(), bottom_left_middle);
     println!("Moving up...");
-    mux.on_event(Event::Shift(Key::Up));
+    mux.on_event(Event::Key(Key::Up));
     assert_eq!(mux.get_focus(), node1);
     println!("Moving right...");
-    mux.on_event(Event::Shift(Key::Right));
+    mux.on_event(Event::Key(Key::Right));
     assert_eq!(mux.get_focus(), node2);
     println!("Moving right...");
-    mux.on_event(Event::Shift(Key::Right));
+    mux.on_event(Event::Key(Key::Right));
     assert_eq!(mux.get_focus(), upper_right_corner);
 }
 
@@ -104,7 +104,7 @@ fn test_quadratic() {
     // Quadratic test
 
     let mut siv = Cursive::dummy();
-    let (mut mux, top_left_corner) = MuxBuilder::new().build(TextArea::new());
+    let (mut mux, top_left_corner) = Mux::new(TextArea::new());
 
     let top_right_mid = mux
         .add_horizontal_id(TextArea::new(), top_left_corner)
@@ -134,27 +134,27 @@ fn test_quadratic() {
     let mut mux: cursive::views::ViewRef<Mux> = siv.find_id("mux").unwrap();
 
     println!("Moving left...");
-    mux.on_event(Event::Shift(Key::Left));
+    mux.on_event(Event::Key(Key::Left));
     println!("Moving left...");
-    mux.on_event(Event::Shift(Key::Left));
+    mux.on_event(Event::Key(Key::Left));
     assert_eq!(mux.get_focus(), top_left_mid);
     println!("Moving left...");
-    mux.on_event(Event::Shift(Key::Left));
+    mux.on_event(Event::Key(Key::Left));
     assert_eq!(mux.get_focus(), top_left_corner);
     println!("Moving down");
-    mux.on_event(Event::Shift(Key::Down));
+    mux.on_event(Event::Key(Key::Down));
     assert_eq!(mux.get_focus(), bottom_left_corner);
     println!("Moving right...");
-    mux.on_event(Event::Shift(Key::Right));
+    mux.on_event(Event::Key(Key::Right));
     assert_eq!(mux.get_focus(), bottom_left_mid);
     println!("Moving right...");
-    mux.on_event(Event::Shift(Key::Right));
+    mux.on_event(Event::Key(Key::Right));
     assert_eq!(mux.get_focus(), bottom_right_mid);
     println!("Moving right...");
-    mux.on_event(Event::Shift(Key::Right));
+    mux.on_event(Event::Key(Key::Right));
     assert_eq!(mux.get_focus(), bottom_right_corner);
     println!("Moving up...");
-    mux.on_event(Event::Shift(Key::Up));
+    mux.on_event(Event::Key(Key::Up));
     assert_eq!(mux.get_focus(), top_right_corner);
 
     println!("Circle completed");

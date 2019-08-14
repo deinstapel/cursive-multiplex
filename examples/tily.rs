@@ -2,12 +2,12 @@ extern crate cursive;
 
 use cursive::views::TextArea;
 use cursive::Cursive;
-use cursive_multiplex::{Id, Mux, MuxBuilder};
+use cursive_multiplex::{Id, Mux};
 
 fn main() {
     let mut siv = Cursive::default();
     siv.show_debug_console();
-    let (mut mux, top_left_corner) = MuxBuilder::new().build(TextArea::new());
+    let (mut mux, top_left_corner) = Mux::new(TextArea::new());
 
     let top_right_mid = mux
         .add_horizontal_id(TextArea::new(), top_left_corner)

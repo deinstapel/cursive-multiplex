@@ -11,12 +11,12 @@
 //! extern crate cursive;
 //! extern crate cursive_multiplex;
 //!
-//! use cursive_multiplex::{MuxBuilder, Mux};
+//! use cursive_multiplex::Mux;
 //! use cursive::views::TextView;
 //! use cursive::Cursive;
 //!
 //! fn main() {
-//!     let (mut mux, node1) = MuxBuilder::new().build(TextView::new("Hello World".to_string()));
+//!     let (mut mux, node1) = Mux::new(TextView::new("Hello World".to_string()));
 //!     let mut siv = Cursive::default();
 //!     mux.add_horizontal_id(TextView::new("Hello from me too!".to_string()), node1);
 //!     siv.add_fullscreen_layer(mux);
@@ -25,31 +25,25 @@
 //!     // siv.run();
 //! }
 //! ```
-
-extern crate cursive;
-extern crate failure;
-extern crate indextree;
 #[macro_use]
 extern crate failure_derive;
 #[macro_use]
 extern crate log;
 
+mod actions;
 mod error;
+mod id;
+mod node;
+mod path;
 
 use cursive::direction::{Absolute, Direction};
 use cursive::event::{Event, EventResult, Key};
 use cursive::view::{Selector, View};
-use cursive::Printer;
-use cursive::Vec2;
-use error::{AddViewError, RemoveViewError, SwitchError};
+use cursive::{Printer, Vec2};
+pub use id::Id;
+use node::Node;
+pub use path::Path;
 use std::convert::TryFrom;
-
-/// Path is a recursive enum made to be able to identify a pane by it's actual location in the multiplexer. An upper Pane on the left side for example would have the path `Path::LeftOrUp(Box::new(Some(Path::LeftOrUp(Box::new(None)))))`.
-#[derive(Debug)]
-pub enum Path {
-    LeftOrUp(Box<Option<Path>>),
-    RightOrDown(Box<Option<Path>>),
-}
 
 #[derive(Debug, PartialEq)]
 enum Orientation {
@@ -65,9 +59,6 @@ enum SearchPath {
     Down,
 }
 
-/// Identifier for views in binary tree of mux, typically returned after adding a new view to the multiplexer.
-pub type Id = indextree::NodeId;
-
 /// View holding information and managing multiplexer.
 pub struct Mux {
     tree: indextree::Arena<Node>,
@@ -81,112 +72,6 @@ pub struct Mux {
     resize_right: Event,
     resize_up: Event,
     resize_down: Event,
-}
-
-/// Builder for the multiplexer, default values for actions are set, but can be modified by calling the corresponding methods of the builder instance.
-/// ```rust
-/// # fn main() {
-/// let builder = cursive_multiplex::MuxBuilder::new();
-/// # }
-/// ```
-pub struct MuxBuilder {
-    focus_up: Event,
-    focus_down: Event,
-    focus_left: Event,
-    focus_right: Event,
-    resize_left: Event,
-    resize_right: Event,
-    resize_up: Event,
-    resize_down: Event,
-}
-
-impl MuxBuilder {
-    pub fn new() -> Self {
-        MuxBuilder {
-            focus_up: Event::Shift(Key::Up),
-            focus_down: Event::Shift(Key::Down),
-            focus_left: Event::Shift(Key::Left),
-            focus_right: Event::Shift(Key::Right),
-            resize_up: Event::Ctrl(Key::Up),
-            resize_down: Event::Ctrl(Key::Down),
-            resize_left: Event::Ctrl(Key::Left),
-            resize_right: Event::Ctrl(Key::Right),
-        }
-    }
-
-    /// Initialization for a new mutliplexer view, view to be provided is the first view to be displayed. It's best to use the main view you want to use here later on, but if neccessary views can also be switched.
-    /// Returned is a tuple consisting of the multiplexer view itself and the id assigend to the passed view.
-    ///
-    /// # Example
-    /// ```
-    /// # extern crate cursive;
-    /// # fn main () {
-    /// let builder = cursive_multiplex::MuxBuilder::new();
-    /// let (mut mux, node1) = builder.build(cursive::views::DummyView);
-    /// # }
-    /// ```
-    pub fn build<T>(&self, v: T) -> (Mux, Id)
-    where
-        T: View,
-    {
-        let root_node = Node {
-            view: None,
-            split_ratio_offset: 0,
-            orientation: Orientation::Horizontal,
-        };
-        let mut new_tree = indextree::Arena::new();
-        let new_root = new_tree.new_node(root_node);
-
-        let mut new_mux = Mux {
-            tree: new_tree,
-            root: new_root,
-            focus: new_root,
-            focus_up: self.focus_up.clone(),
-            focus_down: self.focus_down.clone(),
-            focus_left: self.focus_left.clone(),
-            focus_right: self.focus_right.clone(),
-            resize_left: self.resize_left.clone(),
-            resize_right: self.resize_right.clone(),
-            resize_up: self.resize_up.clone(),
-            resize_down: self.resize_down.clone(),
-        };
-        // borked if not succeeding
-        let fst_view = new_mux.add_horizontal_id(v, new_root).unwrap();
-        (new_mux, fst_view)
-    }
-
-    pub fn focus_up(&mut self, evt: Event) -> &mut Self {
-        self.focus_up = evt;
-        self
-    }
-    pub fn focus_down(&mut self, evt: Event) -> &mut Self {
-        self.focus_down = evt;
-        self
-    }
-    pub fn focus_left(&mut self, evt: Event) -> &mut Self {
-        self.focus_left = evt;
-        self
-    }
-    pub fn focus_right(&mut self, evt: Event) -> &mut Self {
-        self.focus_right = evt;
-        self
-    }
-    pub fn resize_left(&mut self, evt: Event) -> &mut Self {
-        self.resize_left = evt;
-        self
-    }
-    pub fn resize_right(&mut self, evt: Event) -> &mut Self {
-        self.resize_right = evt;
-        self
-    }
-    pub fn resize_up(&mut self, evt: Event) -> &mut Self {
-        self.resize_up = evt;
-        self
-    }
-    pub fn resize_down(&mut self, evt: Event) -> &mut Self {
-        self.resize_down = evt;
-        self
-    }
 }
 
 impl View for Mux {
@@ -240,64 +125,134 @@ impl View for Mux {
     }
 }
 
-struct Node {
-    view: Option<Box<dyn View>>,
-    orientation: Orientation,
-    split_ratio_offset: i16,
-}
+impl Mux {
+    /// Chainable setter for action
+    pub fn with_move_focus_up(mut self, evt: Event) -> Self {
+        self.focus_up = evt;
+        self
+    }
+    /// Chainable setter for action
+    pub fn with_move_focus_down(mut self, evt: Event) -> Self {
+        self.focus_down = evt;
+        self
+    }
+    /// Chainable setter for action
+    pub fn with_move_focus_left(mut self, evt: Event) -> Self {
+        self.focus_left = evt;
+        self
+    }
+    /// Chainable setter for action
+    pub fn with_move_focus_right(mut self, evt: Event) -> Self {
+        self.focus_right = evt;
+        self
+    }
+    /// Chainable setter for action
+    pub fn with_resize_up(mut self, evt: Event) -> Self {
+        self.resize_up = evt;
+        self
+    }
+    /// Chainable setter for action
+    pub fn with_resize_down(mut self, evt: Event) -> Self {
+        self.resize_down = evt;
+        self
+    }
+    /// Chainable setter for action
+    pub fn with_resize_left(mut self, evt: Event) -> Self {
+        self.resize_left = evt;
+        self
+    }
+    /// Chainable setter for action
+    pub fn with_resize_right(mut self, evt: Event) -> Self {
+        self.resize_right = evt;
+        self
+    }
 
-impl Node {
-    fn new<T>(v: T, orit: Orientation) -> Self
+    /// Setter for action
+    pub fn set_move_focus_up(&mut self, evt: Event) {
+        self.focus_up = evt;
+    }
+    /// Setter for action
+    pub fn set_move_focus_down(&mut self, evt: Event) {
+        self.focus_down = evt;
+    }
+    /// Setter for action
+    pub fn set_move_focus_left(&mut self, evt: Event) {
+        self.focus_left = evt;
+    }
+    /// Setter for action
+    pub fn set_move_focus_right(&mut self, evt: Event) {
+        self.focus_right = evt;
+    }
+    /// Setter for action
+    pub fn set_resize_up(&mut self, evt: Event) {
+        self.resize_up = evt;
+    }
+    /// Setter for action
+    pub fn set_resize_down(&mut self, evt: Event) {
+        self.resize_down = evt;
+    }
+    /// Setter for action
+    pub fn set_resize_left(&mut self, evt: Event) {
+        self.resize_left = evt;
+    }
+    /// Setter for action
+    pub fn set_resize_right(&mut self, evt: Event) {
+        self.resize_right = evt;
+    }
+
+    /// Chainable setter for the focus the mux should have
+    pub fn with_focus(mut self, id: Id) -> Self {
+        let nodes: Vec<Id> = self.root.descendants(&self.tree).collect();
+        if nodes.contains(&id) {
+            self.focus = id;
+        }
+        self
+    }
+
+    /// Setter for the focus the mux should have
+    pub fn set_focus(&mut self, id: Id) {
+        let nodes: Vec<Id> = self.root.descendants(&self.tree).collect();
+        if nodes.contains(&id) {
+            self.focus = id;
+        }
+    }
+
+    /// # Example
+    /// ```
+    /// # extern crate cursive;
+    /// # fn main () {
+    /// let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// # }
+    /// ```
+    pub fn new<T>(v: T) -> (Self, Id)
     where
         T: View,
     {
-        Self {
-            view: Some(Box::new(v)),
-            orientation: orit,
+        let root_node = Node {
+            view: None,
             split_ratio_offset: 0,
-        }
+            orientation: Orientation::Horizontal,
+        };
+        let mut new_tree = indextree::Arena::new();
+        let new_root = new_tree.new_node(root_node);
+        let mut new_mux = Mux {
+            tree: new_tree,
+            root: new_root,
+            focus: new_root,
+            focus_up: Event::Key(Key::Up),
+            focus_down: Event::Key(Key::Down),
+            focus_left: Event::Key(Key::Left),
+            focus_right: Event::Key(Key::Right),
+            resize_left: Event::Ctrl(Key::Left),
+            resize_right: Event::Ctrl(Key::Right),
+            resize_up: Event::Ctrl(Key::Up),
+            resize_down: Event::Ctrl(Key::Down),
+        };
+        // borked if not succeeding
+        let fst_view = new_mux.add_horizontal_id(v, new_root).unwrap();
+        (new_mux, fst_view)
     }
 
-    fn has_view(&self) -> bool {
-        match self.view {
-            Some(_) => true,
-            None => false,
-        }
-    }
-
-    fn layout_view(&mut self, vec: Vec2) {
-        if let Some(x) = self.view.as_mut() {
-            x.layout(vec);
-        }
-    }
-
-    fn on_event(&mut self, evt: Event) -> EventResult {
-        if let Some(view) = self.view.as_mut() {
-            view.on_event(evt)
-        } else {
-            EventResult::Ignored
-        }
-    }
-
-    fn draw(&self, printer: &Printer) {
-        match self.view {
-            Some(ref view) => {
-                view.draw(printer);
-            }
-            None => {}
-        }
-    }
-
-    fn take_focus(&mut self) -> bool {
-        if let Some(view) = self.view.as_mut() {
-            view.take_focus(Direction::none())
-        } else {
-            false
-        }
-    }
-}
-
-impl Mux {
     /// Returns the current focused view id.
     /// By default the newest node added to the multiplexer gets focused.
     /// Focus can also be changed by the user.
@@ -305,45 +260,13 @@ impl Mux {
     /// ```
     /// # extern crate cursive;
     /// # fn main () {
-    /// let (mut mux, node1) = cursive_multiplex::MuxBuilder::new().build(cursive::views::DummyView);
+    /// let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
     /// let current_focus = mux.get_focus();
     /// assert_eq!(current_focus, node1);
     /// # }
     /// ```
     pub fn get_focus(&self) -> Id {
         self.focus
-    }
-
-    fn resize(&mut self, direction: Absolute) -> EventResult {
-        let orit = {
-            match direction {
-                Absolute::Left | Absolute::Right => Orientation::Horizontal,
-                Absolute::Up | Absolute::Down => Orientation::Vertical,
-                _ => Orientation::Horizontal,
-            }
-        };
-
-        let mut parent = self.focus.ancestors(&self.tree).nth(1);
-        while parent.is_some() {
-            if let Some(view) = self.tree.get_mut(parent.unwrap()) {
-                if view.get().orientation == orit {
-                    match direction {
-                        Absolute::Left | Absolute::Up => {
-                            view.get_mut().split_ratio_offset -= 1;
-                            return EventResult::Consumed(None);
-                        }
-                        Absolute::Right | Absolute::Down => {
-                            view.get_mut().split_ratio_offset += 1;
-                            return EventResult::Consumed(None);
-                        }
-                        _ => {}
-                    }
-                } else {
-                    parent = parent.unwrap().ancestors(&self.tree).nth(1);
-                }
-            }
-        }
-        EventResult::Ignored
     }
 
     fn rec_layout(&mut self, root: Id, constraint: Vec2) {
@@ -528,553 +451,11 @@ impl Mux {
             _ => debug!("Illegal Number of Child Nodes"),
         }
     }
-
-    /// Add the given view to the tree based on the path, if the path is too specific it will be truncated, if not specific enough an error will be returned.
-    /// When successful `Ok()` will contain the assigned `Id`
-    /// # Example
-    /// ```
-    /// # extern crate cursive;
-    /// # use cursive_multiplex::{Path};
-    /// # fn main () {
-    /// # let (mut mux, node1) = cursive_multiplex::MuxBuilder::new().build(cursive::views::DummyView);
-    /// # let current_focus = mux.get_focus();
-    /// # assert_eq!(current_focus, node1);
-    /// let new_node = mux.add_horizontal_path(cursive::views::DummyView, Path::RightOrDown(Box::new(None))).unwrap();
-    /// # }
-    /// ```
-    pub fn add_horizontal_path<T>(&mut self, v: T, path: Path) -> Result<Id, AddViewError>
-    where
-        T: View,
-    {
-        self.add_node_path(v, Some(path), Orientation::Horizontal, self.root)
-    }
-
-    /// Add the given view to the tree based on the path, if the path is too specific it will be truncated, if not specific enough an error will be returned.
-    /// When successful `Ok()` will contain the assigned `Id`
-    /// # Example
-    /// ```
-    /// # extern crate cursive;
-    /// # use cursive_multiplex::{Path};
-    /// # fn main () {
-    /// # let (mut mux, node1) = cursive_multiplex::MuxBuilder::new().build(cursive::views::DummyView);
-    /// # let current_focus = mux.get_focus();
-    /// # assert_eq!(current_focus, node1);
-    /// let new_node = mux.add_vertical_path(cursive::views::DummyView, Path::RightOrDown(Box::new(None))).unwrap();
-    /// # }
-    /// ```
-    pub fn add_vertical_path<T>(&mut self, v: T, path: Path) -> Result<Id, AddViewError>
-    where
-        T: View,
-    {
-        self.add_node_path(v, Some(path), Orientation::Vertical, self.root)
-    }
-
-    fn add_node_path<T>(
-        &mut self,
-        v: T,
-        path: Option<Path>,
-        orientation: Orientation,
-        cur_node: indextree::NodeId,
-    ) -> Result<Id, AddViewError>
-    where
-        T: View,
-    {
-        match path {
-            Some(path_val) => {
-                match path_val {
-                    Path::LeftOrUp(ch) => {
-                        match cur_node.children(&self.tree).nth(0) {
-                            Some(node) => self.add_node_path(v, *ch, orientation, node),
-                            None => {
-                                // Truncate
-                                self.add_node_path(v, None, orientation, cur_node)
-                            }
-                        }
-                    }
-                    Path::RightOrDown(ch) => {
-                        if cur_node.children(&self.tree).count() < 2 {
-                            match cur_node.children(&self.tree).last() {
-                                Some(node) => {
-                                    self.add_node_path(v, *ch, orientation, node)
-                                    // Ok(self)
-                                }
-                                None => {
-                                    // Truncate, if too specific
-                                    self.add_node_path(v, None, orientation, cur_node)
-                                }
-                            }
-                        } else {
-                            Err(AddViewError::InvalidPath { path: ch.unwrap() })
-                        }
-                    }
-                }
-            }
-            None if cur_node.following_siblings(&self.tree).count()
-                + cur_node.preceding_siblings(&self.tree).count()
-                < 2 =>
-            {
-                let new_node = self.tree.new_node(Node::new(v, Orientation::Horizontal));
-                cur_node.insert_after(new_node, &mut self.tree);
-                self.focus = new_node;
-                debug!("Changed Focus: {}", new_node);
-                Ok(new_node)
-            }
-            None => {
-                // First element is node itself, second direct parent
-                let parent = cur_node.ancestors(&self.tree).nth(1).unwrap();
-                cur_node.detach(&mut self.tree);
-
-                let new_intermediate = self.tree.new_node(Node {
-                    view: None,
-                    split_ratio_offset: 0,
-                    orientation: Orientation::Horizontal,
-                });
-
-                parent.append(new_intermediate, &mut self.tree);
-                new_intermediate.append(cur_node, &mut self.tree);
-                let new_node = self.tree.new_node(Node::new(v, Orientation::Horizontal));
-                new_intermediate.append(new_node, &mut self.tree);
-                self.focus = new_node;
-                debug!("Changed Focus: {}", new_node);
-                Ok(new_node)
-            }
-        }
-    }
-
-    /// Add the given view to the tree based on the path, if the path is too specific it will be truncated, if not specific enough an error will be returned.
-    /// When successful `Ok()` will contain the assigned `Id`
-    /// # Example
-    /// ```
-    /// # extern crate cursive;
-    /// # use cursive_multiplex::{Path};
-    /// # fn main () {
-    /// let (mut mux, node1) = cursive_multiplex::MuxBuilder::new().build(cursive::views::DummyView);
-    /// let new_node = mux.add_horizontal_id(cursive::views::DummyView, node1).unwrap();
-    /// # }
-    /// ```
-    pub fn add_horizontal_id<T>(&mut self, v: T, id: Id) -> Result<Id, AddViewError>
-    where
-        T: View,
-    {
-        self.add_node_id(v, id, Orientation::Horizontal)
-    }
-
-    fn add_node_id<T>(&mut self, v: T, id: Id, orientation: Orientation) -> Result<Id, AddViewError>
-    where
-        T: View,
-    {
-        let new_node = self.tree.new_node(Node::new(v, Orientation::Horizontal));
-
-        let mut node_id;
-        if let Some(parent) = id.ancestors(&self.tree).nth(1) {
-            node_id = parent;
-        } else {
-            node_id = id;
-        }
-
-        if node_id.children(&self.tree).count() < 2
-            && !self.tree.get(node_id).unwrap().get().has_view()
-        {
-            node_id.append(new_node, &mut self.tree);
-            self.tree.get_mut(node_id).unwrap().get_mut().orientation = orientation;
-        } else {
-            // First element is node itself, second direct parent
-            let parent = node_id;
-            node_id = id;
-
-            let position: Path;
-            if parent.children(&self.tree).next().unwrap() == node_id {
-                position = Path::LeftOrUp(Box::new(None));
-            } else {
-                position = Path::RightOrDown(Box::new(None));
-            }
-
-            node_id.detach(&mut self.tree);
-
-            let new_intermediate = self.tree.new_node(Node {
-                view: None,
-                split_ratio_offset: 0,
-                orientation: orientation,
-            });
-            match position {
-                Path::RightOrDown(_) => {
-                    parent.append(new_intermediate, &mut self.tree);
-                }
-                Path::LeftOrUp(_) => {
-                    parent.prepend(new_intermediate, &mut self.tree);
-                }
-            }
-            new_intermediate.append(node_id, &mut self.tree);
-            new_intermediate.append(new_node, &mut self.tree);
-            debug!("Changed order");
-        }
-
-        self.focus = new_node;
-        debug!("Changed Focus: {}", new_node);
-        Ok(new_node)
-    }
-
-    /// Add the given view to the tree based on the path, if the path is too specific it will be truncated, if not specific enough an error will be returned.
-    /// When successful `Ok()` will contain the assigned `Id`
-    /// # Example
-    /// ```
-    /// # extern crate cursive;
-    /// # use cursive_multiplex::{Path};
-    /// # fn main () {
-    /// let (mut mux, node1) = cursive_multiplex::MuxBuilder::new().build(cursive::views::DummyView);
-    /// let new_node = mux.add_vertical_id(cursive::views::DummyView, node1).unwrap();
-    /// # }
-    /// ```
-    pub fn add_vertical_id<T>(&mut self, v: T, id: Id) -> Result<Id, AddViewError>
-    where
-        T: View,
-    {
-        self.add_node_id(v, id, Orientation::Vertical)
-    }
-
-    /// Removes the given id from the multiplexer, returns an error if not a valid id contained in the tree or the lone root of the tree.
-    /// When successful the Id of the removed Node is returned.
-    /// # Example
-    /// ```
-    /// # extern crate cursive;
-    /// # use cursive_multiplex::{Path};
-    /// # fn main () {
-    /// # let (mut mux, node1) = cursive_multiplex::MuxBuilder::new().build(cursive::views::DummyView);
-    /// let new_node = mux.add_vertical_id(cursive::views::DummyView, node1).unwrap();
-    /// mux.remove_id(new_node);
-    /// # }
-    /// ```
-    pub fn remove_id(&mut self, id: Id) -> Result<Id, RemoveViewError> {
-        let desc: Vec<Id> = self.root.descendants(&self.tree).collect();
-        if desc.contains(&id) {
-            let sib_id: Id;
-            if id.preceding_siblings(&self.tree).count() > 1 {
-                sib_id = id.preceding_siblings(&self.tree).nth(1).unwrap();
-            } else if id.following_siblings(&self.tree).count() > 1 {
-                sib_id = id.following_siblings(&self.tree).nth(1).unwrap();
-            } else {
-                return Err(RemoveViewError::Generic {});
-            }
-            let parent = id.ancestors(&self.tree).nth(1).unwrap();
-            id.detach(&mut self.tree);
-
-            if let Some(anker) = parent.ancestors(&self.tree).nth(1) {
-                if anker.children(&self.tree).next().unwrap() == parent {
-                    parent.detach(&mut self.tree);
-                    anker.prepend(sib_id, &mut self.tree);
-                    self.focus = sib_id;
-                    Ok(id)
-                } else {
-                    parent.detach(&mut self.tree);
-                    anker.append(sib_id, &mut self.tree);
-                    self.focus = sib_id;
-                    Ok(id)
-                }
-            } else {
-                self.root = sib_id;
-                self.focus = sib_id;
-                Ok(id)
-            }
-        } else {
-            Err(RemoveViewError::InvalidId { id: id })
-        }
-    }
-
-    /// Allows for position switching of two views, returns error if ids not in multiplexer.
-    /// When successful empty `Ok(())`
-    /// # Example
-    /// ```
-    /// # extern crate cursive;
-    /// # use cursive_multiplex::{Path};
-    /// # fn main () {
-    /// # let (mut mux, node1) = cursive_multiplex::MuxBuilder::new().build(cursive::views::DummyView);
-    /// let daniel = mux.add_vertical_id(cursive::views::DummyView, node1).unwrap();
-    /// let the_cooler_daniel = mux.add_vertical_id(cursive::views::DummyView, node1).unwrap();
-    /// // Oops I wanted the cooler daniel in another spot
-    /// mux.switch_views(daniel, the_cooler_daniel);
-    /// # }
-    /// ```
-    pub fn switch_views(&mut self, fst: Id, snd: Id) -> Result<(), SwitchError> {
-        if let Some(parent1) = fst.ancestors(&self.tree).nth(1) {
-            if let Some(parent2) = snd.ancestors(&self.tree).nth(1) {
-                if parent1.children(&self.tree).next().unwrap() == fst {
-                    fst.detach(&mut self.tree);
-                    if parent2.children(&self.tree).next().unwrap() == snd {
-                        snd.detach(&mut self.tree);
-                        parent1.prepend(snd, &mut self.tree);
-                        parent2.prepend(fst, &mut self.tree);
-                        Ok(())
-                    } else {
-                        snd.detach(&mut self.tree);
-                        parent1.prepend(snd, &mut self.tree);
-                        parent2.append(fst, &mut self.tree);
-                        Ok(())
-                    }
-                } else {
-                    fst.detach(&mut self.tree);
-                    if parent2.children(&self.tree).next().unwrap() == snd {
-                        snd.detach(&mut self.tree);
-                        parent1.append(snd, &mut self.tree);
-                        parent2.prepend(fst, &mut self.tree);
-                        Ok(())
-                    } else {
-                        snd.detach(&mut self.tree);
-                        parent1.append(snd, &mut self.tree);
-                        parent2.append(fst, &mut self.tree);
-                        Ok(())
-                    }
-                }
-            } else {
-                Err(SwitchError::NoParent { from: snd, to: fst })
-            }
-        } else {
-            Err(SwitchError::NoParent { from: fst, to: snd })
-        }
-    }
-
-    fn move_focus(&mut self, direction: Absolute) -> EventResult {
-        match self.search_focus_path(
-            direction,
-            self.focus.ancestors(&self.tree).nth(1).unwrap(),
-            self.focus,
-        ) {
-            Ok((path, turn_point)) => {
-                // Traverse the path down again
-                if let Some(focus) = self.traverse_search_path(path, turn_point) {
-                    if self.tree.get_mut(focus).unwrap().get_mut().take_focus() {
-                        self.focus = focus;
-                        EventResult::Consumed(None)
-                    } else {
-                        debug!("Focus rejected by {}", focus);
-                        EventResult::Ignored
-                    }
-                } else {
-                    EventResult::Ignored
-                }
-            }
-            Err(_) => EventResult::Ignored,
-        }
-    }
-
-    fn traverse_search_path(&self, mut path: Vec<SearchPath>, turn_point: Id) -> Option<Id> {
-        let mut cur_node = turn_point;
-
-        // println!("Path Begin: {:?}", path);
-        while let Some(step) = path.pop() {
-            // println!("Next Step: {:?}", step);
-            match self.traverse_single_node(step, turn_point, cur_node) {
-                Some(node) => {
-                    // println!("{}", node);
-                    cur_node = node;
-                }
-                None => {
-                    // Truncate remaining path
-                    // cur_node = cur_node.children(&self.tree).next().unwrap();
-                    break;
-                }
-            }
-        }
-
-        while !self.tree.get(cur_node).unwrap().get().has_view() {
-            match cur_node.children(&self.tree).next() {
-                Some(node) => cur_node = node,
-                None => return None,
-            }
-        }
-
-        Some(cur_node)
-    }
-
-    fn traverse_single_node(&self, action: SearchPath, turn_point: Id, cur_node: Id) -> Option<Id> {
-        let left = || -> Option<Id> {
-            if let Some(left) = cur_node.children(&self.tree).next() {
-                Some(left)
-            } else {
-                None
-            }
-        };
-
-        let right = || -> Option<Id> {
-            if let Some(right) = cur_node.children(&self.tree).last() {
-                Some(right)
-            } else {
-                None
-            }
-        };
-        let up = left;
-        let down = right;
-
-        match self.tree.get(turn_point).unwrap().get().orientation {
-            Orientation::Horizontal => {
-                match action {
-                    // Switching Sides for Left & Right
-                    SearchPath::Right
-                        if self.tree.get(cur_node).unwrap().get().orientation
-                            == Orientation::Horizontal =>
-                    {
-                        left()
-                    }
-                    SearchPath::Left
-                        if self.tree.get(cur_node).unwrap().get().orientation
-                            == Orientation::Horizontal =>
-                    {
-                        right()
-                    }
-                    // Remain for Up & Down
-                    SearchPath::Up
-                        if self.tree.get(cur_node).unwrap().get().orientation
-                            == Orientation::Vertical =>
-                    {
-                        up()
-                    }
-                    SearchPath::Down
-                        if self.tree.get(cur_node).unwrap().get().orientation
-                            == Orientation::Vertical =>
-                    {
-                        down()
-                    }
-                    _ => None,
-                }
-            }
-            Orientation::Vertical => {
-                match action {
-                    // Remain for Left & Right
-                    SearchPath::Right
-                        if self.tree.get(cur_node).unwrap().get().orientation
-                            == Orientation::Horizontal =>
-                    {
-                        right()
-                    }
-                    SearchPath::Left
-                        if self.tree.get(cur_node).unwrap().get().orientation
-                            == Orientation::Horizontal =>
-                    {
-                        left()
-                    }
-                    // Switch for Up & Down
-                    SearchPath::Up
-                        if self.tree.get(cur_node).unwrap().get().orientation
-                            == Orientation::Vertical =>
-                    {
-                        down()
-                    }
-                    SearchPath::Down
-                        if self.tree.get(cur_node).unwrap().get().orientation
-                            == Orientation::Vertical =>
-                    {
-                        up()
-                    }
-                    _ => None,
-                }
-            }
-        }
-    }
-
-    fn search_focus_path(
-        &self,
-        direction: Absolute,
-        nodeid: Id,
-        fromid: Id,
-    ) -> Result<(Vec<SearchPath>, Id), ()> {
-        let mut cur_node = Some(nodeid);
-        let mut from_node = fromid;
-
-        let mut path = Vec::new();
-
-        while cur_node.is_some() {
-            // println!("Current node in search path: {}", cur_node.unwrap());
-            // println!("Originating from node: {}", from_node);
-            match self.tree.get(cur_node.unwrap()).unwrap().get().orientation {
-                Orientation::Horizontal
-                    if direction == Absolute::Left || direction == Absolute::Right =>
-                {
-                    if cur_node.unwrap().children(&self.tree).next().unwrap() == from_node {
-                        // Originated from left
-                        path.push(SearchPath::Left);
-                        from_node = cur_node.unwrap();
-
-                        if direction == Absolute::Left {
-                            cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
-                        } else {
-                            cur_node = None;
-                        }
-                    } else {
-                        // Originated from right
-                        path.push(SearchPath::Right);
-                        from_node = cur_node.unwrap();
-                        if direction == Absolute::Right {
-                            cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
-                        } else {
-                            cur_node = None;
-                        }
-                    }
-                }
-                Orientation::Vertical
-                    if direction == Absolute::Up || direction == Absolute::Down =>
-                {
-                    if cur_node.unwrap().children(&self.tree).next().unwrap() == from_node {
-                        // Originated from up
-                        path.push(SearchPath::Up);
-                        from_node = cur_node.unwrap();
-
-                        if direction == Absolute::Up {
-                            cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
-                        } else {
-                            cur_node = None;
-                        }
-                    } else {
-                        // Originated from down
-                        path.push(SearchPath::Down);
-                        from_node = cur_node.unwrap();
-                        if direction == Absolute::Down {
-                            cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
-                        } else {
-                            cur_node = None;
-                        }
-                    }
-                }
-                Orientation::Horizontal => {
-                    if cur_node.unwrap().children(&self.tree).next().unwrap() == from_node {
-                        path.push(SearchPath::Left);
-                        from_node = cur_node.unwrap();
-                        cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
-                    } else {
-                        path.push(SearchPath::Right);
-                        from_node = cur_node.unwrap();
-                        cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
-                    }
-                }
-                Orientation::Vertical => {
-                    if cur_node.unwrap().children(&self.tree).next().unwrap() == from_node {
-                        path.push(SearchPath::Up);
-                        from_node = cur_node.unwrap();
-                        cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
-                    } else {
-                        path.push(SearchPath::Down);
-                        from_node = cur_node.unwrap();
-                        cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
-                    }
-                }
-            }
-        }
-
-        match self.tree.get(from_node).unwrap().get().orientation {
-            Orientation::Horizontal if direction == Absolute::Up || direction == Absolute::Down => {
-                Err(())
-            }
-            Orientation::Vertical
-                if direction == Absolute::Left || direction == Absolute::Right =>
-            {
-                Err(())
-            }
-            _ => Ok((path, from_node)),
-        }
-    }
 }
 
 #[cfg(test)]
 mod tree {
-    use super::{Mux, MuxBuilder};
+    use super::Mux;
     use cursive::event::{Event, Key};
     use cursive::traits::View;
     use cursive::views::DummyView;
@@ -1082,7 +463,7 @@ mod tree {
     #[test]
     fn test_remove() {
         // General Remove test
-        let (mut test_mux, node1) = MuxBuilder::new().build(DummyView);
+        let (mut test_mux, node1) = Mux::new(DummyView);
         let node2 = test_mux.add_vertical_id(DummyView, node1).unwrap();
         let node3 = test_mux.add_vertical_id(DummyView, node2).unwrap();
 
@@ -1101,7 +482,7 @@ mod tree {
 
     #[test]
     fn test_switch() {
-        let (mut mux, node1) = MuxBuilder::new().build(DummyView);
+        let (mut mux, node1) = Mux::new(DummyView);
         let node2 = mux.add_horizontal_id(DummyView, node1).unwrap();
         let node3 = mux.add_vertical_id(DummyView, node2).unwrap();
 
@@ -1112,7 +493,7 @@ mod tree {
     fn test_nesting() {
         println!("Nesting Test");
 
-        let (mut mux, _) = MuxBuilder::new().build(DummyView);
+        let (mut mux, _) = Mux::new(DummyView);
 
         let mut nodes = Vec::new();
 
