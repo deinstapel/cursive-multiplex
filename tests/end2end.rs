@@ -12,8 +12,6 @@ fn test_end2end() {
         .output()
         .expect("end2end tests failed");
 
-    assert!(jest.status.success());
-
     let result: Value =
         serde_json::from_slice(&jest.stdout[..]).expect("failed to read end2end tests result");
     let passed = result["numPassedTests"].as_i64().unwrap();
@@ -38,4 +36,6 @@ fn test_end2end() {
         serde_json::to_string_pretty(&shield).expect("failed to generate shields endpoint"),
     )
     .expect("failed to save shields endpoint");
+
+    assert!(jest.status.success());
 }
