@@ -1,7 +1,5 @@
 #! /bin/sh
 
-set -e
-
 die() {
     printf "\e[31:1mError: %s\e[0m\n" "$1" >&2
     exit 1
@@ -41,10 +39,12 @@ EOF
       exit $PRV_EXIT
     fi
 
-    # only run the tests, do not fail build when a test fails
-    cargo "+${RUST_CHAIN}" --color=always test --no-fail-fast || true
+    cargo "+${RUST_CHAIN}" --color=always test --no-fail-fast
+    exitcode=$?
 
     # create badge for `cargo test`
     cargo "+${RUST_CHAIN}" test --no-fail-fast -- -Z unstable-options --format json | \
         jq -s -f ./scripts/shields-from-tests.jq > ./target/shields/cargo-test.json
+
+    exit $exitcode
 )
