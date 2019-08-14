@@ -122,11 +122,7 @@ impl Mux {
 
             node_id.detach(&mut self.tree);
 
-            let new_intermediate = self.tree.new_node(Node {
-                view: None,
-                split_ratio_offset: 0,
-                orientation: orientation,
-            });
+            let new_intermediate = self.tree.new_node(Node::new_empty(orientation));
             match position {
                 Path::RightOrDown(_) => {
                     parent.append(new_intermediate, &mut self.tree);

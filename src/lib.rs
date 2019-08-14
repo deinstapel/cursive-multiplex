@@ -228,13 +228,8 @@ impl Mux {
     where
         T: View,
     {
-        let root_node = Node {
-            view: None,
-            split_ratio_offset: 0,
-            orientation: Orientation::Horizontal,
-        };
         let mut new_tree = indextree::Arena::new();
-        let new_root = new_tree.new_node(root_node);
+        let new_root = new_tree.new_node(Node::new_empty(Orientation::Horizontal));
         let mut new_mux = Mux {
             tree: new_tree,
             root: new_root,

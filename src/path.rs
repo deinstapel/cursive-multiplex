@@ -104,11 +104,7 @@ impl Mux {
                 // First element is node itself, second direct parent
                 let parent = cur_node.ancestors(&self.tree).nth(1).unwrap();
                 cur_node.detach(&mut self.tree);
-                let new_intermediate = self.tree.new_node(Node {
-                    view: None,
-                    split_ratio_offset: 0,
-                    orientation: Orientation::Horizontal,
-                });
+                let new_intermediate = self.tree.new_node(Node::new_empty(Orientation::Horizontal));
                 parent.append(new_intermediate, &mut self.tree);
                 new_intermediate.append(cur_node, &mut self.tree);
                 let new_node = self.tree.new_node(Node::new(v, Orientation::Horizontal));

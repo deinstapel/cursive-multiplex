@@ -1,33 +1,33 @@
 extern crate cursive;
 
-use cursive::views::TextArea;
+use cursive::views::{TextArea, BoxView};
 use cursive::Cursive;
 use cursive_multiplex::{Id, Mux};
 
 fn main() {
     let mut siv = Cursive::default();
     siv.show_debug_console();
-    let (mut mux, top_left_corner) = Mux::new(TextArea::new());
+    let (mut mux, top_left_corner) = Mux::new(BoxView::with_full_screen(TextArea::new()));
 
     let top_right_mid = mux
-        .add_horizontal_id(TextArea::new(), top_left_corner)
+        .add_horizontal_id(BoxView::with_full_screen(TextArea::new()), top_left_corner)
         .unwrap();
-    let bottom_right_mid = mux.add_vertical_id(TextArea::new(), top_right_mid).unwrap();
+    let bottom_right_mid = mux.add_vertical_id(BoxView::with_full_screen(TextArea::new()), top_right_mid).unwrap();
     let _ = mux
-        .add_horizontal_id(cursive::views::Panel::new(TextArea::new()), top_right_mid)
+        .add_horizontal_id(cursive::views::Panel::new(BoxView::with_full_screen(TextArea::new())), top_right_mid)
         .unwrap();
     let _ = mux
-        .add_horizontal_id(TextArea::new(), bottom_right_mid)
+        .add_horizontal_id(BoxView::with_full_screen(TextArea::new()), bottom_right_mid)
         .unwrap();
     let bottom_left_corner = mux
-        .add_vertical_id(TextArea::new(), top_left_corner)
+        .add_vertical_id(BoxView::with_full_screen(TextArea::new()), top_left_corner)
         .unwrap();
     let top_left_mid = mux
-        .add_horizontal_id(TextArea::new(), top_left_corner)
+        .add_horizontal_id(BoxView::with_full_screen(TextArea::new()), top_left_corner)
         .unwrap();
     let _ = mux
         .add_horizontal_id(
-            cursive::views::Panel::new(TextArea::new()),
+            cursive::views::Panel::new(BoxView::with_full_screen(TextArea::new())),
             bottom_left_corner,
         )
         .unwrap();
