@@ -105,6 +105,8 @@ If you find any bugs/unexpected behaviour or you have a proposition for future c
 
 ### Running the tests
 
+> **`!!! CAUTION !!!`** This crate uses Tmux for end2end testing and will **kill your Tmux server** during testing!
+
 #### Preparing integration tests
 
 In order to run the integration tests, you first need to install a recent version of `npm`!
