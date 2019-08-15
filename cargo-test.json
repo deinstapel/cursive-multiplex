@@ -2,6 +2,6 @@
   "color": "yellow",
   "isError": true,
   "label": "cargo test",
-  "message": "16 / 17 tests",
+  "message": "20 / 21 tests",
   "schemaVersion": 1
 }
