@@ -10,23 +10,23 @@ fn main() {
     let (mut mux, top_left_corner) = Mux::new(BoxView::with_full_screen(TextArea::new()));
 
     let top_right_mid = mux
-        .add_horizontal_id(BoxView::with_full_screen(TextArea::new()), top_left_corner)
+        .add_right_of(BoxView::with_full_screen(TextArea::new()), top_left_corner)
         .unwrap();
-    let bottom_right_mid = mux.add_vertical_id(BoxView::with_full_screen(TextArea::new()), top_right_mid).unwrap();
+    let bottom_right_mid = mux.add_below(BoxView::with_full_screen(TextArea::new()), top_right_mid).unwrap();
     let _ = mux
-        .add_horizontal_id(cursive::views::Panel::new(BoxView::with_full_screen(TextArea::new())), top_right_mid)
+        .add_right_of(cursive::views::Panel::new(BoxView::with_full_screen(TextArea::new())), top_right_mid)
         .unwrap();
     let _ = mux
-        .add_horizontal_id(BoxView::with_full_screen(TextArea::new()), bottom_right_mid)
+        .add_right_of(BoxView::with_full_screen(TextArea::new()), bottom_right_mid)
         .unwrap();
     let bottom_left_corner = mux
-        .add_vertical_id(BoxView::with_full_screen(TextArea::new()), top_left_corner)
+        .add_below(BoxView::with_full_screen(TextArea::new()), top_left_corner)
         .unwrap();
     let top_left_mid = mux
-        .add_horizontal_id(BoxView::with_full_screen(TextArea::new()), top_left_corner)
+        .add_right_of(BoxView::with_full_screen(TextArea::new()), top_left_corner)
         .unwrap();
     let _ = mux
-        .add_horizontal_id(
+        .add_right_of(
             cursive::views::Panel::new(BoxView::with_full_screen(TextArea::new())),
             bottom_left_corner,
         )
@@ -51,6 +51,6 @@ fn main() {
 
 fn add_plane(siv: &mut Cursive, node: Id) {
     let mut foo: cursive::views::ViewRef<Mux> = siv.find_id("Steven").unwrap();
-    foo.add_vertical_id(cursive::views::TextView::new("Dynamic!".to_string()), node)
+    foo.add_below(cursive::views::TextView::new("Dynamic!".to_string()), node)
         .unwrap();
 }

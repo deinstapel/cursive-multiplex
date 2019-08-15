@@ -1,5 +1,6 @@
 use crate::id::Id;
-use crate::{Absolute, EventResult, Mux, Orientation, SearchPath};
+use crate::path::SearchPath;
+use crate::{Absolute, EventResult, Mux, Orientation};
 
 impl Mux {
     pub(crate) fn move_focus(&mut self, direction: Absolute) -> EventResult {

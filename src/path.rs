@@ -1,11 +1,4 @@
-use crate::{Id, Mux, Orientation, SearchPath};
-
-/// Path is a recursive enum made to be able to identify a pane by it's actual location in the multiplexer. An upper Pane on the left side for example would have the path `Path::LeftOrUp(Box::new(Some(Path::LeftOrUp(Box::new(None)))))`.
-#[derive(Debug)]
-pub enum Path {
-    LeftOrUp(Box<Option<Path>>),
-    RightOrDown(Box<Option<Path>>),
-}
+use crate::{Id, Mux, Orientation};
 
 /// Path used to get the id of a specific pane in the mux.
 /// self can be directed by calling `.up()`, `.down()`, `.left()` and `.right()` on the instance.
@@ -13,6 +6,14 @@ pub enum Path {
 pub struct AwesomePath<'a> {
     mux: &'a Mux,
     cur_id: Option<Id>,
+}
+
+#[derive(Debug, PartialEq)]
+pub(crate) enum SearchPath {
+    Left,
+    Right,
+    Up,
+    Down,
 }
 
 impl<'a> AwesomePath<'a> {
@@ -32,7 +33,7 @@ impl<'a> AwesomePath<'a> {
     /// # use cursive_multiplex::Mux;
     /// # fn main() {
     /// let (mut mux, node1) = Mux::new(DummyView);
-    /// mux.add_vertical_id(DummyView, node1);
+    /// mux.add_below(DummyView, node1);
     /// let path = mux.root().up().build();
     /// assert_eq!(node1, path.unwrap());
     /// # }
@@ -127,7 +128,7 @@ mod test {
     #[test]
     fn path_up() {
         let (mut mux, node1) = Mux::new(DummyView);
-        mux.add_vertical_id(DummyView, node1).unwrap();
+        mux.add_below(DummyView, node1).unwrap();
         let upper_pane = mux.root().up().build();
         assert!(upper_pane.is_some());
         assert_eq!(node1, upper_pane.unwrap());
@@ -136,7 +137,7 @@ mod test {
     #[test]
     fn path_down() {
         let (mut mux, node1) = Mux::new(DummyView);
-        let node2 = mux.add_vertical_id(DummyView, node1).unwrap();
+        let node2 = mux.add_below(DummyView, node1).unwrap();
         let lower_pane = mux.root().down().build();
         assert!(lower_pane.is_some());
         assert_eq!(node2, lower_pane.unwrap());
@@ -145,7 +146,7 @@ mod test {
     #[test]
     fn path_left() {
         let (mut mux, node1) = Mux::new(DummyView);
-        mux.add_horizontal_id(DummyView, node1).unwrap();
+        mux.add_right_of(DummyView, node1).unwrap();
         let left_pane = mux.root().left().build();
         assert!(left_pane.is_some());
         assert_eq!(node1, left_pane.unwrap());
@@ -154,7 +155,7 @@ mod test {
     #[test]
     fn path_right() {
         let (mut mux, node1) = Mux::new(DummyView);
-        let node2 = mux.add_horizontal_id(DummyView, node1).unwrap();
+        let node2 = mux.add_right_of(DummyView, node1).unwrap();
         let right_pane = mux.root().right().build();
         assert!(right_pane.is_some());
         assert_eq!(node2, right_pane.unwrap());
@@ -163,7 +164,7 @@ mod test {
     #[test]
     fn path_invalid() {
         let (mut mux, node1) = Mux::new(DummyView);
-        let _ = mux.add_horizontal_id(DummyView, node1).unwrap();
+        let _ = mux.add_right_of(DummyView, node1).unwrap();
         let root_pane = mux.root().build();
         assert!(root_pane.is_none());
     }

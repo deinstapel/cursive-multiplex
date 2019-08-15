@@ -18,7 +18,7 @@
 //! fn main() {
 //!     let (mut mux, node1) = Mux::new(TextView::new("Hello World".to_string()));
 //!     let mut siv = Cursive::default();
-//!     mux.add_horizontal_id(TextView::new("Hello from me too!".to_string()), node1);
+//!     mux.add_right_of(TextView::new("Hello from me too!".to_string()), node1);
 //!     siv.add_fullscreen_layer(mux);
 //!
 //!     // When your finished setting up
@@ -42,7 +42,6 @@ use cursive::view::{Selector, View};
 use cursive::{Printer, Vec2};
 pub use id::Id;
 use node::Node;
-pub use path::Path;
 use std::convert::TryFrom;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -51,13 +50,6 @@ enum Orientation {
     Horizontal,
 }
 
-#[derive(Debug, PartialEq)]
-enum SearchPath {
-    Left,
-    Right,
-    Up,
-    Down,
-}
 
 /// View holding information and managing multiplexer.
 pub struct Mux {
@@ -244,7 +236,7 @@ impl Mux {
             resize_down: Event::Ctrl(Key::Down),
         };
         // borked if not succeeding
-        let fst_view = new_mux.add_horizontal_id(v, new_root).unwrap();
+        let fst_view = new_mux.add_below(v, new_root).unwrap();
         (new_mux, fst_view)
     }
 
@@ -459,8 +451,8 @@ mod tree {
     fn test_remove() {
         // General Remove test
         let (mut test_mux, node1) = Mux::new(DummyView);
-        let node2 = test_mux.add_vertical_id(DummyView, node1).unwrap();
-        let node3 = test_mux.add_vertical_id(DummyView, node2).unwrap();
+        let node2 = test_mux.add_below(DummyView, node1).unwrap();
+        let node3 = test_mux.add_below(DummyView, node2).unwrap();
 
         print_tree(&test_mux);
         test_mux.remove_id(node3).unwrap();
@@ -478,8 +470,8 @@ mod tree {
     #[test]
     fn test_switch() {
         let (mut mux, node1) = Mux::new(DummyView);
-        let node2 = mux.add_horizontal_id(DummyView, node1).unwrap();
-        let node3 = mux.add_vertical_id(DummyView, node2).unwrap();
+        let node2 = mux.add_right_of(DummyView, node1).unwrap();
+        let node3 = mux.add_left_of(DummyView, node2).unwrap();
 
         mux.switch_views(node1, node3).unwrap();
     }
@@ -494,7 +486,7 @@ mod tree {
 
         for _ in 0..10 {
             print_tree(&mux);
-            match mux.add_horizontal_id(
+            match mux.add_right_of(
                 DummyView,
                 if let Some(x) = nodes.last() {
                     *x
@@ -509,7 +501,7 @@ mod tree {
                     assert!(false);
                 }
             }
-            match mux.add_vertical_id(DummyView, *nodes.last().unwrap()) {
+            match mux.add_right_of(DummyView, *nodes.last().unwrap()) {
                 Ok(node) => {
                     nodes.push(node);
                 }

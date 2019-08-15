@@ -1,9 +1,7 @@
-use crate::{Id, Path};
+use crate::Id;
 
 #[derive(Debug, Fail)]
 pub enum AddViewError {
-    #[fail(display = "invalid path given: {:?}", path)]
-    InvalidPath { path: Path },
     #[fail(display = "some error occured")]
     GenericError {},
 }

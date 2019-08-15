@@ -1,6 +1,6 @@
 use crate::error::{AddViewError, RemoveViewError, SwitchError};
 use crate::node::Node;
-pub use crate::path::Path;
+use crate::path::SearchPath;
 use crate::{Mux, Orientation, View};
 
 /// Identifier for views in binary tree of mux, typically returned after adding a new view to the multiplexer.
@@ -11,11 +11,9 @@ impl Mux {
     /// When successful the Id of the removed Node is returned.
     /// # Example
     /// ```
-    /// # extern crate cursive;
-    /// # use cursive_multiplex::{Path};
     /// # fn main () {
     /// # let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
-    /// let new_node = mux.add_vertical_id(cursive::views::DummyView, node1).unwrap();
+    /// let new_node = mux.add_below(cursive::views::DummyView, node1).unwrap();
     /// mux.remove_id(new_node);
     /// # }
     /// ```
@@ -54,43 +52,79 @@ impl Mux {
         }
     }
 
-    /// Add the given view to the tree based on the path, if the path is too specific it will be truncated, if not specific enough an error will be returned.
+    /// Add the given view, below the given Id.
+    /// The new view and the indexed one will share the space previously given to the give Id.
     /// When successful `Ok()` will contain the assigned `Id`
     /// # Example
     /// ```
     /// # extern crate cursive;
-    /// # use cursive_multiplex::{Path};
     /// # fn main () {
     /// let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
-    /// let new_node = mux.add_vertical_id(cursive::views::DummyView, node1).unwrap();
+    /// let new_node = mux.add_below(cursive::views::DummyView, node1).unwrap();
     /// # }
     /// ```
-    pub fn add_vertical_id<T>(&mut self, v: T, id: Id) -> Result<Id, AddViewError>
+    pub fn add_below<T>(&mut self, v: T, id: Id) -> Result<Id, AddViewError>
     where
-        T: View,
+        T: View
     {
-        self.add_node_id(v, id, Orientation::Vertical)
+        self.add_node_id(v, id, Orientation::Vertical, SearchPath::Down)
     }
 
-    /// Add the given view to the tree based on the path, if the path is too specific it will be truncated, if not specific enough an error will be returned.
+    /// Add the given view, above the given Id.
+    /// The new view and the indexed one will share the space previously given to the give Id.
     /// When successful `Ok()` will contain the assigned `Id`
     /// # Example
     /// ```
     /// # extern crate cursive;
-    /// # use cursive_multiplex::{Path};
     /// # fn main () {
     /// let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
-    /// let new_node = mux.add_horizontal_id(cursive::views::DummyView, node1).unwrap();
+    /// let new_node = mux.add_above(cursive::views::DummyView, node1).unwrap();
     /// # }
     /// ```
-    pub fn add_horizontal_id<T>(&mut self, v: T, id: Id) -> Result<Id, AddViewError>
+    pub fn add_above<T>(&mut self, v: T, id: Id) -> Result<Id, AddViewError>
     where
-        T: View,
+        T: View
     {
-        self.add_node_id(v, id, Orientation::Horizontal)
+        self.add_node_id(v, id, Orientation::Vertical, SearchPath::Up)
     }
 
-    fn add_node_id<T>(&mut self, v: T, id: Id, orientation: Orientation) -> Result<Id, AddViewError>
+    /// Add the given view, left of the given Id.
+    /// The new view and the indexed one will share the space previously given to the give Id.
+    /// When successful `Ok()` will contain the assigned `Id`
+    /// # Example
+    /// ```
+    /// # extern crate cursive;
+    /// # fn main () {
+    /// let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// let new_node = mux.add_left_of(cursive::views::DummyView, node1).unwrap();
+    /// # }
+    /// ```
+    pub fn add_left_of<T>(&mut self, v: T, id: Id) -> Result<Id, AddViewError>
+    where
+        T: View
+    {
+        self.add_node_id(v, id, Orientation::Horizontal, SearchPath::Left)
+    }
+
+    /// Add the given view, right of the given Id.
+    /// The new view and the indexed one will share the space previously given to the give Id.
+    /// When successful `Ok()` will contain the assigned `Id`
+    /// # Example
+    /// ```
+    /// # extern crate cursive;
+    /// # fn main () {
+    /// let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// let new_node = mux.add_right_of(cursive::views::DummyView, node1).unwrap();
+    /// # }
+    /// ```
+    pub fn add_right_of<T>(&mut self, v: T, id: Id) -> Result<Id, AddViewError>
+    where
+        T: View
+    {
+        self.add_node_id(v, id, Orientation::Horizontal, SearchPath::Right)
+    }
+
+    fn add_node_id<T>(&mut self, v: T, id: Id, orientation: Orientation, direction: SearchPath) -> Result<Id, AddViewError>
     where
         T: View,
     {
@@ -106,33 +140,48 @@ impl Mux {
         if node_id.children(&self.tree).count() < 2
             && !self.tree.get(node_id).unwrap().get().has_view()
         {
-            node_id.append(new_node, &mut self.tree);
+            match direction {
+                SearchPath::Up | SearchPath::Left => {
+                    node_id.prepend(new_node, &mut self.tree)
+                },
+                SearchPath::Down | SearchPath::Right => {
+                    node_id.append(new_node, &mut self.tree)
+                },
+            }
             self.tree.get_mut(node_id).unwrap().get_mut().orientation = orientation;
         } else {
             // First element is node itself, second direct parent
             let parent = node_id;
             node_id = id;
 
-            let position: Path;
+            let position: SearchPath;
             if parent.children(&self.tree).next().unwrap() == node_id {
-                position = Path::LeftOrUp(Box::new(None));
+                position = SearchPath::Left;
             } else {
-                position = Path::RightOrDown(Box::new(None));
+                position = SearchPath::Right;
             }
 
             node_id.detach(&mut self.tree);
 
             let new_intermediate = self.tree.new_node(Node::new_empty(orientation));
             match position {
-                Path::RightOrDown(_) => {
+                SearchPath::Right | SearchPath::Down => {
                     parent.append(new_intermediate, &mut self.tree);
                 }
-                Path::LeftOrUp(_) => {
+                SearchPath::Left | SearchPath::Up => {
                     parent.prepend(new_intermediate, &mut self.tree);
                 }
             }
-            new_intermediate.append(node_id, &mut self.tree);
-            new_intermediate.append(new_node, &mut self.tree);
+            match direction {
+                SearchPath::Up | SearchPath::Left => {
+                    new_intermediate.append(new_node, &mut self.tree);
+                    new_intermediate.append(node_id, &mut self.tree);
+                },
+                SearchPath::Down | SearchPath::Right => {
+                    new_intermediate.append(node_id, &mut self.tree);
+                    new_intermediate.append(new_node, &mut self.tree);
+                },
+            }
             debug!("Changed order");
         }
 
@@ -146,11 +195,10 @@ impl Mux {
     /// # Example
     /// ```
     /// # extern crate cursive;
-    /// # use cursive_multiplex::{Path};
     /// # fn main () {
     /// # let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
-    /// let daniel = mux.add_vertical_id(cursive::views::DummyView, node1).unwrap();
-    /// let the_cooler_daniel = mux.add_vertical_id(cursive::views::DummyView, node1).unwrap();
+    /// let daniel = mux.add_below(cursive::views::DummyView, node1).unwrap();
+    /// let the_cooler_daniel = mux.add_below(cursive::views::DummyView, node1).unwrap();
     /// // Oops I wanted the cooler daniel in another spot
     /// mux.switch_views(daniel, the_cooler_daniel);
     /// # }
