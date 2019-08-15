@@ -109,9 +109,9 @@ If you find any bugs/unexpected behaviour or you have a proposition for future c
 
 #### Preparing integration tests
 
-In order to run the integration tests, you first need to install a recent version of `npm`!
+In order to run the integration tests, you first need to install a recent version of `>=npm-10` and `>=tmux-2.6`!
 
-After `npm` is installed, install required dependencies:
+After `npm` and `tmux` are installed, install required dependencies:
 
 ```
 $ ./scripts/prepare-end2end-tests.sh
