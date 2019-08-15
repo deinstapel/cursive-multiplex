@@ -253,7 +253,7 @@ exports[`tests the horizontal layout with fixed size child 1`] = `
 `;
 
 exports[`tests the horizontal splitting 1`] = `
-"Right               │Center             │Right                                  
+"Left                │Center             │Right                                  
                     │                   │                                       
                     │                   │                                       
                     │                   │                                       
