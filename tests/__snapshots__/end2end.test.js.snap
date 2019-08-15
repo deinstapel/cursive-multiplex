@@ -168,6 +168,34 @@ Down
 "
 `;
 
+exports[`tests resizing a pane in a horizontal setup 1`] = `
+"_                        │                           │                          
+                         │                           │                          
+                         │                           │                          
+                         │                           │                          
+                         │                           │                          
+                         │                           │                          
+                         │                           │                          
+                         │                           │                          
+                         │                           │                          
+                         │                           │                          
+                         │                           │                          
+                         │                           │                          
+                         │                           │                          
+                         │                           │                          
+                         │                           │                          
+                         │                           │                          
+                         │                           │                          
+                         │                           │                          
+                         │                           │                          
+                         │                           │                          
+                         │                           │                          
+                         │                           │                          
+                         │                           │                          
+                         │                           │                          
+"
+`;
+
 exports[`tests switching panes in a complex setup 1`] = `
 "left 1                                  │left 3             │right 2            
                                         │                   │                   
