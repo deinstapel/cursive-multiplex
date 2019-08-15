@@ -22,7 +22,9 @@
     <img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" target="_blank" />
   </a>
   <br>
-  <i>A tmux like multiplexer for gyscos/cursive views</i>
+  <i>A tmux like multiplexer for
+  <a href="https://github.com/gyscos/cursive">gyscos/cursive</a>
+  views</i>
 </p>
 
 ---
@@ -44,25 +46,34 @@ Simply add to your `Cargo.toml`
 cursive-multiplex = "^0.1.2
 ```
 
-And then use the `MuxBuilder` to build a new Mux View
+And then use `Mux::new` to create a new Mux view
 ```rust
-let builder = cursive_multiplex::MuxBuilder::new();
-let (mut mux, root_node)_= builder.build(cursive::views::TextView::new("Hello World!".to_string()));
+let (mut mux, root_node) = cursive_multiplex::Mux::new(
+    cursive::views::TextView::new("Hello World!".to_string())
+);
 ```
 
-> With the MuxBuilder defaults are automatically set for controls of course you can still change them, have a look at the [docs](https://docs.rs/cursive-multiplex).
+> Mux has defaults defined for key bindings. You can change them with the API described in the [docs](https://docs.rs/cursive-multiplex).
 
 ###  Adding views
 
 You can add views by giving a path or an id to an existing node e.g.
 
 ```rust
-let new_node = mux.add_horizontal_id(cursive::views::TextView::new("Foo"), node1).unwrap();
+let new_node = mux.add_right_of(
+    cursive::views::TextView::new("Foo"),
+    root_node,
+).expect("adding right panel to root failed");
 ```
 
 Its also possible to add views by their path.
 ```rust
-let new_node = mux.add_horizontal_path(cursive::views::TextView::new("Foo", Path::LeftOrUp(Box::new(None))));
+if let Some(sibbling) = mux.root().right().right().down().build() {
+    let new_node = mux.add_above(
+        cursive::views::TextView::new("Foo"),
+        sibbling,
+    ).expect("adding by path failed");
+}
 ```
 
 Returned will be a Result Ok contains the new id assigned to the view, or an error in case of failure.
@@ -83,16 +94,6 @@ If you want to reorder your views you can easily switch them by using
 
 ```rust
 mux.switch_views(new_node, old_node)?;
-```
-
-
-## Add to your project
-
-Add the crate to your `Cargo.toml` under `dependencies`
-
-```Cargo
-[dependencies]
-cursive-multiplex = "0.1.0"
 ```
 
 ## Troubleshooting

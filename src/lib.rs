@@ -36,6 +36,8 @@ mod id;
 mod node;
 mod path;
 
+pub use path::AwesomePath;
+
 use cursive::direction::{Absolute, Direction};
 use cursive::event::{Event, EventResult, Key};
 use cursive::view::{Selector, View};
