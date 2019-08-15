@@ -39,7 +39,7 @@ impl Node {
     pub(crate) fn layout_view(&mut self, vec: Vec2) {
         if let Some(x) = self.view.as_mut() {
             let size = Vec2::min(vec, x.required_size(vec));
-            self.size = Some(size);
+            self.size = Some(x.required_size(vec));
             x.layout(size);
         }
     }

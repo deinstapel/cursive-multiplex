@@ -45,7 +45,7 @@ use node::Node;
 pub use path::Path;
 use std::convert::TryFrom;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 enum Orientation {
     Vertical,
     Horizontal,

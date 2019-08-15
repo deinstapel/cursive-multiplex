@@ -1,6 +1,4 @@
-use crate::error::AddViewError;
-use crate::node::Node;
-use crate::{Id, Mux, Orientation, View};
+use crate::{Id, Mux, Orientation, SearchPath};
 
 /// Path is a recursive enum made to be able to identify a pane by it's actual location in the multiplexer. An upper Pane on the left side for example would have the path `Path::LeftOrUp(Box::new(Some(Path::LeftOrUp(Box::new(None)))))`.
 #[derive(Debug)]
@@ -9,110 +7,165 @@ pub enum Path {
     RightOrDown(Box<Option<Path>>),
 }
 
-impl Mux {
-    /// Add the given view to the tree based on the path, if the path is too specific it will be truncated, if not specific enough an error will be returned.
-    /// When successful `Ok()` will contain the assigned `Id`
-    /// # Example
-    /// ```
-    /// # extern crate cursive;
-    /// # use cursive_multiplex::{Path};
-    /// # fn main () {
-    /// # let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
-    /// # let current_focus = mux.get_focus();
-    /// # assert_eq!(current_focus, node1);
-    /// let new_node = mux.add_horizontal_path(cursive::views::DummyView, Path::RightOrDown(Box::new(None))).unwrap();
-    /// # }
-    /// ```
-    pub fn add_horizontal_path<T>(&mut self, v: T, path: Path) -> Result<Id, AddViewError>
-    where
-        T: View,
-    {
-        self.add_node_path(v, Some(path), Orientation::Horizontal, self.root)
-    }
+/// Path used to get the id of a specific pane in the mux.
+/// self can be directed by calling `.up()`, `.down()`, `.left()` and `.right()` on the instance.
+/// To get the final id of a pane `.build()`.
+pub struct AwesomePath<'a> {
+    mux: &'a Mux,
+    cur_id: Option<Id>,
+}
 
-    /// Add the given view to the tree based on the path, if the path is too specific it will be truncated, if not specific enough an error will be returned.
-    /// When successful `Ok()` will contain the assigned `Id`
-    /// # Example
-    /// ```
-    /// # extern crate cursive;
-    /// # use cursive_multiplex::{Path};
-    /// # fn main () {
-    /// # let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
-    /// # let current_focus = mux.get_focus();
-    /// # assert_eq!(current_focus, node1);
-    /// let new_node = mux.add_vertical_path(cursive::views::DummyView, Path::RightOrDown(Box::new(None))).unwrap();
-    /// # }
-    /// ```
-    pub fn add_vertical_path<T>(&mut self, v: T, path: Path) -> Result<Id, AddViewError>
-    where
-        T: View,
-    {
-        self.add_node_path(v, Some(path), Orientation::Vertical, self.root)
-    }
-
-    fn add_node_path<T>(
-        &mut self,
-        v: T,
-        path: Option<Path>,
-        orientation: Orientation,
-        cur_node: indextree::NodeId,
-    ) -> Result<Id, AddViewError>
-    where
-        T: View,
-    {
-        match path {
-            Some(path_val) => {
-                match path_val {
-                    Path::LeftOrUp(ch) => {
-                        match cur_node.children(&self.tree).nth(0) {
-                            Some(node) => self.add_node_path(v, *ch, orientation, node),
-                            None => {
-                                // Truncate
-                                self.add_node_path(v, None, orientation, cur_node)
-                            }
-                        }
-                    }
-                    Path::RightOrDown(ch) => {
-                        if cur_node.children(&self.tree).count() < 2 {
-                            match cur_node.children(&self.tree).last() {
-                                Some(node) => {
-                                    self.add_node_path(v, *ch, orientation, node)
-                                    // Ok(self)
-                                }
-                                None => {
-                                    // Truncate, if too specific
-                                    self.add_node_path(v, None, orientation, cur_node)
-                                }
-                            }
-                        } else {
-                            Err(AddViewError::InvalidPath { path: ch.unwrap() })
-                        }
-                    }
-                }
-            }
-            None if cur_node.following_siblings(&self.tree).count()
-                + cur_node.preceding_siblings(&self.tree).count()
-                < 2 =>
-            {
-                let new_node = self.tree.new_node(Node::new(v, Orientation::Horizontal));
-                cur_node.insert_after(new_node, &mut self.tree);
-                self.focus = new_node;
-                debug!("Changed Focus: {}", new_node);
-                Ok(new_node)
-            }
-            None => {
-                // First element is node itself, second direct parent
-                let parent = cur_node.ancestors(&self.tree).nth(1).unwrap();
-                cur_node.detach(&mut self.tree);
-                let new_intermediate = self.tree.new_node(Node::new_empty(Orientation::Horizontal));
-                parent.append(new_intermediate, &mut self.tree);
-                new_intermediate.append(cur_node, &mut self.tree);
-                let new_node = self.tree.new_node(Node::new(v, Orientation::Horizontal));
-                new_intermediate.append(new_node, &mut self.tree);
-                self.focus = new_node;
-                debug!("Changed Focus: {}", new_node);
-                Ok(new_node)
-            }
+impl<'a> AwesomePath<'a> {
+    fn new(mux: &'a Mux,id: Id) -> Self {
+        AwesomePath {
+            mux,
+            cur_id: Some(id),
         }
     }
+
+    /// Finsihing of the path, Option contains the target Id
+    /// If Option None no Id could be found fitting to the path
+    /// Consumes the path
+    /// # Example
+    /// ```
+    /// # use cursive::views::DummyView;
+    /// # use cursive_multiplex::Mux;
+    /// # fn main() {
+    /// let (mut mux, node1) = Mux::new(DummyView);
+    /// mux.add_vertical_id(DummyView, node1);
+    /// let path = mux.root().up().build();
+    /// assert_eq!(node1, path.unwrap());
+    /// # }
+    /// ```
+    pub fn build(self) -> Option<Id> {
+        if let Some(node) = self.cur_id {
+            if self.mux.tree.get(node).unwrap().get().has_view() {
+                self.cur_id
+            } else {
+                None
+            }
+        } else {
+            self.cur_id
+        }
+    }
+
+    /// Going up from the current position in the mux
+    /// Target can be get by calling `.build()`
+    pub fn up(self) -> Self {
+        self.next_node(SearchPath::Up, Orientation::Vertical)
+    }
+
+    /// Going down from the current position in the mux
+    /// Target can be get by calling `.build()`
+    pub fn down(self) -> Self {
+        self.next_node(SearchPath::Down, Orientation::Vertical)
+    }
+
+    /// Going left from the current position in the mux
+    /// Target can be get by calling `.build()`
+    pub fn left(self) -> Self {
+        self.next_node(SearchPath::Left, Orientation::Horizontal)
+    }
+
+    /// Going right from the current position in the mux
+    /// Target can be get by calling `.build()`
+    pub fn right(self) -> Self {
+        self.next_node(SearchPath::Right, Orientation::Horizontal)
+    }
+
+    fn next_node(mut self, direction: SearchPath, orit: Orientation) -> Self {
+        if let Some(node) = self.cur_id {
+            // Node can be passed
+            if node.children(&self.mux.tree).count() > 0 {
+                if let Some(node_content) = self.mux.tree.get(node) {
+                    match node_content.get().orientation {
+                        _ if node_content.get().orientation == orit => {
+                            if let Some(new) = node.children(&self.mux.tree).nth(
+                                match direction {
+                                    SearchPath::Up | SearchPath::Left => 0,
+                                    SearchPath::Right | SearchPath::Down => 1,
+                                }
+                            ) {
+                                self.cur_id = Some(new);
+                            } else {
+                                // Invalid Path
+                                self.cur_id = None;
+                            }
+                        }
+                        _ => {
+                            // Invalid Path
+                            println!("ello");
+                            self.cur_id = None;
+                        },
+                    }
+                } else {
+                    // State corrupted, should not occur
+                    self.cur_id = None;
+                }
+            }
+        }
+        self
+    }
+
+}
+
+impl Mux {
+
+    /// Getter for the initial path to traverse the tree and find a specific Id.
+    /// Returns a Path which can be traversed.
+    pub fn root(&self) -> AwesomePath {
+        AwesomePath::new(self,self.root)
+    }
+
+}
+
+#[cfg(test)]
+mod test {
+    use super::Mux;
+    use cursive::views::DummyView;
+
+    #[test]
+    fn path_up() {
+        let (mut mux, node1) = Mux::new(DummyView);
+        mux.add_vertical_id(DummyView, node1).unwrap();
+        let upper_pane = mux.root().up().build();
+        assert!(upper_pane.is_some());
+        assert_eq!(node1, upper_pane.unwrap());
+    }
+
+    #[test]
+    fn path_down() {
+        let (mut mux, node1) = Mux::new(DummyView);
+        let node2 = mux.add_vertical_id(DummyView, node1).unwrap();
+        let lower_pane = mux.root().down().build();
+        assert!(lower_pane.is_some());
+        assert_eq!(node2, lower_pane.unwrap());
+    }
+
+    #[test]
+    fn path_left() {
+        let (mut mux, node1) = Mux::new(DummyView);
+        mux.add_horizontal_id(DummyView, node1).unwrap();
+        let left_pane = mux.root().left().build();
+        assert!(left_pane.is_some());
+        assert_eq!(node1, left_pane.unwrap());
+    }
+
+    #[test]
+    fn path_right() {
+        let (mut mux, node1) = Mux::new(DummyView);
+        let node2 = mux.add_horizontal_id(DummyView, node1).unwrap();
+        let right_pane = mux.root().right().build();
+        assert!(right_pane.is_some());
+        assert_eq!(node2, right_pane.unwrap());
+    }
+
+    #[test]
+    fn path_invalid() {
+        let (mut mux, node1) = Mux::new(DummyView);
+        let _ = mux.add_horizontal_id(DummyView, node1).unwrap();
+        let root_pane = mux.root().build();
+        assert!(root_pane.is_none());
+    }
+
 }
