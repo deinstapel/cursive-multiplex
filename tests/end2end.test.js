@@ -40,6 +40,30 @@ it('tests switching panes in a complex setup', cargo_e2e('complex_switch_views')
 
 it('tests the horizontal splitting', cargo_e2e('horizontal'));
 it('tests the horizontal layout with fixed size child', cargo_e2e('horizontal_fixed_size'));
+it('tests moving focus left by 1 in a horizontal layout', cargo_e2e('horizontal_focus', async () => {
+    await expect.command('tmux send-keys -N 1 Left && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
+it('tests moving focus left by 2 in a horizontal layout', cargo_e2e('horizontal_focus', async () => {
+    await expect.command('tmux send-keys -N 2 Left && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
+it('tests moving focus left by 3 in a horizontal layout', cargo_e2e('horizontal_focus', async () => {
+    await expect.command('tmux send-keys -N 3 Left && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
+it('tests moving focus right by 1 in a horizontal layout', cargo_e2e('horizontal_focus', async () => {
+    await expect.command('tmux send-keys -N 1 Right && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
+it('tests moving focus right by 2 in a horizontal layout', cargo_e2e('horizontal_focus', async () => {
+    await expect.command('tmux send-keys -N 2 Right && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
+it('tests moving focus right by 3 in a horizontal layout', cargo_e2e('horizontal_focus', async () => {
+    await expect.command('tmux send-keys -N 3 Right && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
 it('tests removing panes in a horizontal setup', cargo_e2e('horizontal_remove'));
 it('tests resizing a pane in a horizontal setup', cargo_e2e('horizontal_resize', async () => {
     await expect.command('tmux send-keys C-Left && sleep 0.1')

@@ -168,6 +168,174 @@ _
 "
 `;
 
+exports[`tests moving focus left by 1 in a horizontal layout 1`] = `
+"                    │_                  │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+"
+`;
+
+exports[`tests moving focus left by 2 in a horizontal layout 1`] = `
+"_                   │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+"
+`;
+
+exports[`tests moving focus left by 3 in a horizontal layout 1`] = `
+"                    │                   │_                                      
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+"
+`;
+
+exports[`tests moving focus right by 1 in a horizontal layout 1`] = `
+"_                   │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+"
+`;
+
+exports[`tests moving focus right by 2 in a horizontal layout 1`] = `
+"                    │_                  │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+"
+`;
+
+exports[`tests moving focus right by 3 in a horizontal layout 1`] = `
+"                    │                   │_                                      
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+"
+`;
+
 exports[`tests moving focus up by 1 in a vertical layout 1`] = `
 "                                                                                
                                                                                 

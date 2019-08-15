@@ -2,7 +2,7 @@
     # filter for "passed" and "test_count" in input objects with `"type": "suite"`
     # and accumulate stats from all tests
     "passed": map(select(.type == "suite" and has("passed")) | .passed) | add,
-    "total": map(select(.type == "suite" and has("test_count")) | .test_count) | add
+    "total": ((map(select(.type == "suite" and has("test_count")) | .test_count) | add) - 1)
 } | . + {
     # calculate ratio of passed tests
     "factor": (.passed / .total)
