@@ -52,6 +52,30 @@ it('runs a basic smoke test', cargo_e2e('smoke'));
 
 it('tests the vertical splitting', cargo_e2e('vertical'));
 it('tests the vertical layout with fixed size child', cargo_e2e('vertical_fixed_size'));
+it('tests moving focus up by 1 in a vertical layout', cargo_e2e('vertical_focus', async () => {
+    await expect.command('tmux send-keys -N 1 Up && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
+it('tests moving focus up by 2 in a vertical layout', cargo_e2e('vertical_focus', async () => {
+    await expect.command('tmux send-keys -N 2 Up && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
+it('tests moving focus up by 3 in a vertical layout', cargo_e2e('vertical_focus', async () => {
+    await expect.command('tmux send-keys -N 3 Up && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
+it('tests moving focus down by 1 in a vertical layout', cargo_e2e('vertical_focus', async () => {
+    await expect.command('tmux send-keys -N 1 Down && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
+it('tests moving focus down by 2 in a vertical layout', cargo_e2e('vertical_focus', async () => {
+    await expect.command('tmux send-keys -N 2 Down && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
+it('tests moving focus down by 3 in a vertical layout', cargo_e2e('vertical_focus', async () => {
+    await expect.command('tmux send-keys -N 3 Down && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
 it('tests removing panes in a vertical setup', cargo_e2e('vertical_remove'));
 it('tests resizing a pane in a vertical setup', cargo_e2e('vertical_resize', async () => {
     await expect.command('tmux send-keys -N 4 C-Up && sleep 0.1')
