@@ -31,7 +31,7 @@
 
 > This project is work-in-progress
 
-This project provides a tiling window manager for ![gyscos/cursive](https://github.com/gyscos/cursive) similar to Tmux. You can place any other `cursive` view inside of a `Mux` view to display these views in complex layouts side by side. Watch the demo below to see how it looks.
+This project provides a tiling window manager for [gyscos/cursive](https://github.com/gyscos/cursive) similar to Tmux. You can place any other `cursive` view inside of a `Mux` view to display these views in complex layouts side by side. Watch the demo below to see how it looks.
 
 ## How does it look like? `demo` [![terminalizer](https://img.shields.io/badge/GIF-terminalizer-blueviolet.svg)](https://github.com/faressoft/terminalizer)
 
@@ -43,12 +43,14 @@ This project provides a tiling window manager for ![gyscos/cursive](https://gith
 ## Usage
 
 Simply add to your `Cargo.toml`
-```Cargo
+
+```toml
 [dependencies]
 cursive-multiplex = "^0.1.2
 ```
 
 And then use `Mux::new` to create a new Mux view
+
 ```rust
 let (mut mux, root_node) = cursive_multiplex::Mux::new(
     cursive::views::TextView::new("Hello World!".to_string())
@@ -56,6 +58,49 @@ let (mut mux, root_node) = cursive_multiplex::Mux::new(
 ```
 
 > Mux has defaults defined for key bindings. You can change them with the API described in the [docs](https://docs.rs/cursive-multiplex).
+
+<details>
+  <summary>Expand to see default keybindings</summary>
+  
+  <table>
+    <tr>
+      <th>Action</th>
+      <th>Key</th>
+    </tr>
+    <tr>
+      <td>Move focus up</td>
+      <td><code>&uarr;</code></td>
+    </tr>
+    <tr>
+      <td>Move focus right</td>
+      <td><code>&rarr;</code></td>
+    </tr>
+    <tr>
+      <td>Move focus down</td>
+      <td><code>&darr;</code></td>
+    </tr>
+    <tr>
+      <td>Move focus left</td>
+      <td><code>&larr;</code></td>
+    </tr>
+    <tr>
+      <td>Resize up</td>
+      <td><code>Ctrl</code> + <code>&uarr;</code></td>
+    </tr>
+    <tr>
+      <td>Resize right</td>
+      <td><code>Ctrl</code> + <code>&rarr;</code></td>
+    </tr>
+    <tr>
+      <td>Resize down</td>
+      <td><code>Ctrl</code> + <code>&darr;</code></td>
+    </tr>
+    <tr>
+      <td>Resize left</td>
+      <td><code>Ctrl</code> + <code>&larr;</code></td>
+    </tr>
+  </table>
+</details>
 
 ###  Adding views
 
