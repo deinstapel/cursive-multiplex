@@ -46,7 +46,7 @@ Simply add to your `Cargo.toml`
 
 ```toml
 [dependencies]
-cursive-multiplex = "^0.1.2
+cursive-multiplex = "^0.2.0
 ```
 
 And then use `Mux::new` to create a new Mux view
