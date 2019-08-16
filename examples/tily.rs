@@ -1,6 +1,6 @@
 extern crate cursive;
 
-use cursive::views::{TextArea, BoxView};
+use cursive::views::{BoxView, TextArea};
 use cursive::Cursive;
 use cursive_multiplex::{Id, Mux};
 
@@ -12,9 +12,14 @@ fn main() {
     let top_right_mid = mux
         .add_right_of(BoxView::with_full_screen(TextArea::new()), top_left_corner)
         .unwrap();
-    let bottom_right_mid = mux.add_below(BoxView::with_full_screen(TextArea::new()), top_right_mid).unwrap();
+    let bottom_right_mid = mux
+        .add_below(BoxView::with_full_screen(TextArea::new()), top_right_mid)
+        .unwrap();
     let _ = mux
-        .add_right_of(cursive::views::Panel::new(BoxView::with_full_screen(TextArea::new())), top_right_mid)
+        .add_right_of(
+            cursive::views::Panel::new(BoxView::with_full_screen(TextArea::new())),
+            top_right_mid,
+        )
         .unwrap();
     let _ = mux
         .add_right_of(BoxView::with_full_screen(TextArea::new()), bottom_right_mid)

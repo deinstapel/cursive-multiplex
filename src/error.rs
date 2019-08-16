@@ -27,8 +27,8 @@ pub enum SwitchError {
     Failed {},
 }
 
-impl std::convert::From<failure::Error> for SwitchError {
-    fn from(_error: failure::Error) -> Self {
+impl std::convert::From<indextree::NodeError> for SwitchError {
+    fn from(_error: indextree::NodeError) -> Self {
         SwitchError::Failed {}
     }
 }

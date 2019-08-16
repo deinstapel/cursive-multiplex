@@ -1,7 +1,7 @@
 extern crate cursive;
 
+use cursive::views::{BoxView, TextView};
 use cursive::Cursive;
-use cursive::views::{TextView, BoxView};
 use cursive_multiplex::Mux;
 
 fn main() {

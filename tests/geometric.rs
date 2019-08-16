@@ -106,25 +106,15 @@ fn test_quadratic() {
     let mut siv = Cursive::dummy();
     let (mut mux, top_left_corner) = Mux::new(TextArea::new());
 
-    let top_right_mid = mux
-        .add_right_of(TextArea::new(), top_left_corner)
-        .unwrap();
+    let top_right_mid = mux.add_right_of(TextArea::new(), top_left_corner).unwrap();
     let bottom_right_mid = mux.add_below(TextArea::new(), top_right_mid).unwrap();
-    let bottom_right_corner = mux
-        .add_right_of(TextArea::new(), bottom_right_mid)
-        .unwrap();
-    let bottom_left_corner = mux
-        .add_below(TextArea::new(), top_left_corner)
-        .unwrap();
-    let top_left_mid = mux
-        .add_right_of(TextArea::new(), top_left_corner)
-        .unwrap();
+    let bottom_right_corner = mux.add_right_of(TextArea::new(), bottom_right_mid).unwrap();
+    let bottom_left_corner = mux.add_below(TextArea::new(), top_left_corner).unwrap();
+    let top_left_mid = mux.add_right_of(TextArea::new(), top_left_corner).unwrap();
     let bottom_left_mid = mux
         .add_right_of(TextArea::new(), bottom_left_corner)
         .unwrap();
-    let top_right_corner = mux
-        .add_right_of(TextArea::new(), top_right_mid)
-        .unwrap();
+    let top_right_corner = mux.add_right_of(TextArea::new(), top_right_mid).unwrap();
 
     let id = IdView::new("mux".to_string(), mux);
 

@@ -65,7 +65,7 @@ impl Mux {
     /// ```
     pub fn add_below<T>(&mut self, v: T, id: Id) -> Result<Id, AddViewError>
     where
-        T: View
+        T: View,
     {
         self.add_node_id(v, id, Orientation::Vertical, SearchPath::Down)
     }
@@ -83,7 +83,7 @@ impl Mux {
     /// ```
     pub fn add_above<T>(&mut self, v: T, id: Id) -> Result<Id, AddViewError>
     where
-        T: View
+        T: View,
     {
         self.add_node_id(v, id, Orientation::Vertical, SearchPath::Up)
     }
@@ -101,7 +101,7 @@ impl Mux {
     /// ```
     pub fn add_left_of<T>(&mut self, v: T, id: Id) -> Result<Id, AddViewError>
     where
-        T: View
+        T: View,
     {
         self.add_node_id(v, id, Orientation::Horizontal, SearchPath::Left)
     }
@@ -119,12 +119,18 @@ impl Mux {
     /// ```
     pub fn add_right_of<T>(&mut self, v: T, id: Id) -> Result<Id, AddViewError>
     where
-        T: View
+        T: View,
     {
         self.add_node_id(v, id, Orientation::Horizontal, SearchPath::Right)
     }
 
-    fn add_node_id<T>(&mut self, v: T, id: Id, orientation: Orientation, direction: SearchPath) -> Result<Id, AddViewError>
+    fn add_node_id<T>(
+        &mut self,
+        v: T,
+        id: Id,
+        orientation: Orientation,
+        direction: SearchPath,
+    ) -> Result<Id, AddViewError>
     where
         T: View,
     {
@@ -141,12 +147,8 @@ impl Mux {
             && !self.tree.get(node_id).unwrap().get().has_view()
         {
             match direction {
-                SearchPath::Up | SearchPath::Left => {
-                    node_id.prepend(new_node, &mut self.tree)
-                },
-                SearchPath::Down | SearchPath::Right => {
-                    node_id.append(new_node, &mut self.tree)
-                },
+                SearchPath::Up | SearchPath::Left => node_id.prepend(new_node, &mut self.tree),
+                SearchPath::Down | SearchPath::Right => node_id.append(new_node, &mut self.tree),
             }
             self.tree.get_mut(node_id).unwrap().get_mut().orientation = orientation;
         } else {
@@ -176,11 +178,11 @@ impl Mux {
                 SearchPath::Up | SearchPath::Left => {
                     new_intermediate.append(new_node, &mut self.tree);
                     new_intermediate.append(node_id, &mut self.tree);
-                },
+                }
                 SearchPath::Down | SearchPath::Right => {
                     new_intermediate.append(node_id, &mut self.tree);
                     new_intermediate.append(new_node, &mut self.tree);
-                },
+                }
             }
             debug!("Changed order");
         }
@@ -207,29 +209,31 @@ impl Mux {
         if let Some(parent1) = fst.ancestors(&self.tree).nth(1) {
             if let Some(parent2) = snd.ancestors(&self.tree).nth(1) {
                 if parent1.children(&self.tree).next().unwrap() == fst {
-                    fst.detach(&mut self.tree);
                     if parent2.children(&self.tree).next().unwrap() == snd {
+                        fst.detach(&mut self.tree);
                         snd.detach(&mut self.tree);
-                        parent1.prepend(snd, &mut self.tree);
-                        parent2.prepend(fst, &mut self.tree);
+                        parent1.checked_prepend(snd, &mut self.tree)?;
+                        parent2.checked_prepend(fst, &mut self.tree)?;
                         Ok(())
                     } else {
+                        fst.detach(&mut self.tree);
                         snd.detach(&mut self.tree);
-                        parent1.prepend(snd, &mut self.tree);
-                        parent2.append(fst, &mut self.tree);
+                        parent1.checked_prepend(snd, &mut self.tree)?;
+                        parent2.checked_append(fst, &mut self.tree)?;
                         Ok(())
                     }
                 } else {
-                    fst.detach(&mut self.tree);
                     if parent2.children(&self.tree).next().unwrap() == snd {
+                        fst.detach(&mut self.tree);
                         snd.detach(&mut self.tree);
-                        parent1.append(snd, &mut self.tree);
-                        parent2.prepend(fst, &mut self.tree);
+                        parent1.checked_append(snd, &mut self.tree)?;
+                        parent2.checked_prepend(fst, &mut self.tree)?;
                         Ok(())
                     } else {
+                        fst.detach(&mut self.tree);
                         snd.detach(&mut self.tree);
-                        parent1.append(snd, &mut self.tree);
-                        parent2.append(fst, &mut self.tree);
+                        parent1.checked_append(snd, &mut self.tree)?;
+                        parent2.checked_append(fst, &mut self.tree)?;
                         Ok(())
                     }
                 }
@@ -239,5 +243,25 @@ impl Mux {
         } else {
             Err(SwitchError::NoParent { from: fst, to: snd })
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::Mux;
+    use cursive::views::DummyView;
+
+    #[test]
+    fn left_to_right() {
+        let (mut mux, node1) = Mux::new(DummyView);
+        let node2 = mux.add_left_of(DummyView, node1).unwrap();
+        assert!(mux.switch_views(node1, node2).is_ok());
+    }
+
+    #[test]
+    fn right_to_left() {
+        let (mut mux, node1) = Mux::new(DummyView);
+        let node2 = mux.add_left_of(DummyView, node1).unwrap();
+        assert!(mux.switch_views(node2, node1).is_ok());
     }
 }

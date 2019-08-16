@@ -27,10 +27,16 @@ Integer sit amet eleifend ex. Vivamus aliquam eros et massa pellentesque gravida
     menubar.add_leaf("Feel free to try out the examples simply with `cargo run --example=basic` or `cargo run --example=tily`", |_|{});
 
     let node2 = mux
-        .add_right_of(cursive::views::BoxView::with_full_screen(cursive::views::TextArea::new()), node1)
+        .add_right_of(
+            cursive::views::BoxView::with_full_screen(cursive::views::TextArea::new()),
+            node1,
+        )
         .unwrap();
     let _ = mux
-        .add_below(cursive::views::BoxView::with_full_screen(cursive::views::TextArea::new()), node2)
+        .add_below(
+            cursive::views::BoxView::with_full_screen(cursive::views::TextArea::new()),
+            node2,
+        )
         .unwrap();
 
     let idlayer = cursive::views::IdView::new("Mux", mux);

@@ -42,8 +42,10 @@ use cursive::direction::{Absolute, Direction};
 use cursive::event::{Event, EventResult, Key};
 use cursive::view::{Selector, View};
 use cursive::{Printer, Vec2};
+pub use error::*;
 pub use id::Id;
 use node::Node;
+pub use path::Path;
 use std::convert::TryFrom;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -51,7 +53,6 @@ enum Orientation {
     Vertical,
     Horizontal,
 }
-
 
 /// View holding information and managing multiplexer.
 pub struct Mux {
@@ -120,6 +121,37 @@ impl View for Mux {
 }
 
 impl Mux {
+    /// # Example
+    /// ```
+    /// # extern crate cursive;
+    /// # fn main () {
+    /// let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// # }
+    /// ```
+    pub fn new<T>(v: T) -> (Self, Id)
+    where
+        T: View,
+    {
+        let mut new_tree = indextree::Arena::new();
+        let new_root = new_tree.new_node(Node::new_empty(Orientation::Horizontal));
+        let mut new_mux = Mux {
+            tree: new_tree,
+            root: new_root,
+            focus: new_root,
+            focus_up: Event::Key(Key::Up),
+            focus_down: Event::Key(Key::Down),
+            focus_left: Event::Key(Key::Left),
+            focus_right: Event::Key(Key::Right),
+            resize_left: Event::Ctrl(Key::Left),
+            resize_right: Event::Ctrl(Key::Right),
+            resize_up: Event::Ctrl(Key::Up),
+            resize_down: Event::Ctrl(Key::Down),
+        };
+        // borked if not succeeding
+        let fst_view = new_mux.add_below(v, new_root).unwrap();
+        (new_mux, fst_view)
+    }
+
     /// Chainable setter for action
     pub fn with_move_focus_up(mut self, evt: Event) -> Self {
         self.focus_up = evt;
@@ -209,37 +241,6 @@ impl Mux {
         if nodes.contains(&id) {
             self.focus = id;
         }
-    }
-
-    /// # Example
-    /// ```
-    /// # extern crate cursive;
-    /// # fn main () {
-    /// let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
-    /// # }
-    /// ```
-    pub fn new<T>(v: T) -> (Self, Id)
-    where
-        T: View,
-    {
-        let mut new_tree = indextree::Arena::new();
-        let new_root = new_tree.new_node(Node::new_empty(Orientation::Horizontal));
-        let mut new_mux = Mux {
-            tree: new_tree,
-            root: new_root,
-            focus: new_root,
-            focus_up: Event::Key(Key::Up),
-            focus_down: Event::Key(Key::Down),
-            focus_left: Event::Key(Key::Left),
-            focus_right: Event::Key(Key::Right),
-            resize_left: Event::Ctrl(Key::Left),
-            resize_right: Event::Ctrl(Key::Right),
-            resize_up: Event::Ctrl(Key::Up),
-            resize_down: Event::Ctrl(Key::Down),
-        };
-        // borked if not succeeding
-        let fst_view = new_mux.add_below(v, new_root).unwrap();
-        (new_mux, fst_view)
     }
 
     /// Returns the current focused view id.

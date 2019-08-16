@@ -3,7 +3,7 @@ use crate::{Id, Mux, Orientation};
 /// Path used to get the id of a specific pane in the mux.
 /// self can be directed by calling `.up()`, `.down()`, `.left()` and `.right()` on the instance.
 /// To get the final id of a pane `.build()`.
-pub struct AwesomePath<'a> {
+pub struct Path<'a> {
     mux: &'a Mux,
     cur_id: Option<Id>,
 }
@@ -16,9 +16,9 @@ pub(crate) enum SearchPath {
     Down,
 }
 
-impl<'a> AwesomePath<'a> {
-    fn new(mux: &'a Mux,id: Id) -> Self {
-        AwesomePath {
+impl<'a> Path<'a> {
+    fn new(mux: &'a Mux, id: Id) -> Self {
+        Path {
             mux,
             cur_id: Some(id),
         }
@@ -81,12 +81,10 @@ impl<'a> AwesomePath<'a> {
                 if let Some(node_content) = self.mux.tree.get(node) {
                     match node_content.get().orientation {
                         _ if node_content.get().orientation == orit => {
-                            if let Some(new) = node.children(&self.mux.tree).nth(
-                                match direction {
-                                    SearchPath::Up | SearchPath::Left => 0,
-                                    SearchPath::Right | SearchPath::Down => 1,
-                                }
-                            ) {
+                            if let Some(new) = node.children(&self.mux.tree).nth(match direction {
+                                SearchPath::Up | SearchPath::Left => 0,
+                                SearchPath::Right | SearchPath::Down => 1,
+                            }) {
                                 self.cur_id = Some(new);
                             } else {
                                 // Invalid Path
@@ -97,7 +95,7 @@ impl<'a> AwesomePath<'a> {
                             // Invalid Path
                             println!("ello");
                             self.cur_id = None;
-                        },
+                        }
                     }
                 } else {
                     // State corrupted, should not occur
@@ -107,17 +105,14 @@ impl<'a> AwesomePath<'a> {
         }
         self
     }
-
 }
 
 impl Mux {
-
     /// Getter for the initial path to traverse the tree and find a specific Id.
     /// Returns a Path which can be traversed.
-    pub fn root(&self) -> AwesomePath {
-        AwesomePath::new(self,self.root)
+    pub fn root(&self) -> Path {
+        Path::new(self, self.root)
     }
-
 }
 
 #[cfg(test)]
@@ -168,5 +163,4 @@ mod test {
         let root_pane = mux.root().build();
         assert!(root_pane.is_none());
     }
-
 }
