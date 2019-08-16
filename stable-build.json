@@ -1,7 +1,7 @@
 {
-    "color": "red",
+    "color": "brightgreen",
     "isError": true,
     "label": "stable build",
-    "message": "failed",
+    "message": "passing",
     "schemaVersion": 1
 }
