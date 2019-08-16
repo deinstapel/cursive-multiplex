@@ -33,7 +33,7 @@
 
 This project provides a tiling window manager for ![gyscos/cursive](https://github.com/gyscos/cursive) similar to Tmux. You can place any other `cursive` view inside of a `Mux` view to display these views in complex layouts side by side. Watch the demo below to see how it looks.
 
-## How does it look like? [![terminalizer](https://img.shields.io/badge/GIF-terminalizer-blueviolet.svg)](https://github.com/faressoft/terminalizer)
+## How does it look like? `demo` [![terminalizer](https://img.shields.io/badge/GIF-terminalizer-blueviolet.svg)](https://github.com/faressoft/terminalizer)
 
 <details>
   <summary>Expand to view</summary>
