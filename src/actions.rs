@@ -11,7 +11,7 @@ impl Mux {
         ) {
             Ok((path, turn_point)) => {
                 // Traverse the path down again
-                if let Some(focus) = self.traverse_search_path(path, turn_point) {
+                if let Some(focus) = self.traverse_search_path(path, turn_point, direction) {
                     if self.tree.get_mut(focus).unwrap().get_mut().take_focus() {
                         self.focus = focus;
                         EventResult::Consumed(None)
@@ -110,7 +110,7 @@ impl Mux {
         }
     }
 
-    fn traverse_search_path(&self, mut path: Vec<SearchPath>, turn_point: Id) -> Option<Id> {
+    fn traverse_search_path(&self, mut path: Vec<SearchPath>, turn_point: Id, direction: Absolute) -> Option<Id> {
         let mut cur_node = turn_point;
         // println!("Path Begin: {:?}", path);
         while let Some(step) = path.pop() {
@@ -127,10 +127,46 @@ impl Mux {
                 }
             }
         }
+
+        let check = |comp: Absolute, cur_node: &mut Id| -> Result<(),()> {
+            if direction == comp {
+                match cur_node.children(&self.tree).last() {
+                    Some(node) => {
+                        *cur_node = node;
+                        Ok(())
+                    },
+                    None => Err(()),
+                }
+            } else {
+                match cur_node.children(&self.tree).next() {
+                    Some(node) => {
+                        *cur_node = node;
+                        Ok(())
+                    },
+                    None => Err(()),
+                }
+            }
+        };
+
+        // Have to find nearest child here in case path is too short
         while !self.tree.get(cur_node).unwrap().get().has_view() {
-            match cur_node.children(&self.tree).next() {
-                Some(node) => cur_node = node,
-                None => return None,
+            match self.tree.get(cur_node).unwrap().get().orientation {
+                Orientation::Horizontal if direction == Absolute::Left || direction == Absolute::Right => {
+                    if check(Absolute::Left, &mut cur_node).is_err() {
+                        return None
+                    }
+                },
+                Orientation::Vertical if direction == Absolute::Up || direction == Absolute::Down => {
+                    if check(Absolute::Up, &mut cur_node).is_err() {
+                        return None
+                    }
+                },
+                _ => {
+                    match cur_node.children(&self.tree).next() {
+                        Some(node) => cur_node = node,
+                        None => return None,
+                    }
+                },
             }
         }
         Some(cur_node)
