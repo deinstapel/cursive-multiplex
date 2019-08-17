@@ -1,8 +1,18 @@
 use crate::id::Id;
 use crate::path::SearchPath;
-use crate::{Absolute, EventResult, Mux, Orientation};
+use crate::{Absolute, EventResult, Mux, Orientation, Vec2};
 
 impl Mux {
+    // Handler for mouse events
+    pub(crate) fn clicked_pane(&self, mp: Vec2) -> Option<Id> {
+        for node in self.root.descendants(&self.tree) {
+            if self.tree.get(node).unwrap().get().click(mp) {
+                return Some(node);
+            }
+        }
+        None
+    }
+
     pub(crate) fn move_focus(&mut self, direction: Absolute) -> EventResult {
         match self.search_focus_path(
             direction,
@@ -110,9 +120,13 @@ impl Mux {
         }
     }
 
-    fn traverse_search_path(&self, mut path: Vec<SearchPath>, turn_point: Id, direction: Absolute) -> Option<Id> {
+    fn traverse_search_path(
+        &self,
+        mut path: Vec<SearchPath>,
+        turn_point: Id,
+        direction: Absolute,
+    ) -> Option<Id> {
         let mut cur_node = turn_point;
-        // println!("Path Begin: {:?}", path);
         while let Some(step) = path.pop() {
             // println!("Next Step: {:?}", step);
             match self.traverse_single_node(step, turn_point, cur_node) {
@@ -128,13 +142,13 @@ impl Mux {
             }
         }
 
-        let check = |comp: Absolute, cur_node: &mut Id| -> Result<(),()> {
+        let check = |comp: Absolute, cur_node: &mut Id| -> Result<(), ()> {
             if direction == comp {
                 match cur_node.children(&self.tree).last() {
                     Some(node) => {
                         *cur_node = node;
                         Ok(())
-                    },
+                    }
                     None => Err(()),
                 }
             } else {
@@ -142,7 +156,7 @@ impl Mux {
                     Some(node) => {
                         *cur_node = node;
                         Ok(())
-                    },
+                    }
                     None => Err(()),
                 }
             }
@@ -151,21 +165,23 @@ impl Mux {
         // Have to find nearest child here in case path is too short
         while !self.tree.get(cur_node).unwrap().get().has_view() {
             match self.tree.get(cur_node).unwrap().get().orientation {
-                Orientation::Horizontal if direction == Absolute::Left || direction == Absolute::Right => {
+                Orientation::Horizontal
+                    if direction == Absolute::Left || direction == Absolute::Right =>
+                {
                     if check(Absolute::Left, &mut cur_node).is_err() {
-                        return None
+                        return None;
                     }
-                },
-                Orientation::Vertical if direction == Absolute::Up || direction == Absolute::Down => {
+                }
+                Orientation::Vertical
+                    if direction == Absolute::Up || direction == Absolute::Down =>
+                {
                     if check(Absolute::Up, &mut cur_node).is_err() {
-                        return None
+                        return None;
                     }
-                },
-                _ => {
-                    match cur_node.children(&self.tree).next() {
-                        Some(node) => cur_node = node,
-                        None => return None,
-                    }
+                }
+                _ => match cur_node.children(&self.tree).next() {
+                    Some(node) => cur_node = node,
+                    None => return None,
                 },
             }
         }

@@ -37,7 +37,7 @@ mod node;
 mod path;
 
 use cursive::direction::{Absolute, Direction};
-use cursive::event::{Event, EventResult, Key};
+use cursive::event::{Event, EventResult, Key, MouseButton, MouseEvent};
 use cursive::view::{Selector, View};
 use cursive::{Printer, Vec2};
 pub use error::*;
@@ -83,7 +83,7 @@ impl View for Mux {
     }
 
     fn layout(&mut self, constraint: Vec2) {
-        self.rec_layout(self.root, constraint);
+        self.rec_layout(self.root, constraint, Vec2::new(0, 0));
     }
 
     fn take_focus(&mut self, _source: Direction) -> bool {
@@ -95,12 +95,35 @@ impl View for Mux {
     }
 
     fn on_event(&mut self, evt: Event) -> EventResult {
+        // pre_check if focus has to be changed, we dont want views react to mouse click out of their reach
+        match evt {
+            Event::Mouse {
+                offset,
+                position,
+                event,
+            } => match event {
+                MouseEvent::Press(MouseButton::Left) => {
+                    if let Some(off_pos) = position.checked_sub(offset) {
+                        if let Some(pane) = self.clicked_pane(off_pos) {
+                            if self.tree.get_mut(pane).unwrap().get_mut().take_focus() {
+                                if self.focus != pane {
+                                    self.focus = pane;
+                                    return EventResult::Consumed(None);
+                                }
+                            }
+                        }
+                    }
+                },
+                _ => {},
+            },
+            _ => {},
+        }
         let result = self
             .tree
             .get_mut(self.focus)
             .unwrap()
             .get_mut()
-            .on_event(evt.relativized(Vec2::new(0, 0)));
+            .on_event(evt.clone());
         match result {
             EventResult::Ignored => match evt {
                 _ if self.focus_left == evt => self.move_focus(Absolute::Left),
@@ -257,16 +280,21 @@ impl Mux {
         self.focus
     }
 
-    fn rec_layout(&mut self, root: Id, constraint: Vec2) {
+    fn rec_layout(&mut self, root: Id, constraint: Vec2, start_point: Vec2) {
         match root.children(&self.tree).count() {
-            1 => self.rec_layout(root.children(&self.tree).next().unwrap(), constraint),
+            1 => self.rec_layout(
+                root.children(&self.tree).next().unwrap(),
+                constraint,
+                start_point,
+            ),
             2 => {
                 let left = root.children(&self.tree).next().unwrap();
                 let right = root.children(&self.tree).last().unwrap();
                 let const1;
                 let const2;
                 let root_data = &self.tree.get(root).unwrap().get();
-                match root_data.orientation {
+                let orit = root_data.orientation.clone();
+                match orit {
                     Orientation::Horizontal => {
                         const1 = Vec2::new(
                             Mux::add_offset(constraint.x / 2, root_data.split_ratio_offset),
@@ -316,8 +344,15 @@ impl Mux {
                         }
                     }
                 }
-                self.rec_layout(left, const1);
-                self.rec_layout(right, const2);
+                self.rec_layout(left, const1, start_point);
+                self.rec_layout(
+                    right,
+                    const2,
+                    match orit {
+                        Orientation::Vertical => start_point + const1.keep_y(),
+                        Orientation::Horizontal => start_point + const1.keep_x(),
+                    },
+                );
             }
             0 => {
                 self.tree
@@ -325,6 +360,11 @@ impl Mux {
                     .unwrap()
                     .get_mut()
                     .layout_view(constraint);
+                self.tree
+                    .get_mut(root)
+                    .unwrap()
+                    .get_mut()
+                    .set_pos(start_point);
             }
             _ => debug!("Illegal Number of Child Nodes"),
         }

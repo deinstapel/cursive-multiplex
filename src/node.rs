@@ -4,6 +4,7 @@ pub(crate) struct Node {
     pub(crate) view: Option<Box<dyn View>>,
     pub(crate) orientation: Orientation,
     pub(crate) split_ratio_offset: i16,
+    total_position: Option<Vec2>,
     size: Option<Vec2>,
 }
 
@@ -16,8 +17,21 @@ impl Node {
             view: Some(Box::new(v)),
             orientation: orit,
             split_ratio_offset: 0,
+            total_position: None,
             size: None,
         }
+    }
+
+    pub(crate) fn click(&self, mp: Vec2) -> bool {
+        if let Some(pos) = self.total_position {
+            if let Some(size) = self.size {
+                let end_pos = pos + size;
+                if !pos.fits(mp) && end_pos.fits(mp) {
+                    return true;
+                }
+            }
+        }
+        false
     }
 
     pub(crate) fn new_empty(orit: Orientation) -> Self {
@@ -25,7 +39,14 @@ impl Node {
             view: None,
             orientation: orit,
             split_ratio_offset: 0,
+            total_position: None,
             size: None,
+        }
+    }
+
+    pub(crate) fn set_pos(&mut self, pos: Vec2) {
+        if let Some(_) = self.view {
+            self.total_position = Some(pos);
         }
     }
 
