@@ -32,7 +32,8 @@ impl<'a> Path<'a> {
     /// # use cursive::views::DummyView;
     /// # use cursive_multiplex::Mux;
     /// # fn main() {
-    /// let (mut mux, node1) = Mux::new(DummyView);
+    /// let mut mux = Mux::new();
+    /// let node1 = mux.add_right_of(DummyView, mux.root().build().unwrap()).unwrap();
     /// mux.add_below(DummyView, node1);
     /// let path = mux.root().up().build();
     /// assert_eq!(node1, path.unwrap());
@@ -40,7 +41,7 @@ impl<'a> Path<'a> {
     /// ```
     pub fn build(self) -> Option<Id> {
         if let Some(node) = self.cur_id {
-            if self.mux.tree.get(node).unwrap().get().has_view() {
+            if self.mux.tree.get(node).unwrap().get().has_view() || node == self.mux.root {
                 self.cur_id
             } else {
                 None
@@ -121,8 +122,18 @@ mod test {
     use cursive::views::DummyView;
 
     #[test]
+    fn path_root() {
+        let mut mux = Mux::new();
+        let node1 = mux.add_right_of(DummyView, mux.root).unwrap();
+        mux.add_below(DummyView, node1).unwrap();
+        let upper_pane = mux.root().build();
+        assert!(upper_pane.is_some());
+    }
+
+    #[test]
     fn path_up() {
-        let (mut mux, node1) = Mux::new(DummyView);
+        let mut mux = Mux::new();
+        let node1 = mux.add_right_of(DummyView, mux.root).unwrap();
         mux.add_below(DummyView, node1).unwrap();
         let upper_pane = mux.root().up().build();
         assert!(upper_pane.is_some());
@@ -131,7 +142,8 @@ mod test {
 
     #[test]
     fn path_down() {
-        let (mut mux, node1) = Mux::new(DummyView);
+        let mut mux = Mux::new();
+        let node1 = mux.add_right_of(DummyView, mux.root).unwrap();
         let node2 = mux.add_below(DummyView, node1).unwrap();
         let lower_pane = mux.root().down().build();
         assert!(lower_pane.is_some());
@@ -140,7 +152,8 @@ mod test {
 
     #[test]
     fn path_left() {
-        let (mut mux, node1) = Mux::new(DummyView);
+        let mut mux = Mux::new();
+        let node1 = mux.add_right_of(DummyView, mux.root).unwrap();
         mux.add_right_of(DummyView, node1).unwrap();
         let left_pane = mux.root().left().build();
         assert!(left_pane.is_some());
@@ -149,7 +162,8 @@ mod test {
 
     #[test]
     fn path_right() {
-        let (mut mux, node1) = Mux::new(DummyView);
+        let mut mux = Mux::new();
+        let node1 = mux.add_right_of(DummyView, mux.root).unwrap();
         let node2 = mux.add_right_of(DummyView, node1).unwrap();
         let right_pane = mux.root().right().build();
         assert!(right_pane.is_some());
@@ -158,9 +172,10 @@ mod test {
 
     #[test]
     fn path_invalid() {
-        let (mut mux, node1) = Mux::new(DummyView);
+        let mut mux = Mux::new();
+        let node1 = mux.add_right_of(DummyView, mux.root).unwrap();
         let _ = mux.add_right_of(DummyView, node1).unwrap();
-        let root_pane = mux.root().build();
+        let root_pane = mux.root().up().build();
         assert!(root_pane.is_none());
     }
 }

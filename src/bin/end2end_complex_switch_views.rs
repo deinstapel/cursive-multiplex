@@ -6,7 +6,10 @@ use cursive_multiplex::Mux;
 
 fn main() {
     let mut siv = Cursive::default();
-    let (mut mux, left1) = Mux::new(TextView::new("left 1".to_string()));
+    let mut mux = Mux::new();
+    let left1 = mux
+        .add_right_of(TextView::new("left 1"), mux.root().build().unwrap())
+        .expect("left 1 failed");
 
     let right1 = mux
         .add_right_of(TextView::new("right 1"), left1)

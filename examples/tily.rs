@@ -7,7 +7,13 @@ use cursive_multiplex::{Id, Mux};
 fn main() {
     let mut siv = Cursive::default();
     siv.show_debug_console();
-    let (mut mux, top_left_corner) = Mux::new(BoxView::with_full_screen(TextArea::new()));
+    let mut mux = Mux::new();
+    let top_left_corner = mux
+        .add_right_of(
+            BoxView::with_full_screen(TextArea::new()),
+            mux.root().build().unwrap(),
+        )
+        .expect("first failed");
 
     let top_right_mid = mux
         .add_right_of(BoxView::with_full_screen(TextArea::new()), top_left_corner)

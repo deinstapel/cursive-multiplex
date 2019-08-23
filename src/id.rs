@@ -12,7 +12,8 @@ impl Mux {
     /// # Example
     /// ```
     /// # fn main () {
-    /// # let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// # let mut mux = cursive_multiplex::Mux::new();
+    /// # let node1 = mux.add_right_of(cursive::views::DummyView, mux.root().build().unwrap()).unwrap();
     /// let new_node = mux.add_below(cursive::views::DummyView, node1).unwrap();
     /// mux.remove_id(new_node);
     /// # }
@@ -59,7 +60,8 @@ impl Mux {
     /// ```
     /// # extern crate cursive;
     /// # fn main () {
-    /// let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// let mut mux = cursive_multiplex::Mux::new();
+    /// let node1 = mux.add_right_of(cursive::views::DummyView, mux.root().build().unwrap()).unwrap();
     /// let new_node = mux.add_below(cursive::views::DummyView, node1).unwrap();
     /// # }
     /// ```
@@ -77,7 +79,8 @@ impl Mux {
     /// ```
     /// # extern crate cursive;
     /// # fn main () {
-    /// let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// let mut mux = cursive_multiplex::Mux::new();
+    /// let node1 = mux.add_right_of(cursive::views::DummyView, mux.root().build().unwrap()).unwrap();
     /// let new_node = mux.add_above(cursive::views::DummyView, node1).unwrap();
     /// # }
     /// ```
@@ -95,7 +98,8 @@ impl Mux {
     /// ```
     /// # extern crate cursive;
     /// # fn main () {
-    /// let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// let mut mux = cursive_multiplex::Mux::new();
+    /// let node1 = mux.add_right_of(cursive::views::DummyView, mux.root().build().unwrap()).unwrap();
     /// let new_node = mux.add_left_of(cursive::views::DummyView, node1).unwrap();
     /// # }
     /// ```
@@ -113,7 +117,8 @@ impl Mux {
     /// ```
     /// # extern crate cursive;
     /// # fn main () {
-    /// let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// let mut mux = cursive_multiplex::Mux::new();
+    /// let node1 = mux.add_right_of(cursive::views::DummyView, mux.root().build().unwrap()).unwrap();
     /// let new_node = mux.add_right_of(cursive::views::DummyView, node1).unwrap();
     /// # }
     /// ```
@@ -198,7 +203,8 @@ impl Mux {
     /// ```
     /// # extern crate cursive;
     /// # fn main () {
-    /// # let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// # let mut mux = cursive_multiplex::Mux::new();
+    /// # let node1 = mux.add_right_of(cursive::views::DummyView, mux.root().build().unwrap()).unwrap();
     /// let daniel = mux.add_below(cursive::views::DummyView, node1).unwrap();
     /// let the_cooler_daniel = mux.add_below(cursive::views::DummyView, node1).unwrap();
     /// // Oops I wanted the cooler daniel in another spot
@@ -253,14 +259,16 @@ mod test {
 
     #[test]
     fn left_to_right() {
-        let (mut mux, node1) = Mux::new(DummyView);
+        let mut mux = Mux::new();
+        let node1 = mux.add_left_of(DummyView, mux.root).unwrap();
         let node2 = mux.add_left_of(DummyView, node1).unwrap();
         assert!(mux.switch_views(node1, node2).is_ok());
     }
 
     #[test]
     fn right_to_left() {
-        let (mut mux, node1) = Mux::new(DummyView);
+        let mut mux = Mux::new();
+        let node1 = mux.add_right_of(DummyView, mux.root).unwrap();
         let node2 = mux.add_left_of(DummyView, node1).unwrap();
         assert!(mux.switch_views(node2, node1).is_ok());
     }

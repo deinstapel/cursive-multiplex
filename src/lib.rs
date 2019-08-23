@@ -16,7 +16,8 @@
 //! use cursive::Cursive;
 //!
 //! fn main() {
-//!     let (mut mux, node1) = Mux::new(TextView::new("Hello World".to_string()));
+//!     let mut mux = Mux::new();
+//!     let node1 = mux.add_right_of(TextView::new("Hello World"), mux.root().build().unwrap()).unwrap();
 //!     let mut siv = Cursive::default();
 //!     mux.add_right_of(TextView::new("Hello from me too!".to_string()), node1);
 //!     siv.add_fullscreen_layer(mux);
@@ -113,10 +114,10 @@ impl View for Mux {
                             }
                         }
                     }
-                },
-                _ => {},
+                }
+                _ => {}
             },
-            _ => {},
+            _ => {}
         }
         let result = self
             .tree
@@ -146,16 +147,13 @@ impl Mux {
     /// ```
     /// # extern crate cursive;
     /// # fn main () {
-    /// let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// let mut mux = cursive_multiplex::Mux::new();
     /// # }
     /// ```
-    pub fn new<T>(v: T) -> (Self, Id)
-    where
-        T: View,
-    {
+    pub fn new() -> Self {
         let mut new_tree = indextree::Arena::new();
         let new_root = new_tree.new_node(Node::new_empty(Orientation::Horizontal));
-        let mut new_mux = Mux {
+        let new_mux = Mux {
             tree: new_tree,
             root: new_root,
             focus: new_root,
@@ -169,8 +167,7 @@ impl Mux {
             resize_down: Event::Ctrl(Key::Down),
         };
         // borked if not succeeding
-        let fst_view = new_mux.add_below(v, new_root).unwrap();
-        (new_mux, fst_view)
+        new_mux
     }
 
     /// Chainable setter for action
@@ -271,7 +268,8 @@ impl Mux {
     /// ```
     /// # extern crate cursive;
     /// # fn main () {
-    /// let (mut mux, node1) = cursive_multiplex::Mux::new(cursive::views::DummyView);
+    /// let mut mux = cursive_multiplex::Mux::new();
+    /// let node1 = mux.add_right_of(cursive::views::DummyView, mux.root().build().unwrap()).unwrap();
     /// let current_focus = mux.get_focus();
     /// assert_eq!(current_focus, node1);
     /// # }
@@ -491,7 +489,8 @@ mod tree {
     #[test]
     fn test_remove() {
         // General Remove test
-        let (mut test_mux, node1) = Mux::new(DummyView);
+        let mut test_mux = Mux::new();
+        let node1 = test_mux.add_below(DummyView, test_mux.root).unwrap();
         let node2 = test_mux.add_below(DummyView, node1).unwrap();
         let node3 = test_mux.add_below(DummyView, node2).unwrap();
 
@@ -510,7 +509,8 @@ mod tree {
 
     #[test]
     fn test_switch() {
-        let (mut mux, node1) = Mux::new(DummyView);
+        let mut mux = Mux::new();
+        let node1 = mux.add_right_of(DummyView, mux.root).unwrap();
         let node2 = mux.add_right_of(DummyView, node1).unwrap();
         let node3 = mux.add_left_of(DummyView, node2).unwrap();
 
@@ -521,7 +521,7 @@ mod tree {
     fn test_nesting() {
         println!("Nesting Test");
 
-        let (mut mux, _) = Mux::new(DummyView);
+        let mut mux = Mux::new();
 
         let mut nodes = Vec::new();
 

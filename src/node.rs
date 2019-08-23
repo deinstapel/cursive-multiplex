@@ -69,7 +69,7 @@ impl Node {
         if let Some(view) = self.view.as_mut() {
             view.on_event(evt.relativized(match self.total_position {
                 Some(vec) => vec,
-                None => Vec2::new(0,0),
+                None => Vec2::new(0, 0),
             }))
         } else {
             EventResult::Ignored
