@@ -109,7 +109,6 @@ impl View for Mux {
                             if self.tree.get_mut(pane).unwrap().get_mut().take_focus() {
                                 if self.focus != pane {
                                     self.focus = pane;
-                                    return EventResult::Consumed(None);
                                 }
                             }
                         }
