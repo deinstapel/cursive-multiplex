@@ -38,7 +38,7 @@ mod node;
 mod path;
 
 use cursive::direction::{Absolute, Direction};
-use cursive::event::{Event, EventResult, Key, MouseButton, MouseEvent};
+use cursive::event::{Event, EventResult, Key, MouseButton, MouseEvent, AnyCb};
 use cursive::view::{Selector, View};
 use cursive::{Printer, Vec2};
 pub use error::*;
@@ -93,6 +93,15 @@ impl View for Mux {
 
     fn focus_view(&mut self, _: &Selector) -> Result<(), ()> {
         Ok(())
+    }
+
+    fn call_on_any<'a>(&mut self, slct: &Selector, mut cb: AnyCb<'a>) {
+        let nodes: Vec<Id> = self.root.descendants(&self.tree).collect();
+        for node in nodes {
+            if let Some(node_c) = self.tree.get_mut(node) {
+                node_c.get_mut().call_on_any(slct, Box::new(|any| cb(any)));
+            }
+        }
     }
 
     fn on_event(&mut self, evt: Event) -> EventResult {

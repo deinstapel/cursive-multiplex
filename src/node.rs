@@ -1,4 +1,4 @@
-use crate::{Direction, Event, EventResult, Orientation, Printer, Vec2, View};
+use crate::{Direction, Event, EventResult, Orientation, Printer, Vec2, View, AnyCb, Selector};
 
 pub(crate) struct Node {
     pub(crate) view: Option<Box<dyn View>>,
@@ -98,6 +98,12 @@ impl Node {
             view.take_focus(Direction::none())
         } else {
             false
+        }
+    }
+
+    pub(crate) fn call_on_any<'a>(&mut self, slct: &Selector, cb: AnyCb<'a>) {
+        if let Some(view) = self.view.as_mut() {
+            view.call_on_any(slct, cb);
         }
     }
 }
