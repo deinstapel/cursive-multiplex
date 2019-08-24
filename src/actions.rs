@@ -14,10 +14,14 @@ impl Mux {
     }
 
     pub(crate) fn move_focus(&mut self, direction: Absolute) -> EventResult {
+        self.move_focus_relative(direction, self.focus)
+    }
+
+    fn move_focus_relative(&mut self, direction: Absolute, node: Id) -> EventResult {
         match self.search_focus_path(
             direction,
-            self.focus.ancestors(&self.tree).nth(1).unwrap(),
-            self.focus,
+            node.ancestors(&self.tree).nth(1).unwrap(),
+            node,
         ) {
             Ok((path, turn_point)) => {
                 // Traverse the path down again
@@ -26,8 +30,8 @@ impl Mux {
                         self.focus = focus;
                         EventResult::Consumed(None)
                     } else {
-                        debug!("Focus rejected by {}", focus);
-                        EventResult::Ignored
+                        // rejected
+                        self.move_focus_relative(direction, focus)
                     }
                 } else {
                     EventResult::Ignored
@@ -128,10 +132,8 @@ impl Mux {
     ) -> Option<Id> {
         let mut cur_node = turn_point;
         while let Some(step) = path.pop() {
-            // println!("Next Step: {:?}", step);
             match self.traverse_single_node(step, turn_point, cur_node) {
                 Some(node) => {
-                    // println!("{}", node);
                     cur_node = node;
                 }
                 None => {
@@ -210,6 +212,9 @@ impl Mux {
                         from_node = cur_node.unwrap();
                         if direction == Absolute::Left {
                             cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
+                            if cur_node.is_none() {
+                                return Err(())
+                            }
                         } else {
                             cur_node = None;
                         }
@@ -219,6 +224,9 @@ impl Mux {
                         from_node = cur_node.unwrap();
                         if direction == Absolute::Right {
                             cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
+                            if cur_node.is_none() {
+                                return Err(())
+                            }
                         } else {
                             cur_node = None;
                         }
@@ -233,6 +241,9 @@ impl Mux {
                         from_node = cur_node.unwrap();
                         if direction == Absolute::Up {
                             cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
+                            if cur_node.is_none() {
+                                return Err(())
+                            }
                         } else {
                             cur_node = None;
                         }
@@ -242,6 +253,9 @@ impl Mux {
                         from_node = cur_node.unwrap();
                         if direction == Absolute::Down {
                             cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
+                            if cur_node.is_none() {
+                                return Err(())
+                            }
                         } else {
                             cur_node = None;
                         }
@@ -275,8 +289,7 @@ impl Mux {
             Orientation::Horizontal if direction == Absolute::Up || direction == Absolute::Down => {
                 Err(())
             }
-            Orientation::Vertical
-                if direction == Absolute::Left || direction == Absolute::Right =>
+            Orientation::Vertical if direction == Absolute::Left || direction == Absolute::Right =>
             {
                 Err(())
             }
