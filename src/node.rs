@@ -6,6 +6,7 @@ pub(crate) struct Node {
     pub(crate) split_ratio_offset: i16,
     total_position: Option<Vec2>,
     size: Option<Vec2>,
+    total_size: Option<Vec2>,
 }
 
 impl Node {
@@ -19,13 +20,14 @@ impl Node {
             split_ratio_offset: 0,
             total_position: None,
             size: None,
+            total_size: None,
         }
     }
 
     pub(crate) fn click(&self, mp: Vec2) -> bool {
         if let Some(pos) = self.total_position {
-            if let Some(size) = self.size {
-                let end_pos = pos + size;
+            if let Some(total_size) = self.total_size {
+                let end_pos = pos + total_size;
                 if !pos.fits(mp) && end_pos.fits(mp) {
                     return true;
                 }
@@ -41,6 +43,7 @@ impl Node {
             split_ratio_offset: 0,
             total_position: None,
             size: None,
+            total_size: None,
         }
     }
 
@@ -59,6 +62,7 @@ impl Node {
 
     pub(crate) fn layout_view(&mut self, vec: Vec2) {
         if let Some(x) = self.view.as_mut() {
+            self.total_size = Some(vec);
             let size = Vec2::min(vec, x.required_size(vec));
             self.size = Some(x.required_size(vec));
             x.layout(size);
