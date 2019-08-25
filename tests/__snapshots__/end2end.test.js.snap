@@ -85,14 +85,14 @@ exports[`tests focusing another pane 1`] = `
 `;
 
 exports[`tests moving focus down by 1 in a vertical layout 1`] = `
-"_                                                                               
+"                                                                                
                                                                                 
                                                                                 
                                                                                 
                                                                                 
                                                                                 
 ────────────────────────────────────────────────────────────────────────────────
-                                                                                
+_                                                                               
                                                                                 
                                                                                 
                                                                                 
@@ -120,13 +120,13 @@ exports[`tests moving focus down by 2 in a vertical layout 1`] = `
                                                                                 
                                                                                 
 ────────────────────────────────────────────────────────────────────────────────
-_                                                                               
+                                                                                
                                                                                 
                                                                                 
                                                                                 
                                                                                 
 ────────────────────────────────────────────────────────────────────────────────
-                                                                                
+_                                                                               
                                                                                 
                                                                                 
                                                                                 
@@ -225,34 +225,6 @@ exports[`tests moving focus left by 2 in a horizontal layout 1`] = `
 `;
 
 exports[`tests moving focus left by 3 in a horizontal layout 1`] = `
-"                    │                   │_                                      
-                    │                   │                                       
-                    │                   │                                       
-                    │                   │                                       
-                    │                   │                                       
-                    │                   │                                       
-                    │                   │                                       
-                    │                   │                                       
-                    │                   │                                       
-                    │                   │                                       
-                    │                   │                                       
-                    │                   │                                       
-                    │                   │                                       
-                    │                   │                                       
-                    │                   │                                       
-                    │                   │                                       
-                    │                   │                                       
-                    │                   │                                       
-                    │                   │                                       
-                    │                   │                                       
-                    │                   │                                       
-                    │                   │                                       
-                    │                   │                                       
-                    │                   │                                       
-"
-`;
-
-exports[`tests moving focus right by 1 in a horizontal layout 1`] = `
 "_                   │                   │                                       
                     │                   │                                       
                     │                   │                                       
@@ -280,8 +252,36 @@ exports[`tests moving focus right by 1 in a horizontal layout 1`] = `
 "
 `;
 
-exports[`tests moving focus right by 2 in a horizontal layout 1`] = `
+exports[`tests moving focus right by 1 in a horizontal layout 1`] = `
 "                    │_                  │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+                    │                   │                                       
+"
+`;
+
+exports[`tests moving focus right by 2 in a horizontal layout 1`] = `
+"                    │                   │_                                      
                     │                   │                                       
                     │                   │                                       
                     │                   │                                       
@@ -393,7 +393,7 @@ exports[`tests moving focus up by 2 in a vertical layout 1`] = `
 `;
 
 exports[`tests moving focus up by 3 in a vertical layout 1`] = `
-"                                                                                
+"_                                                                               
                                                                                 
                                                                                 
                                                                                 
@@ -406,7 +406,7 @@ exports[`tests moving focus up by 3 in a vertical layout 1`] = `
                                                                                 
                                                                                 
 ────────────────────────────────────────────────────────────────────────────────
-_                                                                               
+                                                                                
                                                                                 
                                                                                 
                                                                                 

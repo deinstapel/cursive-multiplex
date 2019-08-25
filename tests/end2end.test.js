@@ -38,32 +38,21 @@ it('tests resizing panes in a complex setup', cargo_e2e('complex_resize', async 
 }));
 it('tests switching panes in a complex setup', cargo_e2e('complex_switch_views'));
 
+it('tests moving focus down by 1 in a vertical layout', cargo_e2e('down_focus', async () => {
+    await expect.command('tmux send-keys -N 1 Down && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
+it('tests moving focus down by 2 in a vertical layout', cargo_e2e('down_focus', async () => {
+    await expect.command('tmux send-keys -N 2 Down && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
+it('tests moving focus down by 3 in a vertical layout', cargo_e2e('down_focus', async () => {
+    await expect.command('tmux send-keys -N 3 Down && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
+
 it('tests the horizontal splitting', cargo_e2e('horizontal'));
 it('tests the horizontal layout with fixed size child', cargo_e2e('horizontal_fixed_size'));
-it('tests moving focus left by 1 in a horizontal layout', cargo_e2e('horizontal_focus', async () => {
-    await expect.command('tmux send-keys -N 1 Left && sleep 0.1')
-        .forExitCode(exp => exp.toBe(0));
-}));
-it('tests moving focus left by 2 in a horizontal layout', cargo_e2e('horizontal_focus', async () => {
-    await expect.command('tmux send-keys -N 2 Left && sleep 0.1')
-        .forExitCode(exp => exp.toBe(0));
-}));
-it('tests moving focus left by 3 in a horizontal layout', cargo_e2e('horizontal_focus', async () => {
-    await expect.command('tmux send-keys -N 3 Left && sleep 0.1')
-        .forExitCode(exp => exp.toBe(0));
-}));
-it('tests moving focus right by 1 in a horizontal layout', cargo_e2e('horizontal_focus', async () => {
-    await expect.command('tmux send-keys -N 1 Right && sleep 0.1')
-        .forExitCode(exp => exp.toBe(0));
-}));
-it('tests moving focus right by 2 in a horizontal layout', cargo_e2e('horizontal_focus', async () => {
-    await expect.command('tmux send-keys -N 2 Right && sleep 0.1')
-        .forExitCode(exp => exp.toBe(0));
-}));
-it('tests moving focus right by 3 in a horizontal layout', cargo_e2e('horizontal_focus', async () => {
-    await expect.command('tmux send-keys -N 3 Right && sleep 0.1')
-        .forExitCode(exp => exp.toBe(0));
-}));
 it('tests removing panes in a horizontal setup', cargo_e2e('horizontal_remove'));
 it('tests resizing a pane in a horizontal setup', cargo_e2e('horizontal_resize', async () => {
     await expect.command('tmux send-keys C-Left && sleep 0.1')
@@ -74,34 +63,49 @@ it('tests resizing a pane in a horizontal setup', cargo_e2e('horizontal_resize',
         .forExitCode(exp => exp.toBe(0));}));
 it('tests switching panes in a horizontal setup', cargo_e2e('horizontal_switch_views'));
 
+it('tests moving focus left by 1 in a horizontal layout', cargo_e2e('left_focus', async () => {
+    await expect.command('tmux send-keys -N 1 Left && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
+it('tests moving focus left by 2 in a horizontal layout', cargo_e2e('left_focus', async () => {
+    await expect.command('tmux send-keys -N 2 Left && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
+it('tests moving focus left by 3 in a horizontal layout', cargo_e2e('left_focus', async () => {
+    await expect.command('tmux send-keys -N 3 Left && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
+
+it('tests moving focus right by 1 in a horizontal layout', cargo_e2e('right_focus', async () => {
+    await expect.command('tmux send-keys -N 1 Right && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
+it('tests moving focus right by 2 in a horizontal layout', cargo_e2e('right_focus', async () => {
+    await expect.command('tmux send-keys -N 2 Right && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
+it('tests moving focus right by 3 in a horizontal layout', cargo_e2e('right_focus', async () => {
+    await expect.command('tmux send-keys -N 3 Right && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
+
 it('runs a basic smoke test', cargo_e2e('smoke'));
 
-it('tests the vertical splitting', cargo_e2e('vertical'));
-it('tests the vertical layout with fixed size child', cargo_e2e('vertical_fixed_size'));
-it('tests moving focus up by 1 in a vertical layout', cargo_e2e('vertical_focus', async () => {
+it('tests moving focus up by 1 in a vertical layout', cargo_e2e('up_focus', async () => {
     await expect.command('tmux send-keys -N 1 Up && sleep 0.1')
         .forExitCode(exp => exp.toBe(0));
 }));
-it('tests moving focus up by 2 in a vertical layout', cargo_e2e('vertical_focus', async () => {
+it('tests moving focus up by 2 in a vertical layout', cargo_e2e('up_focus', async () => {
     await expect.command('tmux send-keys -N 2 Up && sleep 0.1')
         .forExitCode(exp => exp.toBe(0));
 }));
-it('tests moving focus up by 3 in a vertical layout', cargo_e2e('vertical_focus', async () => {
+it('tests moving focus up by 3 in a vertical layout', cargo_e2e('up_focus', async () => {
     await expect.command('tmux send-keys -N 3 Up && sleep 0.1')
         .forExitCode(exp => exp.toBe(0));
 }));
-it('tests moving focus down by 1 in a vertical layout', cargo_e2e('vertical_focus', async () => {
-    await expect.command('tmux send-keys -N 1 Down && sleep 0.1')
-        .forExitCode(exp => exp.toBe(0));
-}));
-it('tests moving focus down by 2 in a vertical layout', cargo_e2e('vertical_focus', async () => {
-    await expect.command('tmux send-keys -N 2 Down && sleep 0.1')
-        .forExitCode(exp => exp.toBe(0));
-}));
-it('tests moving focus down by 3 in a vertical layout', cargo_e2e('vertical_focus', async () => {
-    await expect.command('tmux send-keys -N 3 Down && sleep 0.1')
-        .forExitCode(exp => exp.toBe(0));
-}));
+
+it('tests the vertical splitting', cargo_e2e('vertical'));
+it('tests the vertical layout with fixed size child', cargo_e2e('vertical_fixed_size'));
 it('tests removing panes in a vertical setup', cargo_e2e('vertical_remove'));
 it('tests resizing a pane in a vertical setup', cargo_e2e('vertical_resize', async () => {
     await expect.command('tmux send-keys C-Up && sleep 0.1')
