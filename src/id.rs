@@ -192,8 +192,10 @@ impl Mux {
             debug!("Changed order");
         }
 
-        self.focus = new_node;
-        debug!("Changed Focus: {}", new_node);
+        if self.tree.get_mut(new_node).unwrap().get_mut().take_focus() {
+            self.focus = new_node;
+            debug!("Changed Focus: {}", new_node);
+        }
         Ok(new_node)
     }
 
