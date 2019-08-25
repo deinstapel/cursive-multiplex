@@ -277,7 +277,7 @@ impl Mux {
     /// # extern crate cursive;
     /// # fn main () {
     /// let mut mux = cursive_multiplex::Mux::new();
-    /// let node1 = mux.add_right_of(cursive::views::DummyView, mux.root().build().unwrap()).unwrap();
+    /// let node1 = mux.add_right_of(cursive::views::TextArea::new(), mux.root().build().unwrap()).unwrap();
     /// let current_focus = mux.get_focus();
     /// assert_eq!(current_focus, node1);
     /// # }
