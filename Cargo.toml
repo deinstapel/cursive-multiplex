@@ -1,14 +1,13 @@
 [package]
 name = "cursive-multiplex"
 version = "0.2.5-alpha.0"
-authors = ["Johannes Wünsche <johannes.wuensche97@gmail.com>"]
+authors = ["Fin Christensen <christensen.fin@gmail.com>", "Johannes Wünsche <johannes.wuensche97@gmail.com>"]
 edition = "2018"
 description = "A tmux like multiplexer for gyscos/cursive views"
 license = "BSD-3-Clause"
 readme = "README.md"
 keywords = ["cursive", "tui", "terminal", "tiling", "view"]
 repository = "https://github.com/deinstapel/cursive-multiplex"
-homepage = "https://github.com/deinstapel/cursive-multiplex"
 documentation = "https://docs.rs/cursive-multiplex"
 
 [dependencies]
