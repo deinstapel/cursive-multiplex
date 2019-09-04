@@ -69,19 +69,19 @@ let (mut mux, root_node) = cursive_multiplex::Mux::new(
     </tr>
     <tr>
       <td>Move focus up</td>
-      <td><code>&uarr;</code></td>
+      <td><code>Alt</code> + <code>&uarr;</code></td>
     </tr>
     <tr>
       <td>Move focus right</td>
-      <td><code>&rarr;</code></td>
+      <td><code>Alt</code> + <code>&rarr;</code></td>
     </tr>
     <tr>
       <td>Move focus down</td>
-      <td><code>&darr;</code></td>
+      <td><code>Alt</code> + <code>&darr;</code></td>
     </tr>
     <tr>
       <td>Move focus left</td>
-      <td><code>&larr;</code></td>
+      <td><code>Alt</code> + <code>&larr;</code></td>
     </tr>
     <tr>
       <td>Resize up</td>
