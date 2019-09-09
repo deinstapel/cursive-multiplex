@@ -83,13 +83,13 @@ fn add_pane(siv: &mut Cursive) {
 ⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⣿⣿
 ⣿⣿⣿⣿⣿⣿⣿⣿⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿
 ";
-    let id = mux.get_focus();
+    let id = mux.focus();
     mux.add_below(cursive::views::TextView::new(surprise), id)
         .unwrap();
 }
 
 fn remove_pane(siv: &mut Cursive) {
     let mut mux: cursive::views::ViewRef<Mux> = siv.find_id("Mux").unwrap();
-    let id = mux.get_focus();
+    let id = mux.focus();
     mux.remove_id(id).unwrap();
 }

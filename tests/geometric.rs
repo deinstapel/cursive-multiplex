@@ -24,11 +24,11 @@ fn test_line_vertical() {
     siv.run();
 
     let mut mux: cursive::views::ViewRef<Mux> = siv.find_id("mux").unwrap();
-    assert_eq!(node3, mux.get_focus());
+    assert_eq!(node3, mux.focus());
     mux.on_event(Event::Alt(Key::Up));
-    assert_eq!(node2, mux.get_focus());
+    assert_eq!(node2, mux.focus());
     mux.on_event(Event::Alt(Key::Down));
-    assert_eq!(node3, mux.get_focus());
+    assert_eq!(node3, mux.focus());
     match mux.on_event(Event::Alt(Key::Left)) {
         cursive::event::EventResult::Ignored => {}
         _ => {
@@ -53,17 +53,17 @@ fn test_triangle() {
     siv.run();
     let mut mux: cursive::views::ViewRef<Mux> = siv.find_id("mux").unwrap();
 
-    assert_eq!(mux.get_focus(), node3);
+    assert_eq!(mux.focus(), node3);
     mux.on_event(Event::Alt(Key::Up));
-    assert_eq!(mux.get_focus(), node2);
+    assert_eq!(mux.focus(), node2);
     match mux.on_event(Event::Alt(Key::Left)) {
         cursive::event::EventResult::Consumed(_) => {
-            assert_eq!(mux.get_focus(), node1);
+            assert_eq!(mux.focus(), node1);
         }
         cursive::event::EventResult::Ignored => {
             println!(
                 "Not to be ignored Event ignored, Focus was at: {}",
-                mux.get_focus()
+                mux.focus()
             );
             assert!(false);
         }
@@ -93,19 +93,19 @@ fn test_diagonal() {
 
     println!("Moving left...");
     mux.on_event(Event::Alt(Key::Left));
-    assert_eq!(mux.get_focus(), bottom_left_corner);
+    assert_eq!(mux.focus(), bottom_left_corner);
     println!("Moving right...");
     mux.on_event(Event::Alt(Key::Right));
-    assert_eq!(mux.get_focus(), bottom_left_middle);
+    assert_eq!(mux.focus(), bottom_left_middle);
     println!("Moving up...");
     mux.on_event(Event::Alt(Key::Up));
-    assert_eq!(mux.get_focus(), node1);
+    assert_eq!(mux.focus(), node1);
     println!("Moving right...");
     mux.on_event(Event::Alt(Key::Right));
-    assert_eq!(mux.get_focus(), node2);
+    assert_eq!(mux.focus(), node2);
     println!("Moving right...");
     mux.on_event(Event::Alt(Key::Right));
-    assert_eq!(mux.get_focus(), upper_right_corner);
+    assert_eq!(mux.focus(), upper_right_corner);
 }
 
 #[test]
@@ -139,25 +139,25 @@ fn test_quadratic() {
     mux.on_event(Event::Alt(Key::Left));
     println!("Moving left...");
     mux.on_event(Event::Alt(Key::Left));
-    assert_eq!(mux.get_focus(), top_left_mid);
+    assert_eq!(mux.focus(), top_left_mid);
     println!("Moving left...");
     mux.on_event(Event::Alt(Key::Left));
-    assert_eq!(mux.get_focus(), top_left_corner);
+    assert_eq!(mux.focus(), top_left_corner);
     println!("Moving down");
     mux.on_event(Event::Alt(Key::Down));
-    assert_eq!(mux.get_focus(), bottom_left_corner);
+    assert_eq!(mux.focus(), bottom_left_corner);
     println!("Moving right...");
     mux.on_event(Event::Alt(Key::Right));
-    assert_eq!(mux.get_focus(), bottom_left_mid);
+    assert_eq!(mux.focus(), bottom_left_mid);
     println!("Moving right...");
     mux.on_event(Event::Alt(Key::Right));
-    assert_eq!(mux.get_focus(), bottom_right_mid);
+    assert_eq!(mux.focus(), bottom_right_mid);
     println!("Moving right...");
     mux.on_event(Event::Alt(Key::Right));
-    assert_eq!(mux.get_focus(), bottom_right_corner);
+    assert_eq!(mux.focus(), bottom_right_corner);
     println!("Moving up...");
     mux.on_event(Event::Alt(Key::Up));
-    assert_eq!(mux.get_focus(), top_right_corner);
+    assert_eq!(mux.focus(), top_right_corner);
 
     println!("Circle completed");
 }

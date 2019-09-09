@@ -278,11 +278,11 @@ impl Mux {
     /// # fn main () {
     /// let mut mux = cursive_multiplex::Mux::new();
     /// let node1 = mux.add_right_of(cursive::views::TextArea::new(), mux.root().build().unwrap()).unwrap();
-    /// let current_focus = mux.get_focus();
+    /// let current_focus = mux.focus();
     /// assert_eq!(current_focus, node1);
     /// # }
     /// ```
-    pub fn get_focus(&self) -> Id {
+    pub fn focus(&self) -> Id {
         self.focus
     }
 
