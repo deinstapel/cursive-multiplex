@@ -149,8 +149,6 @@ If you find any bugs/unexpected behaviour or you have a proposition for future c
 
 ## Development [![cargo test](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fcargo-test.json)](https://travis-ci.org/deinstapel/cursive-multiplex) [![shellshot](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fshellshot.json)](https://github.com/fin-ger/shellshot)
 
-> TBD
-
 ### Running the tests
 
 > :bangbang: **CAUTION** :bangbang: This crate uses Tmux for end2end testing and will **kill your Tmux server** during testing!
