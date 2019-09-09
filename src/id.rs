@@ -67,7 +67,7 @@ impl Mux {
     /// ```
     pub fn add_below<T>(&mut self, v: T, id: Id) -> Result<Id, AddViewError>
     where
-        T: View + Send,
+        T: View,
     {
         self.add_node_id(v, id, Orientation::Vertical, SearchPath::Down)
     }
@@ -86,7 +86,7 @@ impl Mux {
     /// ```
     pub fn add_above<T>(&mut self, v: T, id: Id) -> Result<Id, AddViewError>
     where
-        T: View + Send,
+        T: View,
     {
         self.add_node_id(v, id, Orientation::Vertical, SearchPath::Up)
     }
@@ -105,7 +105,7 @@ impl Mux {
     /// ```
     pub fn add_left_of<T>(&mut self, v: T, id: Id) -> Result<Id, AddViewError>
     where
-        T: View + Send,
+        T: View,
     {
         self.add_node_id(v, id, Orientation::Horizontal, SearchPath::Left)
     }
@@ -124,7 +124,7 @@ impl Mux {
     /// ```
     pub fn add_right_of<T>(&mut self, v: T, id: Id) -> Result<Id, AddViewError>
     where
-        T: View + Send,
+        T: View,
     {
         self.add_node_id(v, id, Orientation::Horizontal, SearchPath::Right)
     }
@@ -137,7 +137,7 @@ impl Mux {
         direction: SearchPath,
     ) -> Result<Id, AddViewError>
     where
-        T: View + Send,
+        T: View,
     {
         let new_node = self.tree.new_node(Node::new(v, Orientation::Horizontal));
 

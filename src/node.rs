@@ -1,7 +1,7 @@
 use crate::{Direction, Event, EventResult, Orientation, Printer, Vec2, View, AnyCb, Selector};
 
 pub(crate) struct Node {
-    pub(crate) view: Option<Box<dyn View + Send>>,
+    pub(crate) view: Option<Box<dyn View>>,
     pub(crate) orientation: Orientation,
     pub(crate) split_ratio_offset: i16,
     total_position: Option<Vec2>,
@@ -12,7 +12,7 @@ pub(crate) struct Node {
 impl Node {
     pub(crate) fn new<T>(v: T, orit: Orientation) -> Self
     where
-        T: View + Send,
+        T: View,
     {
         Self {
             view: Some(Box::new(v)),
