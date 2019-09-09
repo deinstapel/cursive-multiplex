@@ -11,12 +11,12 @@ repository = "https://github.com/deinstapel/cursive-multiplex"
 documentation = "https://docs.rs/cursive-multiplex"
 
 [dependencies]
-cursive = "^0.13.0"
-indextree = "^4.0.0"
+cursive = "0.13.0"
+indextree = "4.0.0"
 serde_json = "1.0.40"
 failure = "0.1.5"
 failure_derive = "0.1.5"
-log = "0.4.7"
+log = "0.4.8"
 
 [badges]
 travis-ci = { repository = "deinstapel/cursive-multiplex" }
