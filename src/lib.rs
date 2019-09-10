@@ -84,7 +84,7 @@ impl View for Mux {
     }
 
     fn layout(&mut self, constraint: Vec2) {
-        self.rec_layout(self.root, constraint, Vec2::new(0, 0));
+        self.rec_layout(self.root, constraint, Vec2::zero());
     }
 
     fn take_focus(&mut self, _source: Direction) -> bool {
@@ -174,7 +174,6 @@ impl Mux {
             resize_up: Event::Ctrl(Key::Up),
             resize_down: Event::Ctrl(Key::Down),
         };
-        // borked if not succeeding
         new_mux
     }
 
@@ -307,7 +306,7 @@ impl Mux {
                             constraint.y,
                         );
                         const2 = Vec2::new(
-                            Mux::add_offset(constraint.x / 2, -root_data.split_ratio_offset) + 1,
+                            Mux::add_offset(constraint.x / 2, -root_data.split_ratio_offset),
                             constraint.y,
                         );
                         // Precautions have to be taken here as modification of the split is not possible elsewhere
@@ -332,24 +331,11 @@ impl Mux {
                         );
                         const2 = Vec2::new(
                             constraint.x,
-                            Mux::add_offset(constraint.y / 2, -root_data.split_ratio_offset) + 1,
+                            Mux::add_offset(constraint.y / 2, -root_data.split_ratio_offset),
                         );
-                        // Precautions have to be taken here as modification of the split is not possible elsewhere
-                        if const1.y <= 3 {
-                            self.tree
-                                .get_mut(root)
-                                .unwrap()
-                                .get_mut()
-                                .split_ratio_offset += 1;
-                        } else if const1.y >= constraint.y - 3 {
-                            self.tree
-                                .get_mut(root)
-                                .unwrap()
-                                .get_mut()
-                                .split_ratio_offset -= 1;
-                        }
                     }
                 }
+                self.tree.get_mut(root).unwrap().get_mut().layout_view(constraint);
                 self.rec_layout(left, const1, start_point);
                 self.rec_layout(
                     right,
@@ -440,7 +426,6 @@ impl Mux {
                             ));
                     }
                 }
-                self.rec_draw(&printer1, left);
                 match self.tree.get(root).unwrap().get().orientation {
                     Orientation::Vertical => {
                         if printer.size.y > 1 {
@@ -473,6 +458,7 @@ impl Mux {
                         }
                     }
                 }
+                self.rec_draw(&printer1, left);
                 self.rec_draw(&printer2, right);
             }
             0 => {

@@ -298,27 +298,14 @@ impl Mux {
     }
 
     pub(crate) fn resize(&mut self, direction: Absolute) -> EventResult {
-        let orit = {
-            match direction {
-                Absolute::Left | Absolute::Right => Orientation::Horizontal,
-                Absolute::Up | Absolute::Down => Orientation::Vertical,
-                _ => Orientation::Horizontal,
-            }
-        };
+        // TODO: Do not let children be resized to a lower amount then they said they could be
         let mut parent = self.focus.ancestors(&self.tree).nth(1);
         while parent.is_some() {
             if let Some(view) = self.tree.get_mut(parent.unwrap()) {
-                if view.get().orientation == orit {
-                    match direction {
-                        Absolute::Left | Absolute::Up => {
-                            view.get_mut().split_ratio_offset -= 1;
-                            return EventResult::Consumed(None);
-                        }
-                        Absolute::Right | Absolute::Down => {
-                            view.get_mut().split_ratio_offset += 1;
-                            return EventResult::Consumed(None);
-                        }
-                        _ => {}
+                if view.get().orientation == direction.into() {
+                    match view.get_mut().move_offset(direction) {
+                        Ok(()) => return EventResult::Consumed(None),
+                        Err(()) => break,
                     }
                 } else {
                     parent = parent.unwrap().ancestors(&self.tree).nth(1);
@@ -326,5 +313,16 @@ impl Mux {
             }
         }
         EventResult::Ignored
+    }
+}
+
+impl std::convert::From<Absolute> for Orientation {
+    fn from(direction: Absolute) -> Orientation {
+        match direction {
+            Absolute::Up | Absolute::Down => Orientation::Vertical,
+            Absolute::Left | Absolute::Right => Orientation::Horizontal,
+            // If no direction default to Horizontal
+            Absolute::None => Orientation::Horizontal,
+        }
     }
 }

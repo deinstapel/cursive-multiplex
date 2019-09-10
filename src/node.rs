@@ -1,4 +1,6 @@
 use crate::{Direction, Event, EventResult, Orientation, Printer, Vec2, View, AnyCb, Selector};
+use cursive::direction::Absolute;
+use std::convert::TryFrom;
 
 pub(crate) struct Node {
     pub(crate) view: Option<Box<dyn View>>,
@@ -36,6 +38,56 @@ impl Node {
         false
     }
 
+    pub(crate) fn move_offset(&mut self, direction: Absolute) -> Result<(), ()>{
+        if let Some(total_size) = self.total_size {
+            match direction {
+                Absolute::Left | Absolute::Up => {
+                    match direction.into() {
+                        Orientation::Horizontal => {
+                            if i16::try_from(total_size.x).unwrap() / 2 - self.split_ratio_offset.abs() > 1 || self.split_ratio_offset > 0 {
+                                self.split_ratio_offset -= 1;
+                                Ok(())
+                            } else {
+                                Err(())
+                            }
+                        },
+                        Orientation::Vertical => {
+                            if i16::try_from(total_size.y).unwrap() / 2 - self.split_ratio_offset.abs() > 1 || self.split_ratio_offset > 0 {
+                                self.split_ratio_offset -= 1;
+                                Ok(())
+                            } else {
+                                Err(())
+                            }
+                        },
+                    }
+                },
+                Absolute::Right | Absolute::Down => {
+                    match direction.into() {
+                        Orientation::Horizontal => {
+                            if i16::try_from(total_size.x).unwrap() / 2 - self.split_ratio_offset.abs() > 1 || self.split_ratio_offset < 0 {
+                                self.split_ratio_offset += 1;
+                                Ok(())
+                            } else {
+                                Err(())
+                            }
+                        },
+                        Orientation::Vertical => {
+                            if i16::try_from(total_size.y).unwrap() / 2 - self.split_ratio_offset.abs() > 1 || self.split_ratio_offset < 0 {
+                                self.split_ratio_offset += 1;
+                                Ok(())
+                            } else {
+                                Err(())
+                            }
+                        },
+                    }
+                },
+                _ => Err(())
+            }
+        } else {
+            Err(())
+        }
+    }
+
     pub(crate) fn new_empty(orit: Orientation) -> Self {
         Self {
             view: None,
@@ -62,11 +114,11 @@ impl Node {
 
     pub(crate) fn layout_view(&mut self, vec: Vec2) {
         if let Some(x) = self.view.as_mut() {
-            self.total_size = Some(vec);
             let size = Vec2::min(vec, x.required_size(vec));
             self.size = Some(x.required_size(vec));
             x.layout(size);
         }
+        self.total_size = Some(vec);
     }
 
     pub(crate) fn on_event(&mut self, evt: Event) -> EventResult {
