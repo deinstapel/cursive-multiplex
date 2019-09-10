@@ -306,23 +306,19 @@ impl Mux {
                             constraint.y,
                         );
                         const2 = Vec2::new(
-                            Mux::add_offset(constraint.x / 2, -root_data.split_ratio_offset),
+                            {
+                                let size = Mux::add_offset(constraint.x / 2, -root_data.split_ratio_offset);
+                                if constraint.x % 2 == 0 {
+                                    match size.checked_sub(1) {
+                                        Some(res) => res,
+                                        None => size,
+                                    }
+                                } else {
+                                    size
+                                }
+                            },
                             constraint.y,
                         );
-                        // Precautions have to be taken here as modification of the split is not possible elsewhere
-                        if const1.x <= 3 {
-                            self.tree
-                                .get_mut(root)
-                                .unwrap()
-                                .get_mut()
-                                .split_ratio_offset += 1;
-                        } else if const1.x >= constraint.x - 3 {
-                            self.tree
-                                .get_mut(root)
-                                .unwrap()
-                                .get_mut()
-                                .split_ratio_offset -= 1;
-                        }
                     }
                     Orientation::Vertical => {
                         const1 = Vec2::new(
@@ -331,7 +327,17 @@ impl Mux {
                         );
                         const2 = Vec2::new(
                             constraint.x,
-                            Mux::add_offset(constraint.y / 2, -root_data.split_ratio_offset),
+                            {
+                                let size = Mux::add_offset(constraint.y / 2, -root_data.split_ratio_offset);
+                                if constraint.y % 2 == 0 {
+                                    match size.checked_sub(1) {
+                                        Some(res) => res,
+                                        None => size,
+                                    }
+                                } else {
+                                    size
+                                }
+                            },
                         );
                     }
                 }
