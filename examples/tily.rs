@@ -19,7 +19,10 @@ fn main() {
         .add_right_of(BoxView::with_full_screen(TextArea::new()), top_left_corner)
         .unwrap();
     let bottom_right_mid = mux
-        .add_below(BoxView::with_full_screen(TextView::new("I will not be focused!")), top_right_mid)
+        .add_below(
+            BoxView::with_full_screen(TextView::new("I will not be focused!")),
+            top_right_mid,
+        )
         .unwrap();
     let _ = mux
         .add_right_of(

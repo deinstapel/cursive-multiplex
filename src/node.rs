@@ -1,4 +1,4 @@
-use crate::{Direction, Event, EventResult, Orientation, Printer, Vec2, View, AnyCb, Selector};
+use crate::{AnyCb, Direction, Event, EventResult, Orientation, Printer, Selector, Vec2, View};
 use cursive::direction::Absolute;
 use std::convert::TryFrom;
 
@@ -38,50 +38,58 @@ impl Node {
         false
     }
 
-    pub(crate) fn move_offset(&mut self, direction: Absolute) -> Result<(), ()>{
+    pub(crate) fn move_offset(&mut self, direction: Absolute) -> Result<(), ()> {
         if let Some(total_size) = self.total_size {
             match direction {
-                Absolute::Left | Absolute::Up => {
-                    match direction.into() {
-                        Orientation::Horizontal => {
-                            if i16::try_from(total_size.x).unwrap() / 2 - self.split_ratio_offset.abs() > 1 || self.split_ratio_offset > 0 {
-                                self.split_ratio_offset -= 1;
-                                Ok(())
-                            } else {
-                                Err(())
-                            }
-                        },
-                        Orientation::Vertical => {
-                            if i16::try_from(total_size.y).unwrap() / 2 - self.split_ratio_offset.abs() > 1 || self.split_ratio_offset > 0 {
-                                self.split_ratio_offset -= 1;
-                                Ok(())
-                            } else {
-                                Err(())
-                            }
-                        },
+                Absolute::Left | Absolute::Up => match direction.into() {
+                    Orientation::Horizontal => {
+                        if i16::try_from(total_size.x).unwrap() / 2 - self.split_ratio_offset.abs()
+                            > 1
+                            || self.split_ratio_offset > 0
+                        {
+                            self.split_ratio_offset -= 1;
+                            Ok(())
+                        } else {
+                            Err(())
+                        }
+                    }
+                    Orientation::Vertical => {
+                        if i16::try_from(total_size.y).unwrap() / 2 - self.split_ratio_offset.abs()
+                            > 1
+                            || self.split_ratio_offset > 0
+                        {
+                            self.split_ratio_offset -= 1;
+                            Ok(())
+                        } else {
+                            Err(())
+                        }
                     }
                 },
-                Absolute::Right | Absolute::Down => {
-                    match direction.into() {
-                        Orientation::Horizontal => {
-                            if i16::try_from(total_size.x).unwrap() / 2 - self.split_ratio_offset.abs() > 1 || self.split_ratio_offset < 0 {
-                                self.split_ratio_offset += 1;
-                                Ok(())
-                            } else {
-                                Err(())
-                            }
-                        },
-                        Orientation::Vertical => {
-                            if i16::try_from(total_size.y).unwrap() / 2 - self.split_ratio_offset.abs() > 1 || self.split_ratio_offset < 0 {
-                                self.split_ratio_offset += 1;
-                                Ok(())
-                            } else {
-                                Err(())
-                            }
-                        },
+                Absolute::Right | Absolute::Down => match direction.into() {
+                    Orientation::Horizontal => {
+                        if i16::try_from(total_size.x).unwrap() / 2 - self.split_ratio_offset.abs()
+                            > 1
+                            || self.split_ratio_offset < 0
+                        {
+                            self.split_ratio_offset += 1;
+                            Ok(())
+                        } else {
+                            Err(())
+                        }
+                    }
+                    Orientation::Vertical => {
+                        if i16::try_from(total_size.y).unwrap() / 2 - self.split_ratio_offset.abs()
+                            > 1
+                            || self.split_ratio_offset < 0
+                        {
+                            self.split_ratio_offset += 1;
+                            Ok(())
+                        } else {
+                            Err(())
+                        }
                     }
                 },
-                _ => Err(())
+                _ => Err(()),
             }
         } else {
             Err(())

@@ -38,13 +38,14 @@ mod node;
 mod path;
 
 use cursive::direction::{Absolute, Direction};
-use cursive::event::{Event, EventResult, Key, MouseButton, MouseEvent, AnyCb};
+use cursive::event::{AnyCb, Event, EventResult, Key, MouseButton, MouseEvent};
 use cursive::view::{Selector, View};
 use cursive::{Printer, Vec2};
 pub use error::*;
 pub use id::Id;
 use node::Node;
 pub use path::Path;
+use std::collections::VecDeque;
 use std::convert::TryFrom;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -58,6 +59,8 @@ pub struct Mux {
     tree: indextree::Arena<Node>,
     root: indextree::NodeId,
     focus: indextree::NodeId,
+    history: VecDeque<(indextree::NodeId, indextree::NodeId, Absolute)>,
+    history_length: usize,
     focus_up: Event,
     focus_down: Event,
     focus_left: Event,
@@ -164,6 +167,8 @@ impl Mux {
         let new_mux = Mux {
             tree: new_tree,
             root: new_root,
+            history: VecDeque::new(),
+            history_length: 50,
             focus: new_root,
             focus_up: Event::Alt(Key::Up),
             focus_down: Event::Alt(Key::Down),
@@ -307,7 +312,10 @@ impl Mux {
                         );
                         const2 = Vec2::new(
                             {
-                                let size = Mux::add_offset(constraint.x / 2, -root_data.split_ratio_offset);
+                                let size = Mux::add_offset(
+                                    constraint.x / 2,
+                                    -root_data.split_ratio_offset,
+                                );
                                 if constraint.x % 2 == 0 {
                                     match size.checked_sub(1) {
                                         Some(res) => res,
@@ -325,23 +333,25 @@ impl Mux {
                             constraint.x,
                             Mux::add_offset(constraint.y / 2, root_data.split_ratio_offset),
                         );
-                        const2 = Vec2::new(
-                            constraint.x,
-                            {
-                                let size = Mux::add_offset(constraint.y / 2, -root_data.split_ratio_offset);
-                                if constraint.y % 2 == 0 {
-                                    match size.checked_sub(1) {
-                                        Some(res) => res,
-                                        None => size,
-                                    }
-                                } else {
-                                    size
+                        const2 = Vec2::new(constraint.x, {
+                            let size =
+                                Mux::add_offset(constraint.y / 2, -root_data.split_ratio_offset);
+                            if constraint.y % 2 == 0 {
+                                match size.checked_sub(1) {
+                                    Some(res) => res,
+                                    None => size,
                                 }
-                            },
-                        );
+                            } else {
+                                size
+                            }
+                        });
                     }
                 }
-                self.tree.get_mut(root).unwrap().get_mut().layout_view(constraint);
+                self.tree
+                    .get_mut(root)
+                    .unwrap()
+                    .get_mut()
+                    .layout_view(constraint);
                 self.rec_layout(left, const1, start_point);
                 self.rec_layout(
                     right,

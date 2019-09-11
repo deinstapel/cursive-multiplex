@@ -14,24 +14,31 @@ impl Mux {
     }
 
     pub(crate) fn move_focus(&mut self, direction: Absolute) -> EventResult {
-        self.move_focus_relative(direction, self.focus)
+        let prev_move = self.focus;
+        match self.move_focus_relative(direction, self.focus, self.focus) {
+            EventResult::Consumed(any) => {
+                self.history.push_back((prev_move, self.focus, direction));
+                if self.history.len() > self.history_length {
+                    self.history.pop_front();
+                }
+                EventResult::Consumed(any)
+            }
+            EventResult::Ignored => EventResult::Ignored,
+        }
     }
 
-    fn move_focus_relative(&mut self, direction: Absolute, node: Id) -> EventResult {
-        match self.search_focus_path(
-            direction,
-            node.ancestors(&self.tree).nth(1).unwrap(),
-            node,
-        ) {
+    fn move_focus_relative(&mut self, direction: Absolute, node: Id, origin: Id) -> EventResult {
+        match self.search_focus_path(direction, node.ancestors(&self.tree).nth(1).unwrap(), node) {
             Ok((path, turn_point)) => {
                 // Traverse the path down again
-                if let Some(focus) = self.traverse_search_path(path, turn_point, direction) {
+                if let Some(focus) = self.traverse_search_path(path, turn_point, direction, origin)
+                {
                     if self.tree.get_mut(focus).unwrap().get_mut().take_focus() {
                         self.focus = focus;
                         EventResult::Consumed(None)
                     } else {
                         // rejected
-                        self.move_focus_relative(direction, focus)
+                        self.move_focus_relative(direction, focus, origin)
                     }
                 } else {
                     EventResult::Ignored
@@ -129,6 +136,7 @@ impl Mux {
         mut path: Vec<SearchPath>,
         turn_point: Id,
         direction: Absolute,
+        origin: Id,
     ) -> Option<Id> {
         let mut cur_node = turn_point;
         while let Some(step) = path.pop() {
@@ -163,6 +171,26 @@ impl Mux {
                 }
             }
         };
+
+        // Check if values exist in the history that specify this path
+        let goal_opt = {
+            let history = self.history.iter().rev();
+            for entry in history {
+                match entry {
+                    (goal, past_origin, past_direction)
+                        if *past_direction == direction.invert() && origin == *past_origin =>
+                    {
+                        return Some(*goal);
+                    }
+                    _ => {}
+                }
+            }
+            None
+        };
+
+        if let Some(goal) = goal_opt {
+            return Some(goal);
+        }
 
         // Have to find nearest child here in case path is too short
         while !self.tree.get(cur_node).unwrap().get().has_view() {
@@ -213,7 +241,7 @@ impl Mux {
                         if direction == Absolute::Left {
                             cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
                             if cur_node.is_none() {
-                                return Err(())
+                                return Err(());
                             }
                         } else {
                             cur_node = None;
@@ -225,7 +253,7 @@ impl Mux {
                         if direction == Absolute::Right {
                             cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
                             if cur_node.is_none() {
-                                return Err(())
+                                return Err(());
                             }
                         } else {
                             cur_node = None;
@@ -242,7 +270,7 @@ impl Mux {
                         if direction == Absolute::Up {
                             cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
                             if cur_node.is_none() {
-                                return Err(())
+                                return Err(());
                             }
                         } else {
                             cur_node = None;
@@ -254,7 +282,7 @@ impl Mux {
                         if direction == Absolute::Down {
                             cur_node = cur_node.unwrap().ancestors(&self.tree).nth(1);
                             if cur_node.is_none() {
-                                return Err(())
+                                return Err(());
                             }
                         } else {
                             cur_node = None;
@@ -289,7 +317,8 @@ impl Mux {
             Orientation::Horizontal if direction == Absolute::Up || direction == Absolute::Down => {
                 Err(())
             }
-            Orientation::Vertical if direction == Absolute::Left || direction == Absolute::Right =>
+            Orientation::Vertical
+                if direction == Absolute::Left || direction == Absolute::Right =>
             {
                 Err(())
             }
@@ -323,6 +352,22 @@ impl std::convert::From<Absolute> for Orientation {
             Absolute::Left | Absolute::Right => Orientation::Horizontal,
             // If no direction default to Horizontal
             Absolute::None => Orientation::Horizontal,
+        }
+    }
+}
+
+trait Invertable {
+    fn invert(&self) -> Self;
+}
+
+impl Invertable for Absolute {
+    fn invert(&self) -> Absolute {
+        match self {
+            Absolute::Right => Absolute::Left,
+            Absolute::Left => Absolute::Right,
+            Absolute::Up => Absolute::Down,
+            Absolute::Down => Absolute::Up,
+            Absolute::None => Absolute::None,
         }
     }
 }
