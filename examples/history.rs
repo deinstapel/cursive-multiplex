@@ -21,7 +21,7 @@ Integer sit amet eleifend ex. Vivamus aliquam eros et massa pellentesque gravida
     let mut mux = Mux::new();
     let node1 = mux
         .add_right_of(
-            cursive::views::ScrollView::new(cursive::views::TextView::new(text)),
+            cursive::views::BoxView::with_full_screen(cursive::views::TextArea::new()),
             mux.root().build().unwrap(),
         )
         .expect("text view failed");
