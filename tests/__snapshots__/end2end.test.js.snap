@@ -84,6 +84,62 @@ exports[`tests focusing another pane 1`] = `
 "
 `;
 
+exports[`tests focusing panes, remembering the origin 1`] = `
+"                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+────────────────────────────────────────────────────────────────────────────────
+                                        │_                                      
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+"
+`;
+
+exports[`tests focusing panes, remembering the origin 2`] = `
+"                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │───────────────────────────────────────
+                                        │_                                      
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+                                        │                                       
+"
+`;
+
 exports[`tests moving focus down by 1 in a vertical layout 1`] = `
 "                                                                                
                                                                                 

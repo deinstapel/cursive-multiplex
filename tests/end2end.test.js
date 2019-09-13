@@ -116,3 +116,15 @@ it('tests resizing a pane in a vertical setup', cargo_e2e('vertical_resize', asy
         .forExitCode(exp => exp.toBe(0));
 }));
 it('tests switching panes in a vertical setup', cargo_e2e('vertical_switch_views'));
+it('tests focusing panes, remembering the origin', cargo_e2e('up_down_focus_history', async () => {
+    await expect.command('tmux send-keys M-Up && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+    await expect.command('tmux send-keys M-Down && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
+it('tests focusing panes, remembering the origin', cargo_e2e('left_right_focus_history', async () => {
+    await expect.command('tmux send-keys M-Left && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+    await expect.command('tmux send-keys M-Right && sleep 0.1')
+        .forExitCode(exp => exp.toBe(0));
+}));
