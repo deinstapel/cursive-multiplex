@@ -333,7 +333,10 @@ impl Mux {
             if let Some(view) = self.tree.get_mut(parent.unwrap()) {
                 if view.get().orientation == direction.into() {
                     match view.get_mut().move_offset(direction) {
-                        Ok(()) => return EventResult::Consumed(None),
+                        Ok(()) => {
+                            self.invalidated = true;
+                            return EventResult::Consumed(None);
+                        },
                         Err(()) => break,
                     }
                 } else {

@@ -31,6 +31,7 @@ impl Mux {
             }
             let parent = id.ancestors(&self.tree).nth(1).unwrap();
             id.detach(&mut self.tree);
+            self.invalidated = true;
             if let Some(anker) = parent.ancestors(&self.tree).nth(1) {
                 if anker.children(&self.tree).next().unwrap() == parent {
                     parent.detach(&mut self.tree);
@@ -139,6 +140,7 @@ impl Mux {
     where
         T: View,
     {
+        self.invalidated = true;
         let new_node = self.tree.new_node(Node::new(v, Orientation::Horizontal));
 
         let mut node_id;
@@ -216,6 +218,7 @@ impl Mux {
     pub fn switch_views(&mut self, fst: Id, snd: Id) -> Result<(), SwitchError> {
         if let Some(parent1) = fst.ancestors(&self.tree).nth(1) {
             if let Some(parent2) = snd.ancestors(&self.tree).nth(1) {
+                self.invalidated = true;
                 if parent1.children(&self.tree).next().unwrap() == fst {
                     if parent2.children(&self.tree).next().unwrap() == snd {
                         fst.detach(&mut self.tree);

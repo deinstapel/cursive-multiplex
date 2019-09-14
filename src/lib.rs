@@ -61,6 +61,7 @@ pub struct Mux {
     focus: indextree::NodeId,
     history: VecDeque<(indextree::NodeId, indextree::NodeId, Absolute)>,
     history_length: usize,
+    invalidated: bool,
     focus_up: Event,
     focus_down: Event,
     focus_left: Event,
@@ -79,7 +80,7 @@ impl View for Mux {
     }
 
     fn needs_relayout(&self) -> bool {
-        true
+        self.invalidated
     }
 
     fn required_size(&mut self, constraint: Vec2) -> Vec2 {
@@ -87,6 +88,7 @@ impl View for Mux {
     }
 
     fn layout(&mut self, constraint: Vec2) {
+        self.invalidated = false;
         self.rec_layout(self.root, constraint, Vec2::zero());
     }
 
@@ -121,6 +123,7 @@ impl View for Mux {
                             if self.tree.get_mut(pane).unwrap().get_mut().take_focus() {
                                 if self.focus != pane {
                                     self.focus = pane;
+                                    self.invalidated = true;
                                 }
                             }
                         }
@@ -169,6 +172,7 @@ impl Mux {
             root: new_root,
             history: VecDeque::new(),
             history_length: 50,
+            invalidated: true,
             focus: new_root,
             focus_up: Event::Alt(Key::Up),
             focus_down: Event::Alt(Key::Down),
@@ -261,6 +265,7 @@ impl Mux {
         let nodes: Vec<Id> = self.root.descendants(&self.tree).collect();
         if nodes.contains(&id) {
             self.focus = id;
+            self.invalidated = true;
         }
         self
     }
@@ -270,6 +275,7 @@ impl Mux {
         let nodes: Vec<Id> = self.root.descendants(&self.tree).collect();
         if nodes.contains(&id) {
             self.focus = id;
+            self.invalidated = true;
         }
     }
 
