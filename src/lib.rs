@@ -26,6 +26,9 @@
 //!     // siv.run();
 //! }
 //! ```
+
+#![doc(html_logo_url = "https://raw.githubusercontent.com/deinstapel/cursive-multiplex/master/assets/cursive-multiplex.png")]
+
 #[macro_use]
 extern crate failure_derive;
 #[macro_use]
