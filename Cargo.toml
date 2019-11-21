@@ -10,6 +10,7 @@ keywords = ["cursive", "tui", "terminal", "tiling", "view"]
 repository = "https://github.com/deinstapel/cursive-multiplex"
 documentation = "https://docs.rs/cursive-multiplex"
 
+
 [dependencies]
 cursive = "0.13.0"
 indextree = "4.0.0"
@@ -22,3 +23,4 @@ serde_json = "1.0.40"
 
 [badges]
 travis-ci = { repository = "deinstapel/cursive-multiplex" }
+is-it-maintained-open-issues = { repository = "deinstapel/cursive-multiplex" } 
