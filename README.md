@@ -102,6 +102,10 @@ let (mut mux, root_node) = cursive_multiplex::Mux::new(
       <td>Resize left</td>
       <td><code>Ctrl</code> + <code>&larr;</code></td>
     </tr>
+    <tr>
+      <td>Zoom</td>
+      <td><code>Ctrl</code> + <code>x</code></td>
+    </tr>
   </table>
 </details>
 
