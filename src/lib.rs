@@ -532,7 +532,7 @@ impl Mux {
 #[cfg(test)]
 mod tree {
     use super::Mux;
-    use cursive::event::{Event, Key};
+    use cursive::event::{Event, EventResult, Key};
     use cursive::traits::View;
     use cursive::views::DummyView;
 
@@ -565,6 +565,19 @@ mod tree {
         let node3 = mux.add_left_of(DummyView, node2).unwrap();
 
         mux.switch_views(node1, node3).unwrap();
+    }
+
+    #[test]
+    fn test_zoom() {
+        let mut mux = Mux::new();
+        let node1 = mux.add_right_of(DummyView, mux.root).unwrap();
+        let node2 = mux.add_right_of(DummyView, node1).unwrap();
+        let _node3 = mux.add_left_of(DummyView, node2).unwrap();
+
+        match mux.on_event(mux.zoom.clone()) {
+            EventResult::Consumed(_) => {}
+            EventResult::Ignored => assert!(false),
+        }
     }
 
     #[test]
