@@ -5,6 +5,9 @@ use crate::{Absolute, EventResult, Mux, Orientation, Vec2};
 impl Mux {
     // Handler for mouse events
     pub(crate) fn clicked_pane(&self, mp: Vec2) -> Option<Id> {
+        if self.zoomed {
+            return None;
+        }
         for node in self.root.descendants(&self.tree) {
             if self.tree.get(node).unwrap().get().click(mp) {
                 return Some(node);
@@ -13,7 +16,16 @@ impl Mux {
         None
     }
 
+    pub(crate) fn zoom_focus(&mut self) -> EventResult {
+        self.zoomed = !self.zoomed;
+        self.invalidated = true;
+        EventResult::Consumed(None)
+    }
+
     pub(crate) fn move_focus(&mut self, direction: Absolute) -> EventResult {
+        if self.zoomed {
+            return EventResult::Ignored;
+        }
         let prev_move = self.focus;
         match self.move_focus_relative(direction, self.focus, self.focus) {
             EventResult::Consumed(any) => {
@@ -328,6 +340,9 @@ impl Mux {
 
     pub(crate) fn resize(&mut self, direction: Absolute) -> EventResult {
         // TODO: Do not let children be resized to a lower amount then they said they could be
+        if self.zoomed {
+            return EventResult::Ignored;
+        }
         let mut parent = self.focus.ancestors(&self.tree).nth(1);
         while parent.is_some() {
             if let Some(view) = self.tree.get_mut(parent.unwrap()) {
@@ -336,7 +351,7 @@ impl Mux {
                         Ok(()) => {
                             self.invalidated = true;
                             return EventResult::Consumed(None);
-                        },
+                        }
                         Err(()) => break,
                     }
                 } else {

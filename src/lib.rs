@@ -27,7 +27,9 @@
 //! }
 //! ```
 
-#![doc(html_logo_url = "https://raw.githubusercontent.com/deinstapel/cursive-multiplex/master/assets/cursive-multiplex.png")]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/deinstapel/cursive-multiplex/master/assets/cursive-multiplex.png"
+)]
 
 #[macro_use]
 extern crate failure_derive;
@@ -73,13 +75,22 @@ pub struct Mux {
     resize_right: Event,
     resize_up: Event,
     resize_down: Event,
+    zoom: Event,
+    zoomed: bool,
 }
 
 impl View for Mux {
     fn draw(&self, printer: &Printer) {
         debug!("Current Focus: {}", self.focus);
+        debug!("Is the current pane focused? {}", self.zoomed);
         // println!("Mux currently focused: {}", printer.focused);
-        self.rec_draw(printer, self.root)
+        if self.zoomed {
+            if let Some(focused) = self.tree.get(self.focus) {
+                focused.get().draw(printer);
+            }
+        } else {
+            self.rec_draw(printer, self.root)
+        }
     }
 
     fn needs_relayout(&self) -> bool {
@@ -92,7 +103,13 @@ impl View for Mux {
 
     fn layout(&mut self, constraint: Vec2) {
         self.invalidated = false;
-        self.rec_layout(self.root, constraint, Vec2::zero());
+        if self.zoomed {
+            if let Some(focused) = self.tree.get_mut(self.focus) {
+                focused.get_mut().layout_view(constraint);
+            }
+        } else {
+            self.rec_layout(self.root, constraint, Vec2::zero());
+        }
     }
 
     fn take_focus(&mut self, _source: Direction) -> bool {
@@ -141,7 +158,7 @@ impl View for Mux {
             .get_mut(self.focus)
             .unwrap()
             .get_mut()
-            .on_event(evt.clone());
+            .on_event(evt.clone(), self.zoomed);
         match result {
             EventResult::Ignored => match evt {
                 _ if self.focus_left == evt => self.move_focus(Absolute::Left),
@@ -152,6 +169,7 @@ impl View for Mux {
                 _ if self.resize_right == evt => self.resize(Absolute::Right),
                 _ if self.resize_up == evt => self.resize(Absolute::Up),
                 _ if self.resize_down == evt => self.resize(Absolute::Down),
+                _ if self.zoom == evt => self.zoom_focus(),
                 _ => EventResult::Ignored,
             },
             result => result,
@@ -185,6 +203,8 @@ impl Mux {
             resize_right: Event::Ctrl(Key::Right),
             resize_up: Event::Ctrl(Key::Up),
             resize_down: Event::Ctrl(Key::Down),
+            zoom: Event::CtrlChar('x'),
+            zoomed: false,
         };
         new_mux
     }
@@ -230,6 +250,12 @@ impl Mux {
         self
     }
 
+    /// Chainable setter for action
+    pub fn with_zoom(mut self, evt: Event) -> Self {
+        self.zoom = evt;
+        self
+    }
+
     /// Setter for action
     pub fn set_move_focus_up(&mut self, evt: Event) {
         self.focus_up = evt;
@@ -261,6 +287,11 @@ impl Mux {
     /// Setter for action
     pub fn set_resize_right(&mut self, evt: Event) {
         self.resize_right = evt;
+    }
+
+    /// Setter for action
+    pub fn set_zoom(&mut self, evt: Event) {
+        self.zoom = evt;
     }
 
     /// Chainable setter for the focus the mux should have

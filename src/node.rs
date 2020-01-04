@@ -129,11 +129,12 @@ impl Node {
         self.total_size = Some(vec);
     }
 
-    pub(crate) fn on_event(&mut self, evt: Event) -> EventResult {
+    pub(crate) fn on_event(&mut self, evt: Event, zoomed: bool) -> EventResult {
         if let Some(view) = self.view.as_mut() {
-            view.on_event(evt.relativized(match self.total_position {
-                Some(vec) => vec,
-                None => Vec2::new(0, 0),
+            view.on_event(evt.relativized(if zoomed {
+                Vec2::new(0, 0)
+            } else {
+                self.total_position.unwrap_or(Vec2::new(0, 0))
             }))
         } else {
             EventResult::Ignored
