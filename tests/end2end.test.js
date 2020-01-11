@@ -104,6 +104,7 @@ it('tests moving focus up by 3 in a vertical layout', cargo_e2e('up_focus', asyn
         .forExitCode(exp => exp.toBe(0));
 }));
 
+it('tests zooming into a pane', cargo_e2e('zoom'));
 it('tests the vertical splitting', cargo_e2e('vertical'));
 it('tests the vertical layout with fixed size child', cargo_e2e('vertical_fixed_size'));
 it('tests removing panes in a vertical setup', cargo_e2e('vertical_remove'));

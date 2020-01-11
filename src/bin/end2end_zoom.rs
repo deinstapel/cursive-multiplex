@@ -2,7 +2,7 @@ extern crate cursive;
 
 use cursive::event::Event;
 use cursive::traits::View;
-use cursive::views::TextView;
+use cursive::views::{TextView};
 use cursive::Cursive;
 use cursive_multiplex::Mux;
 
@@ -18,7 +18,37 @@ fn main() {
     let _id = mux
         .add_below(TextView::new("Down"), root)
         .expect("Down failed");
-    let _id = mux.add_above(TextView::new("Up"), root).expect("Up failed");
+    let id = mux.add_above(TextView::new("Ups asd
+    asd 
+    asd asd
+    as a
+    s da
+    s a
+    sdasdasdasdasdfasfgarhbah
+    ga
+    fa
+    sdf
+    asf
+
+
+
+
+    a
+    sdfa
+    sdf
+    ad
+    fas
+    f
+
+
+
+    asdf
+
+    a
+    as
+    DAS
+    D"), root).expect("Up failed");
+    mux.set_focus(id);
     mux.on_event(Event::CtrlChar('x'));
     siv.add_fullscreen_layer(mux);
     siv.run();
