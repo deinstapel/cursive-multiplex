@@ -1,6 +1,6 @@
 [package]
 name = "cursive-multiplex"
-version = "0.2.16-alpha.0"
+version = "0.2.16"
 authors = ["Fin Christensen <christensen.fin@gmail.com>", "Johannes Wünsche <johannes.wuensche97@gmail.com>"]
 edition = "2018"
 description = "A tmux like multiplexer for gyscos/cursive views"
