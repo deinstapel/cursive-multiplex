@@ -120,11 +120,11 @@ impl View for Mux {
         Ok(())
     }
 
-    fn call_on_any<'a>(&mut self, slct: &Selector, mut cb: AnyCb<'a>) {
+    fn call_on_any<'a>(&mut self, slct: &Selector, cb: AnyCb<'a>) {
         let nodes: Vec<Id> = self.root.descendants(&self.tree).collect();
         for node in nodes {
             if let Some(node_c) = self.tree.get_mut(node) {
-                node_c.get_mut().call_on_any(slct, Box::new(|any| cb(any)));
+                node_c.get_mut().call_on_any(slct, cb);
             }
         }
     }
