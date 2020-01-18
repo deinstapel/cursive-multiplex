@@ -32,18 +32,18 @@ Integer sit amet eleifend ex. Vivamus aliquam eros et massa pellentesque gravida
 
     let node2 = mux
         .add_right_of(
-            cursive::views::BoxView::with_full_screen(cursive::views::TextArea::new()),
+            cursive::views::ResizedView::with_full_screen(cursive::views::TextArea::new()),
             node1,
         )
         .unwrap();
     let _ = mux
         .add_below(
-            cursive::views::BoxView::with_full_screen(cursive::views::TextArea::new()),
+            cursive::views::ResizedView::with_full_screen(cursive::views::TextArea::new()),
             node2,
         )
         .unwrap();
 
-    let idlayer = cursive::views::IdView::new("Mux", mux);
+    let idlayer = cursive::views::NamedView::new("Mux", mux);
     let mut linear = cursive::views::LinearLayout::new(cursive::direction::Orientation::Vertical);
 
     linear.add_child(idlayer);
@@ -67,7 +67,7 @@ Integer sit amet eleifend ex. Vivamus aliquam eros et massa pellentesque gravida
 }
 
 fn add_pane(siv: &mut Cursive) {
-    let mut mux: cursive::views::ViewRef<Mux> = siv.find_id("Mux").unwrap();
+    let mut mux: cursive::views::ViewRef<Mux> = siv.find_name("Mux").unwrap();
     let surprise = "⢀⣠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⣠⣤⣶⣶
 ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⢰⣿⣿⣿⣿
 ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⣀⣀⣾⣿⣿⣿⣿
@@ -89,7 +89,7 @@ fn add_pane(siv: &mut Cursive) {
 }
 
 fn remove_pane(siv: &mut Cursive) {
-    let mut mux: cursive::views::ViewRef<Mux> = siv.find_id("Mux").unwrap();
+    let mut mux: cursive::views::ViewRef<Mux> = siv.find_name("Mux").unwrap();
     let id = mux.focus();
     mux.remove_id(id).unwrap();
 }

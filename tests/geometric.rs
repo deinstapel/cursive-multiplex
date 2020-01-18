@@ -1,6 +1,6 @@
 use cursive::event::{Event, Key};
 use cursive::traits::View;
-use cursive::views::{IdView, TextArea};
+use cursive::views::{NamedView, TextArea};
 use cursive::Cursive;
 use cursive_multiplex::Mux;
 
@@ -18,12 +18,12 @@ fn test_line_vertical() {
     let node2 = test_mux.add_below(TextArea::new(), node1).unwrap();
     let node3 = test_mux.add_below(TextArea::new(), node2).unwrap();
 
-    let id = IdView::new("mux".to_string(), test_mux);
+    let id = NamedView::new("mux".to_string(), test_mux);
 
     siv.add_fullscreen_layer(id);
     siv.run();
 
-    let mut mux: cursive::views::ViewRef<Mux> = siv.find_id("mux").unwrap();
+    let mut mux: cursive::views::ViewRef<Mux> = siv.find_name("mux").unwrap();
     assert_eq!(node3, mux.focus());
     mux.on_event(Event::Alt(Key::Up));
     assert_eq!(node2, mux.focus());
@@ -48,10 +48,10 @@ fn test_triangle() {
     let node2 = mux.add_right_of(TextArea::new(), node1).unwrap();
     let node3 = mux.add_below(TextArea::new(), node2).unwrap();
 
-    let id = IdView::new("mux".to_string(), mux);
+    let id = NamedView::new("mux".to_string(), mux);
     siv.add_fullscreen_layer(id);
     siv.run();
-    let mut mux: cursive::views::ViewRef<Mux> = siv.find_id("mux").unwrap();
+    let mut mux: cursive::views::ViewRef<Mux> = siv.find_name("mux").unwrap();
 
     assert_eq!(mux.focus(), node3);
     mux.on_event(Event::Alt(Key::Up));
@@ -86,10 +86,10 @@ fn test_diagonal() {
         .add_right_of(TextArea::new(), bottom_left_corner)
         .unwrap();
 
-    let id = IdView::new("mux".to_string(), mux);
+    let id = NamedView::new("mux".to_string(), mux);
     siv.add_fullscreen_layer(id);
     siv.run();
-    let mut mux: cursive::views::ViewRef<Mux> = siv.find_id("mux").unwrap();
+    let mut mux: cursive::views::ViewRef<Mux> = siv.find_name("mux").unwrap();
 
     println!("Moving left...");
     mux.on_event(Event::Alt(Key::Left));
@@ -128,12 +128,12 @@ fn test_quadratic() {
         .unwrap();
     let top_right_corner = mux.add_right_of(TextArea::new(), top_right_mid).unwrap();
 
-    let id = IdView::new("mux".to_string(), mux);
+    let id = NamedView::new("mux".to_string(), mux);
 
     siv.add_fullscreen_layer(id);
     siv.run();
 
-    let mut mux: cursive::views::ViewRef<Mux> = siv.find_id("mux").unwrap();
+    let mut mux: cursive::views::ViewRef<Mux> = siv.find_name("mux").unwrap();
 
     println!("Moving left...");
     mux.on_event(Event::Alt(Key::Left));
