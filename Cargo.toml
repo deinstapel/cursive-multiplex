@@ -14,13 +14,13 @@ documentation = "https://docs.rs/cursive-multiplex"
 [dependencies]
 cursive = { version = "0.14.0", default-features = false }
 indextree = "4.0.0"
-failure = "0.1.5"
-failure_derive = "0.1.5"
+failure = "0.1.7"
+failure_derive = "0.1.7"
 log = "0.4.8"
 
 [dev-dependencies]
-serde_json = "1.0.40"
-cursive = "0.14"
+serde_json = "1.0.48"
+cursive = "0.14.0"
 
 [badges]
 travis-ci = { repository = "deinstapel/cursive-multiplex" }

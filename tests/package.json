@@ -1,6 +1,6 @@
 {
   "name": "cursive-multiplex-tests",
   "dependencies": {
-    "shellshot": "^0.2.1"
+    "shellshot": "^0.2.2"
   }
 }
