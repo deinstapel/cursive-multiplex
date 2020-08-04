@@ -18,7 +18,7 @@
 //! fn main() {
 //!     let mut mux = Mux::new();
 //!     let node1 = mux.add_right_of(TextView::new("Hello World"), mux.root().build().unwrap()).unwrap();
-//!     let mut siv = Cursive::default();
+//!     let mut siv = cursive::default();
 //!     mux.add_right_of(TextView::new("Hello from me too!".to_string()), node1);
 //!     siv.add_fullscreen_layer(mux);
 //!
