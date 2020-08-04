@@ -5,7 +5,7 @@ use cursive::Cursive;
 use cursive_multiplex::Mux;
 
 fn main() {
-    let mut siv = Cursive::default();
+    let mut siv = cursive::default();
     let mut mux = Mux::new();
     let up = mux
         .add_right_of(TextView::new("Up"), mux.root().build().unwrap())
