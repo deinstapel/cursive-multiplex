@@ -32,7 +32,7 @@
 
 ---
 
-> This project is work-in-progress
+> This project is work-in-progress (this fork includes fixes for the cursive-core changes)
 
 This project provides a tiling window manager for [gyscos/cursive](https://github.com/gyscos/cursive) similar to Tmux. You can place any other `cursive` view inside of a `Mux` view to display these views in complex layouts side by side. Watch the demo below to see how it looks.
 
