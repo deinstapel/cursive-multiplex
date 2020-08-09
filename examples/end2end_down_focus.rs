@@ -1,7 +1,4 @@
-extern crate cursive;
-
 use cursive_core::views::TextArea;
-use cursive_core::Cursive;
 use cursive_multiplex::Mux;
 
 fn main() {

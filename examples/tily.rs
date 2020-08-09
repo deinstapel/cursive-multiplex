@@ -1,6 +1,3 @@
-extern crate cursive_core;
-extern crate cursive;
-
 use cursive_core::views::{ResizedView, TextArea, TextView};
 use cursive_core::Cursive;
 use cursive_multiplex::{Id, Mux};
