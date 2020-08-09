@@ -12,8 +12,7 @@ documentation = "https://docs.rs/cursive-multiplex"
 
 
 [dependencies]
-cursive_core = { version = "0.1.1", default-features = false }
-cursive = { version = "0.15.0", default-features = false }
+cursive_core ="^0.1"
 indextree = "4.0.0"
 failure = "0.1.7"
 failure_derive = "0.1.7"
@@ -21,7 +20,7 @@ log = "0.4.8"
 
 [dev-dependencies]
 serde_json = "1.0.48"
-cursive_core = "0.1.1"
+cursive="^0.15"
 
 [badges]
 travis-ci = { repository = "deinstapel/cursive-multiplex" }
