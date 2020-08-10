@@ -1,7 +1,7 @@
-use cursive::event::{Event, Key};
-use cursive::traits::View;
-use cursive::views::{NamedView, TextArea};
-use cursive::Cursive;
+use cursive_core::event::{Event, Key};
+use cursive_core::traits::View;
+use cursive_core::views::{NamedView, TextArea};
+use cursive_core::Cursive;
 use cursive_multiplex::Mux;
 
 #[test]
@@ -23,14 +23,14 @@ fn test_line_vertical() {
     siv.add_fullscreen_layer(id);
     siv.run();
 
-    let mut mux: cursive::views::ViewRef<Mux> = siv.find_name("mux").unwrap();
+    let mut mux: cursive_core::views::ViewRef<Mux> = siv.find_name("mux").unwrap();
     assert_eq!(node3, mux.focus());
     mux.on_event(Event::Alt(Key::Up));
     assert_eq!(node2, mux.focus());
     mux.on_event(Event::Alt(Key::Down));
     assert_eq!(node3, mux.focus());
     match mux.on_event(Event::Alt(Key::Left)) {
-        cursive::event::EventResult::Ignored => {}
+        cursive_core::event::EventResult::Ignored => {}
         _ => {
             assert!(false);
         }
@@ -51,16 +51,16 @@ fn test_triangle() {
     let id = NamedView::new("mux".to_string(), mux);
     siv.add_fullscreen_layer(id);
     siv.run();
-    let mut mux: cursive::views::ViewRef<Mux> = siv.find_name("mux").unwrap();
+    let mut mux: cursive_core::views::ViewRef<Mux> = siv.find_name("mux").unwrap();
 
     assert_eq!(mux.focus(), node3);
     mux.on_event(Event::Alt(Key::Up));
     assert_eq!(mux.focus(), node2);
     match mux.on_event(Event::Alt(Key::Left)) {
-        cursive::event::EventResult::Consumed(_) => {
+        cursive_core::event::EventResult::Consumed(_) => {
             assert_eq!(mux.focus(), node1);
         }
-        cursive::event::EventResult::Ignored => {
+        cursive_core::event::EventResult::Ignored => {
             println!(
                 "Not to be ignored Event ignored, Focus was at: {}",
                 mux.focus()
@@ -89,7 +89,7 @@ fn test_diagonal() {
     let id = NamedView::new("mux".to_string(), mux);
     siv.add_fullscreen_layer(id);
     siv.run();
-    let mut mux: cursive::views::ViewRef<Mux> = siv.find_name("mux").unwrap();
+    let mut mux: cursive_core::views::ViewRef<Mux> = siv.find_name("mux").unwrap();
 
     println!("Moving left...");
     mux.on_event(Event::Alt(Key::Left));
@@ -133,7 +133,7 @@ fn test_quadratic() {
     siv.add_fullscreen_layer(id);
     siv.run();
 
-    let mut mux: cursive::views::ViewRef<Mux> = siv.find_name("mux").unwrap();
+    let mut mux: cursive_core::views::ViewRef<Mux> = siv.find_name("mux").unwrap();
 
     println!("Moving left...");
     mux.on_event(Event::Alt(Key::Left));

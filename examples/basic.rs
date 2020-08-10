@@ -1,10 +1,8 @@
-extern crate cursive;
-
 use cursive::Cursive;
 use cursive_multiplex::Mux;
 
 fn main() {
-    let mut siv = Cursive::default();
+    let mut siv = cursive::default();
     // siv.show_debug_console();
 
     let text = "
@@ -21,7 +19,7 @@ Integer sit amet eleifend ex. Vivamus aliquam eros et massa pellentesque gravida
     let mut mux = Mux::new();
     let node1 = mux
         .add_right_of(
-            cursive::views::ScrollView::new(cursive::views::TextView::new(text)),
+            cursive::views::ScrollView::new(cursive_core::views::TextView::new(text)),
             mux.root().build().unwrap(),
         )
         .expect("text view failed");
@@ -32,32 +30,32 @@ Integer sit amet eleifend ex. Vivamus aliquam eros et massa pellentesque gravida
 
     let node2 = mux
         .add_right_of(
-            cursive::views::ResizedView::with_full_screen(cursive::views::TextArea::new()),
+            cursive::views::ResizedView::with_full_screen(cursive_core::views::TextArea::new()),
             node1,
         )
         .unwrap();
     let _ = mux
         .add_below(
-            cursive::views::ResizedView::with_full_screen(cursive::views::TextArea::new()),
+            cursive::views::ResizedView::with_full_screen(cursive_core::views::TextArea::new()),
             node2,
         )
         .unwrap();
 
     let idlayer = cursive::views::NamedView::new("Mux", mux);
-    let mut linear = cursive::views::LinearLayout::new(cursive::direction::Orientation::Vertical);
+    let mut linear = cursive::views::LinearLayout::new(cursive_core::direction::Orientation::Vertical);
 
     linear.add_child(idlayer);
     linear.add_child(menubar);
     siv.add_fullscreen_layer(linear);
     siv.add_global_callback('q', Cursive::quit);
     siv.add_global_callback(
-        cursive::event::Event::Alt(cursive::event::Key::Ins),
+        cursive::event::Event::Alt(cursive_core::event::Key::Ins),
         move |ref mut siv| {
             add_pane(siv);
         },
     );
     siv.add_global_callback(
-        cursive::event::Event::Alt(cursive::event::Key::Del),
+        cursive::event::Event::Alt(cursive_core::event::Key::Del),
         move |ref mut siv| {
             remove_pane(siv);
         },

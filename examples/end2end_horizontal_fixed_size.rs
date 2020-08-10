@@ -1,11 +1,8 @@
-extern crate cursive;
-
 use cursive::views::{Panel, ResizedView, TextView};
-use cursive::Cursive;
 use cursive_multiplex::Mux;
 
 fn main() {
-    let mut siv = Cursive::default();
+    let mut siv = cursive::default();
     let mut mux = Mux::new();
     let root = mux
         .add_right_of(TextView::new("Root"), mux.root().build().unwrap())

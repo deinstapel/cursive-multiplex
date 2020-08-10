@@ -260,7 +260,7 @@ impl Mux {
 #[cfg(test)]
 mod test {
     use super::Mux;
-    use cursive::views::DummyView;
+    use cursive_core::views::DummyView;
 
     #[test]
     fn left_to_right() {

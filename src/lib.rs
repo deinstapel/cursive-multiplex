@@ -18,7 +18,7 @@
 //! fn main() {
 //!     let mut mux = Mux::new();
 //!     let node1 = mux.add_right_of(TextView::new("Hello World"), mux.root().build().unwrap()).unwrap();
-//!     let mut siv = Cursive::default();
+//!     let mut siv = cursive::default();
 //!     mux.add_right_of(TextView::new("Hello from me too!".to_string()), node1);
 //!     siv.add_fullscreen_layer(mux);
 //!
@@ -42,10 +42,10 @@ mod id;
 mod node;
 mod path;
 
-use cursive::direction::{Absolute, Direction};
-use cursive::event::{AnyCb, Event, EventResult, Key, MouseButton, MouseEvent};
-use cursive::view::{Selector, View};
-use cursive::{Printer, Vec2};
+use cursive_core::direction::{Absolute, Direction};
+use cursive_core::event::{AnyCb, Event, EventResult, Key, MouseButton, MouseEvent};
+use cursive_core::view::{Selector, View};
+use cursive_core::{Printer, Vec2};
 pub use error::*;
 pub use id::Id;
 use node::Node;
@@ -532,9 +532,9 @@ impl Mux {
 #[cfg(test)]
 mod tree {
     use super::Mux;
-    use cursive::event::{Event, EventResult, Key};
-    use cursive::traits::View;
-    use cursive::views::DummyView;
+    use cursive_core::event::{Event, EventResult, Key};
+    use cursive_core::traits::View;
+    use cursive_core::views::DummyView;
 
     #[test]
     fn test_remove() {

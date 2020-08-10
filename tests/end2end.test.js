@@ -4,10 +4,10 @@ setup();
 
 function cargo_e2e(name, custom) {
     return async () => {
-        await expect.command(`cargo build --bin end2end_${name}`)
+        await expect.command(`cargo build --all`)
             .forExitCode(exp => exp.toBe(0));
         await expect.command(
-            `tmux new-session -x 80 -y 24 -d 'sh -c "TERM=xterm-256color ../target/debug/end2end_${name}"' \; set status off && sleep 0.05`
+            `tmux new-session -x 80 -y 24 -d 'sh -c "TERM=xterm-256color ../target/debug/examples/end2end_${name}"' \; set status off && sleep 0.05`
         ).forExitCode(exp => exp.toBe(0));
 
         if (!!custom) {

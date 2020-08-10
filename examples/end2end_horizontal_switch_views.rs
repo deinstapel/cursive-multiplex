@@ -1,11 +1,8 @@
-extern crate cursive;
-
 use cursive::views::TextView;
-use cursive::Cursive;
 use cursive_multiplex::Mux;
 
 fn main() {
-    let mut siv = Cursive::default();
+    let mut siv = cursive::default();
     let mut mux = Mux::new();
     let right = mux
         .add_right_of(
