@@ -108,16 +108,13 @@ impl Node {
     }
 
     pub(crate) fn set_pos(&mut self, pos: Vec2) {
-        if let Some(_) = self.view {
+        if self.view.is_some() {
             self.total_position = Some(pos);
         }
     }
 
     pub(crate) fn has_view(&self) -> bool {
-        match self.view {
-            Some(_) => true,
-            None => false,
-        }
+        self.view.is_some()
     }
 
     pub(crate) fn layout_view(&mut self, vec: Vec2) {
@@ -134,7 +131,7 @@ impl Node {
             view.on_event(evt.relativized(if zoomed {
                 Vec2::new(0, 0)
             } else {
-                self.total_position.unwrap_or(Vec2::new(0, 0))
+                self.total_position.unwrap_or_else(|| Vec2::new(0, 0))
             }))
         } else {
             EventResult::Ignored
@@ -142,19 +139,16 @@ impl Node {
     }
 
     pub(crate) fn draw(&self, printer: &Printer) {
-        match self.view {
-            Some(ref view) => {
-                let printer_crop = {
-                    if let Some(size) = self.size {
-                        // cropped_centered is bugged here, panics on valid values
-                        printer.cropped(size)
-                    } else {
-                        printer.clone()
-                    }
-                };
-                view.draw(&printer_crop);
-            }
-            None => {}
+        if let Some(ref view) = self.view {
+            let printer_crop = {
+                if let Some(size) = self.size {
+                    // cropped_centered is bugged here, panics on valid values
+                    printer.cropped(size)
+                } else {
+                    printer.clone()
+                }
+            };
+            view.draw(&printer_crop);
         }
     }
 

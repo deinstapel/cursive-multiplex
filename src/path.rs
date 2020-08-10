@@ -31,13 +31,11 @@ impl<'a> Path<'a> {
     /// ```
     /// # use cursive::views::DummyView;
     /// # use cursive_multiplex::Mux;
-    /// # fn main() {
     /// let mut mux = Mux::new();
     /// let node1 = mux.add_right_of(DummyView, mux.root().build().unwrap()).unwrap();
     /// mux.add_below(DummyView, node1);
     /// let path = mux.root().up().build();
     /// assert_eq!(node1, path.unwrap());
-    /// # }
     /// ```
     pub fn build(self) -> Option<Id> {
         if let Some(node) = self.cur_id {

@@ -50,7 +50,7 @@ impl Mux {
                 Ok(id)
             }
         } else {
-            Err(RemoveViewError::InvalidId { id: id })
+            Err(RemoveViewError::InvalidId { id })
         }
     }
 
@@ -233,20 +233,18 @@ impl Mux {
                         parent2.checked_append(fst, &mut self.tree)?;
                         Ok(())
                     }
-                } else {
-                    if parent2.children(&self.tree).next().unwrap() == snd {
+                } else if parent2.children(&self.tree).next().unwrap() == snd {
                         fst.detach(&mut self.tree);
                         snd.detach(&mut self.tree);
                         parent1.checked_append(snd, &mut self.tree)?;
                         parent2.checked_prepend(fst, &mut self.tree)?;
                         Ok(())
-                    } else {
-                        fst.detach(&mut self.tree);
-                        snd.detach(&mut self.tree);
-                        parent1.checked_append(snd, &mut self.tree)?;
-                        parent2.checked_append(fst, &mut self.tree)?;
-                        Ok(())
-                    }
+                } else {
+                    fst.detach(&mut self.tree);
+                    snd.detach(&mut self.tree);
+                    parent1.checked_append(snd, &mut self.tree)?;
+                    parent2.checked_append(fst, &mut self.tree)?;
+                    Ok(())
                 }
             } else {
                 Err(SwitchError::NoParent { from: snd, to: fst })

@@ -131,27 +131,21 @@ impl View for Mux {
 
     fn on_event(&mut self, evt: Event) -> EventResult {
         // pre_check if focus has to be changed, we dont want views react to mouse click out of their reach
-        match evt {
-            Event::Mouse {
-                offset,
-                position,
-                event,
-            } => match event {
-                MouseEvent::Press(MouseButton::Left) => {
-                    if let Some(off_pos) = position.checked_sub(offset) {
-                        if let Some(pane) = self.clicked_pane(off_pos) {
-                            if self.tree.get_mut(pane).unwrap().get_mut().take_focus() {
-                                if self.focus != pane {
-                                    self.focus = pane;
-                                    self.invalidated = true;
-                                }
-                            }
+        if let Event::Mouse {
+            offset,
+            position,
+            event,
+        } = evt {
+            if let MouseEvent::Press(MouseButton::Left) = event {
+                if let Some(off_pos) = position.checked_sub(offset) {
+                    if let Some(pane) = self.clicked_pane(off_pos) {
+                        if self.tree.get_mut(pane).unwrap().get_mut().take_focus() && self.focus != pane {
+                            self.focus = pane;
+                            self.invalidated = true;
                         }
                     }
                 }
-                _ => {}
-            },
-            _ => {}
+            }
         }
         let result = self
             .tree
@@ -188,7 +182,7 @@ impl Mux {
     pub fn new() -> Self {
         let mut new_tree = indextree::Arena::new();
         let new_root = new_tree.new_node(Node::new_empty(Orientation::Horizontal));
-        let new_mux = Mux {
+        Mux {
             tree: new_tree,
             root: new_root,
             history: VecDeque::new(),
@@ -205,8 +199,7 @@ impl Mux {
             resize_down: Event::Ctrl(Key::Down),
             zoom: Event::CtrlChar('x'),
             zoomed: false,
-        };
-        new_mux
+        }
     }
 
     /// Chainable setter for action
@@ -529,6 +522,12 @@ impl Mux {
     }
 }
 
+impl Default for Mux {
+    fn default() -> Self {
+        Mux::new()
+    }
+}
+
 #[cfg(test)]
 mod tree {
     use super::Mux;
@@ -626,7 +625,7 @@ mod tree {
         for node in mux.root.descendants(&mux.tree) {
             print!("{},", node);
         }
-        println!("");
+        println!();
     }
 
     fn direction_test(mux: &mut Mux) {
