@@ -154,7 +154,7 @@ mux.switch_views(new_node, old_node)?;
 
 If you find any bugs/unexpected behaviour or you have a proposition for future changes open an issue describing the current behaviour and what you expected.
 
-## Development [![cargo test](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fcargo-test.json)](https://travis-ci.org/deinstapel/cursive-multiplex) [![shellshot](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fshellshot.json)](https://github.com/fin-ger/shellshot)
+## Development [![cargo test](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fcargo-test.json)](https://travis-ci.org/deinstapel/cursive-multiplex)
 
 ### Running the tests
 
