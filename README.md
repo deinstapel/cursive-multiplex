@@ -158,19 +158,7 @@ If you find any bugs/unexpected behaviour or you have a proposition for future c
 
 ### Running the tests
 
-> :bangbang: **CAUTION** :bangbang: This crate uses Tmux for end2end testing and will **kill your Tmux server** during testing!
-
-#### Preparing integration tests
-
-In order to run the integration tests, you first need to install a recent version of `>=npm-10` and `>=tmux-2.6`!
-
-After `npm` and `tmux` are installed, install required dependencies:
-
-```
-$ ./scripts/prepare-end2end-tests.sh
-```
-
-This will use `npm` to install `jest` and `shellshot` in the `tests` folder.
+> The tests will no longer kill your tmux server. As the tests have moved to use cursive exclusively in combination with [insta](https://crates.io/crates/insta)
 
 #### Running all test suites
 
@@ -181,6 +169,23 @@ $ cargo test
 ```
 
 to execute all available tests.
+
+#### Investigating failed tests
+
+In case some test fails with your changes, you can use the `cargo-insta` tool to investigate the test case.
+
+To install
+```
+$ cargo install cargo-insta
+```
+
+and to run the tests and investigate all failing tests interactively.
+
+```
+$ cargo insta review
+```
+
+Any changes between the expected and received screen will be then displayed.
 
 #### shields.io endpoints
 
