@@ -8,7 +8,7 @@ license = "BSD-3-Clause"
 name = "cursive-multiplex"
 readme = "README.md"
 repository = "https://github.com/deinstapel/cursive-multiplex"
-version = "0.4.0"
+version = "0.4.1-alpha.0"
 [badges]
 [badges.is-it-maintained-open-issues]
 repository = "deinstapel/cursive-multiplex"
