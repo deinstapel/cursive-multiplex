@@ -1,0 +1,32 @@
+---
+source: tests/end2end.rs
+expression: tsiv.last_screen()
+---
+captured piece:
+x01234567890123456789012345678901234567890123456789012345678901234567890123456789x
+0Ups asd                                                                         |
+1    asd                                                                         |
+2    asd asd                                                                     |
+3    as a                                                                        |
+4    s da                                                                        |
+5    s a                                                                         |
+6    sdasdasdasdasdfasfgarhbah                                                   |
+7    ga                                                                          |
+8    fa                                                                          |
+9    sdf                                                                         |
+0    asf                                                                         |
+1                                                                                |
+2                                                                                |
+3                                                                                |
+4                                                                                |
+5    a                                                                           |
+6    sdfa                                                                        |
+7    sdf                                                                         |
+8    ad                                                                          |
+9    fas                                                                         |
+0    f                                                                           |
+1                                                                                |
+2                                                                                |
+3                                                                                |
+x--------------------------------------------------------------------------------x
+

@@ -1,27 +1,30 @@
 [package]
-name = "cursive-multiplex"
-version = "0.3.2-alpha.0"
 authors = ["Fin Christensen <christensen.fin@gmail.com>", "Johannes Wünsche <johannes.wuensche97@gmail.com>"]
-edition = "2018"
 description = "A tmux like multiplexer for gyscos/cursive views"
-license = "BSD-3-Clause"
-readme = "README.md"
-keywords = ["cursive", "tui", "terminal", "tiling", "view"]
-repository = "https://github.com/deinstapel/cursive-multiplex"
 documentation = "https://docs.rs/cursive-multiplex"
+edition = "2018"
+keywords = ["cursive", "tui", "terminal", "tiling", "view"]
+license = "BSD-3-Clause"
+name = "cursive-multiplex"
+readme = "README.md"
+repository = "https://github.com/deinstapel/cursive-multiplex"
+version = "0.3.2-alpha.0"
+[badges]
+[badges.is-it-maintained-open-issues]
+repository = "deinstapel/cursive-multiplex"
 
+[badges.travis-ci]
+repository = "deinstapel/cursive-multiplex"
 
 [dependencies]
-cursive_core ="^0.1"
-indextree = "4.0.0"
+cursive_core = "^0.1"
 failure = "0.1.7"
 failure_derive = "0.1.7"
+indextree = "4.0.0"
 log = "0.4.8"
 
 [dev-dependencies]
+crossbeam = "^0.7"
+cursive = "^0.15"
 serde_json = "1.0.48"
-cursive="^0.15"
-
-[badges]
-travis-ci = { repository = "deinstapel/cursive-multiplex" }
-is-it-maintained-open-issues = { repository = "deinstapel/cursive-multiplex" } 
+insta = "^0.16"
