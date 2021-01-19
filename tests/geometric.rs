@@ -1,14 +1,13 @@
 use cursive_core::event::{Event, Key};
 use cursive_core::traits::View;
 use cursive_core::views::{NamedView, TextArea};
-use cursive_core::Cursive;
 use cursive_multiplex::Mux;
 
 #[test]
 fn test_line_vertical() {
     // Vertical test
 
-    let mut siv = Cursive::dummy();
+    let mut siv = cursive::dummy();
 
     println!("Vertical Test");
     let mut test_mux = Mux::new();
@@ -43,7 +42,7 @@ fn test_triangle() {
     let node1 = mux
         .add_right_of(TextArea::new(), mux.root().build().unwrap())
         .expect("first failed");
-    let mut siv = Cursive::dummy();
+    let mut siv = cursive::dummy();
 
     let node2 = mux.add_right_of(TextArea::new(), node1).unwrap();
     let node3 = mux.add_below(TextArea::new(), node2).unwrap();
@@ -76,7 +75,7 @@ fn test_diagonal() {
     let node1 = mux
         .add_right_of(TextArea::new(), mux.root().build().unwrap())
         .expect("first failed");
-    let mut siv = Cursive::dummy();
+    let mut siv = cursive::dummy();
 
     let node2 = mux.add_right_of(TextArea::new(), node1).unwrap();
     let _ = mux.add_below(TextArea::new(), node2).unwrap();
@@ -112,7 +111,7 @@ fn test_diagonal() {
 fn test_quadratic() {
     // Quadratic test
 
-    let mut siv = Cursive::dummy();
+    let mut siv = cursive::dummy();
     let mut mux = Mux::new();
     let top_left_corner = mux
         .add_right_of(TextArea::new(), mux.root().build().unwrap())
