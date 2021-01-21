@@ -14,7 +14,7 @@ where
     let backend = Backend::init(Some(Vec2::new(80, 24)));
     let frames = backend.stream();
     let input = backend.input();
-    let mut siv = cursive::Cursive::new(|| backend);
+    let mut siv = cursive::Cursive::new().into_runner(backend);
     cb(&mut siv);
     input
         .send(Some(Event::Refresh))
@@ -24,7 +24,7 @@ where
 }
 
 struct TestCursive {
-    siv: cursive::Cursive,
+    siv: cursive::CursiveRunner<cursive::Cursive>,
     frames: Receiver<ObservedScreen>,
     input: Sender<Option<Event>>,
 }
@@ -37,7 +37,7 @@ impl TestCursive {
         let backend = Backend::init(Some(Vec2::new(80, 24)));
         let frames = backend.stream();
         let input = backend.input();
-        let mut siv = cursive::Cursive::new(|| backend);
+        let mut siv = cursive::Cursive::new().into_runner(backend);
         cb(&mut siv);
         input
             .send(Some(Event::Refresh))

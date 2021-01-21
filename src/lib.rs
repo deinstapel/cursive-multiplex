@@ -44,7 +44,7 @@ mod path;
 
 use cursive_core::direction::{Absolute, Direction};
 use cursive_core::event::{AnyCb, Event, EventResult, Key, MouseButton, MouseEvent};
-use cursive_core::view::{Selector, View};
+use cursive_core::view::{Selector, View, ViewNotFound};
 use cursive_core::{Printer, Vec2};
 pub use error::*;
 pub use id::Id;
@@ -116,7 +116,7 @@ impl View for Mux {
         true
     }
 
-    fn focus_view(&mut self, _: &Selector) -> Result<(), ()> {
+    fn focus_view(&mut self, _: &Selector) -> Result<(), ViewNotFound> {
         Ok(())
     }
 
@@ -135,11 +135,14 @@ impl View for Mux {
             offset,
             position,
             event,
-        } = evt {
+        } = evt
+        {
             if let MouseEvent::Press(MouseButton::Left) = event {
                 if let Some(off_pos) = position.checked_sub(offset) {
                     if let Some(pane) = self.clicked_pane(off_pos) {
-                        if self.tree.get_mut(pane).unwrap().get_mut().take_focus() && self.focus != pane {
+                        if self.tree.get_mut(pane).unwrap().get_mut().take_focus()
+                            && self.focus != pane
+                        {
                             self.focus = pane;
                             self.invalidated = true;
                         }
