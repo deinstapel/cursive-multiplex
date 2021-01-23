@@ -209,6 +209,12 @@ impl Mux {
             .and_then(|node| node.view.as_ref())
     }
 
+    pub fn get_current_view_mut(&mut self) -> Option<&mut Box<dyn View>> {
+        self.tree.get_mut(self.focus.clone())
+            .map(|node| node.get_mut())
+            .and_then(|node| node.view.as_mut())
+    }
+
     /// Chainable setter for action
     pub fn with_move_focus_up(mut self, evt: Event) -> Self {
         self.focus_up = evt;
