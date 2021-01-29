@@ -18,13 +18,12 @@ repository = "deinstapel/cursive-multiplex"
 
 [dependencies]
 cursive_core = "^0.2"
-failure = "0.1.7"
-failure_derive = "0.1.7"
-indextree = "4.0.0"
-log = "0.4.8"
+thiserror = "1.0"
+indextree = "4.3"
+log = "0.4"
 
 [dev-dependencies]
 crossbeam = "^0.8"
 cursive = "^0.16"
-serde_json = "1.0.48"
-insta = "^0.16"
+serde_json = "1.0"
+insta = "1.5"

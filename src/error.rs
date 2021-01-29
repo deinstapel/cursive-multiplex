@@ -1,46 +1,35 @@
 use crate::Id;
+use thiserror::Error;
 
-#[derive(Debug, Fail)]
+#[derive(Debug, Error)]
 pub enum AddViewError {
-    #[fail(display = "some error occured")]
+    #[error("some error occured")]
     GenericError {},
 }
 
-#[derive(Debug, Fail)]
+#[derive(Debug, Error)]
 pub enum RemoveViewError {
-    #[fail(display = "invalid id given, cannot be removed: {}", id)]
+    #[error("invalid id given, cannot be removed: {}", id)]
     InvalidId { id: Id },
 
-    #[fail(display = "id has no parent, cannot be removed: {}", id)]
+    #[error("id has no parent, cannot be removed: {}", id)]
     NoParent { id: Id },
 
-    #[fail(display = "something broke, oh no ")]
+    #[error("something broke, oh no ")]
     Generic {},
 }
 
-#[derive(Debug, Fail)]
+#[derive(Debug, Error)]
 pub enum SwitchError {
-    #[fail(display = "node {} has no parent to be switched to from {}", from, to)]
+    #[error("node {} has no parent to be switched to from {}", from, to)]
     NoParent { from: Id, to: Id },
 
-    #[fail(display = "error while switching, figuring out...")]
+    #[error("error while switching, figuring out...")]
     Failed {},
 }
 
 impl std::convert::From<indextree::NodeError> for SwitchError {
     fn from(_error: indextree::NodeError) -> Self {
         SwitchError::Failed {}
-    }
-}
-
-impl std::convert::From<failure::Error> for RemoveViewError {
-    fn from(_error: failure::Error) -> Self {
-        RemoveViewError::Generic {}
-    }
-}
-
-impl std::convert::From<failure::Error> for AddViewError {
-    fn from(_error: failure::Error) -> Self {
-        AddViewError::GenericError {}
     }
 }
