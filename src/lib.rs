@@ -203,16 +203,20 @@ impl Mux {
         }
     }
 
-    pub fn get_current_view(&self) -> Option<&Box<dyn View>> {
+    pub fn active_view(&self) -> Option<&dyn View> {
         self.tree.get(self.focus.clone())
             .map(|node| node.get())
-            .and_then(|node| node.view.as_ref())
+            .and_then(|node| {
+                node.view.as_ref().map(|b| &**b)
+            })
     }
 
-    pub fn get_current_view_mut(&mut self) -> Option<&mut Box<dyn View>> {
+    pub fn active_view_mut(&mut self) -> Option<&mut dyn View> {
         self.tree.get_mut(self.focus.clone())
             .map(|node| node.get_mut())
-            .and_then(|node| node.view.as_mut())
+            .and_then(|node| {
+              node.view.as_mut().map(|b| &mut **b)
+            })
     }
 
     /// Chainable setter for action
