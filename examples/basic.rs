@@ -1,4 +1,5 @@
-use cursive::Cursive;
+use cursive::{Cursive, views::{LinearLayout, Menubar, NamedView, ResizedView, ScrollView, TextArea}};
+use cursive_core::{direction::Orientation, views::TextView};
 use cursive_multiplex::Mux;
 
 fn main() {
@@ -19,30 +20,34 @@ Integer sit amet eleifend ex. Vivamus aliquam eros et massa pellentesque gravida
     let mut mux = Mux::new();
     let node1 = mux
         .add_right_of(
-            cursive::views::ScrollView::new(cursive_core::views::TextView::new(text)),
+            ScrollView::new(TextView::new(text)),
             mux.root().build().unwrap(),
         )
         .expect("text view failed");
 
-    let mut menubar = cursive::views::Menubar::new();
+    let mut menubar = Menubar::new();
     menubar.add_leaf("Hello from cursive_multiplex", |_| {});
     menubar.add_leaf("Feel free to try out the examples simply with `cargo run --example=basic` or `cargo run --example=tily`", |_|{});
 
     let node2 = mux
         .add_right_of(
-            cursive::views::ResizedView::with_full_screen(cursive_core::views::TextArea::new()),
+            ResizedView::with_full_screen(TextArea::new()),
             node1,
         )
         .unwrap();
+    if let Some(textview) = mux.active_view_mut() {
+        let valid_view = textview.downcast_mut::<ResizedView<TextArea>>().unwrap().get_inner_mut();
+        valid_view.set_content("This text is added by later modification! Check out the `basic` example to see how.");
+    }
     let _ = mux
         .add_below(
-            cursive::views::ResizedView::with_full_screen(cursive_core::views::TextArea::new()),
+            ResizedView::with_full_screen(TextArea::new()),
             node2,
         )
         .unwrap();
 
-    let idlayer = cursive::views::NamedView::new("Mux", mux);
-    let mut linear = cursive::views::LinearLayout::new(cursive_core::direction::Orientation::Vertical);
+    let idlayer = NamedView::new("Mux", mux);
+    let mut linear = LinearLayout::new(Orientation::Vertical);
 
     linear.add_child(idlayer);
     linear.add_child(menubar);
