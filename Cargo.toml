@@ -17,13 +17,13 @@ repository = "deinstapel/cursive-multiplex"
 repository = "deinstapel/cursive-multiplex"
 
 [dependencies]
-cursive_core = "^0.2"
+cursive_core = "0.2"
 thiserror = "1.0"
 indextree = "4.3"
 log = "0.4"
 
 [dev-dependencies]
-crossbeam = "^0.8"
-cursive = "^0.16"
+crossbeam = "0.8"
+cursive = "0.16"
 serde_json = "1.0"
-insta = "1.5"
+insta = "1.7"
