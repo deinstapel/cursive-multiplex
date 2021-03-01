@@ -203,6 +203,22 @@ impl Mux {
         }
     }
 
+    pub fn active_view(&self) -> Option<&dyn View> {
+        self.tree.get(self.focus.clone())
+            .map(|node| node.get())
+            .and_then(|node| {
+                node.view.as_ref().map(|b| &**b)
+            })
+    }
+
+    pub fn active_view_mut(&mut self) -> Option<&mut dyn View> {
+        self.tree.get_mut(self.focus.clone())
+            .map(|node| node.get_mut())
+            .and_then(|node| {
+              node.view.as_mut().map(|b| &mut **b)
+            })
+    }
+
     /// Chainable setter for action
     pub fn with_move_focus_up(mut self, evt: Event) -> Self {
         self.focus_up = evt;
