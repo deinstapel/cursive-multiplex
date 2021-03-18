@@ -1,14 +1,16 @@
 use crate::{AnyCb, Direction, Event, EventResult, Orientation, Printer, Selector, Vec2, View};
 use cursive_core::direction::Absolute;
 use std::convert::TryFrom;
+use crate::error::RenderError;
 
 pub(crate) struct Node {
     pub(crate) view: Option<Box<dyn View>>,
     pub(crate) orientation: Orientation,
     pub(crate) split_ratio_offset: i16,
+    pub(crate) split_ratio: f32,
     total_position: Option<Vec2>,
     size: Option<Vec2>,
-    total_size: Option<Vec2>,
+    pub(crate) total_size: Option<Vec2>,
 }
 
 impl Node {
@@ -20,9 +22,11 @@ impl Node {
             view: Some(Box::new(v)),
             orientation: orit,
             split_ratio_offset: 0,
+            split_ratio: 0.5,
             total_position: None,
             size: None,
-            total_size: None,
+            total_size: None
+
         }
     }
 
@@ -38,69 +42,70 @@ impl Node {
         false
     }
 
-    pub(crate) fn move_offset(&mut self, direction: Absolute) -> Result<(), ()> {
+    pub(crate) fn move_offset(&mut self, direction: Absolute) -> Result<(), RenderError> {
         if let Some(total_size) = self.total_size {
             match direction {
                 Absolute::Left | Absolute::Up => match direction.into() {
                     Orientation::Horizontal => {
-                        if i16::try_from(total_size.x).unwrap() / 2 - self.split_ratio_offset.abs()
+                        if (total_size.x as f32 * self.split_ratio) as i16 - self.split_ratio_offset.abs()
                             > 1
                             || self.split_ratio_offset > 0
                         {
                             self.split_ratio_offset -= 1;
                             Ok(())
                         } else {
-                            Err(())
+                            Err(RenderError::Arithmetic{})
                         }
                     }
                     Orientation::Vertical => {
-                        if i16::try_from(total_size.y).unwrap() / 2 - self.split_ratio_offset.abs()
+                        if (total_size.y as f32 * self.split_ratio) as i16 - self.split_ratio_offset.abs()
                             > 1
                             || self.split_ratio_offset > 0
                         {
                             self.split_ratio_offset -= 1;
                             Ok(())
                         } else {
-                            Err(())
+                            Err(RenderError::Arithmetic{})
                         }
                     }
                 },
                 Absolute::Right | Absolute::Down => match direction.into() {
                     Orientation::Horizontal => {
-                        if i16::try_from(total_size.x).unwrap() / 2 - self.split_ratio_offset.abs()
+                        if (total_size.x as f32 * (1.0 - self.split_ratio)) as i16 - self.split_ratio_offset.abs()
                             > 1
                             || self.split_ratio_offset < 0
                         {
                             self.split_ratio_offset += 1;
                             Ok(())
                         } else {
-                            Err(())
+                            Err(RenderError::Arithmetic{})
                         }
                     }
                     Orientation::Vertical => {
-                        if i16::try_from(total_size.y).unwrap() / 2 - self.split_ratio_offset.abs()
+                        if (total_size.y as f32 * (1.0 - self.split_ratio)) as i16 - self.split_ratio_offset.abs()
                             > 1
                             || self.split_ratio_offset < 0
                         {
                             self.split_ratio_offset += 1;
                             Ok(())
                         } else {
-                            Err(())
+                            Err(RenderError::Arithmetic{})
                         }
                     }
                 },
-                _ => Err(()),
+                _ => Err(RenderError::Arithmetic{}),
             }
         } else {
-            Err(())
+            Err(RenderError::Arithmetic{})
         }
     }
 
-    pub(crate) fn new_empty(orit: Orientation) -> Self {
+    pub(crate) fn new_empty(orit: Orientation, split: f32) -> Self {
         Self {
             view: None,
             orientation: orit,
             split_ratio_offset: 0,
+            split_ratio: split,
             total_position: None,
             size: None,
             total_size: None,

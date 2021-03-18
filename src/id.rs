@@ -130,6 +130,27 @@ impl Mux {
         self.add_node_id(v, id, Orientation::Horizontal, SearchPath::Right)
     }
 
+    /// Sets the dimensions for partitioning two adjacent panes in the same container.
+    /// ```
+    /// # extern crate cursive;
+    /// # fn main () {
+    /// let mut mux = cursive_multiplex::Mux::new();
+    /// let node1 = mux.add_right_of(cursive::views::DummyView, mux.root().build().unwrap()).unwrap();
+    /// let new_node = mux.add_right_of(cursive::views::DummyView, node1).unwrap();
+    /// mux.set_container_split_ratio(new_node, 0.3).unwrap();
+    /// # }
+    /// ```
+    pub fn set_container_split_ratio<T: Into<f32>>(&mut self, id: Id, input: T) -> Result<(), AddViewError> {
+        let ratio = input.into().clamp(0.0, 1.0);
+        if let Some(parent_id) = self.tree.get(id).ok_or(AddViewError::GenericError{})?.parent() {
+            let parent = self.tree.get_mut(parent_id).ok_or(AddViewError::GenericError{})?.get_mut();
+            parent.split_ratio = ratio;
+            return Ok(())
+        }
+        Err(AddViewError::GenericError{})
+
+    }
+
     fn add_node_id<T>(
         &mut self,
         v: T,
@@ -172,7 +193,7 @@ impl Mux {
 
             node_id.detach(&mut self.tree);
 
-            let new_intermediate = self.tree.new_node(Node::new_empty(orientation));
+            let new_intermediate = self.tree.new_node(Node::new_empty(orientation, self.default_split_ratio));
             match position {
                 SearchPath::Right | SearchPath::Down => {
                     parent.append(new_intermediate, &mut self.tree);

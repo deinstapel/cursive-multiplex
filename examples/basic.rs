@@ -46,6 +46,8 @@ Integer sit amet eleifend ex. Vivamus aliquam eros et massa pellentesque gravida
         )
         .unwrap();
 
+    mux.set_container_split_ratio(node2, 0.7).unwrap();
+
     let idlayer = NamedView::new("Mux", mux);
     let mut linear = LinearLayout::new(Orientation::Vertical);
 

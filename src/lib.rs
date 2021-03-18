@@ -61,6 +61,7 @@ enum Orientation {
 pub struct Mux {
     tree: indextree::Arena<Node>,
     root: indextree::NodeId,
+    default_split_ratio: f32,
     focus: indextree::NodeId,
     history: VecDeque<(indextree::NodeId, indextree::NodeId, Absolute)>,
     history_length: usize,
@@ -182,10 +183,11 @@ impl Mux {
     /// ```
     pub fn new() -> Self {
         let mut new_tree = indextree::Arena::new();
-        let new_root = new_tree.new_node(Node::new_empty(Orientation::Horizontal));
+        let new_root = new_tree.new_node(Node::new_empty(Orientation::Horizontal, 0.5));
         Mux {
             tree: new_tree,
             root: new_root,
+            default_split_ratio: 0.5,
             history: VecDeque::new(),
             history_length: 50,
             invalidated: true,
@@ -218,6 +220,22 @@ impl Mux {
               node.view.as_mut().map(|b| &mut **b)
             })
     }
+
+    /// Chainable setter for the default split ratio.
+    /// Note: Only values from 0 to 1 are valid, if your value exceeds this range it will be clamped.
+    pub fn with_default_split_ratio<T: Into<f32>>(mut self, split: T) -> Self {
+        self.default_split_ratio = split.into().clamp(0.0, 1.0);
+        self.tree.get_mut(self.root).unwrap().get_mut().split_ratio = self.default_split_ratio;
+        self
+    }
+
+    /// Setter for the default split ratio.
+    /// Note: Only values from 0 to 1 are valid, if your value exceeds this range it will be clamped.
+    pub fn set_default_split_ratio<T: Into<f32>>(&mut self, split: T) {
+        self.default_split_ratio = split.into().clamp(0.0, 1.0);
+        self.tree.get_mut(self.root).unwrap().get_mut().split_ratio = self.default_split_ratio;
+    }
+
 
     /// Chainable setter for action
     pub fn with_move_focus_up(mut self, evt: Event) -> Self {
@@ -357,13 +375,13 @@ impl Mux {
                 match orit {
                     Orientation::Horizontal => {
                         const1 = Vec2::new(
-                            Mux::add_offset(constraint.x / 2, root_data.split_ratio_offset),
+                            Mux::add_offset((constraint.x as f32 * root_data.split_ratio) as usize, root_data.split_ratio_offset),
                             constraint.y,
                         );
                         const2 = Vec2::new(
                             {
                                 let size = Mux::add_offset(
-                                    constraint.x / 2,
+                                    (constraint.x as f32 * root_data.split_ratio) as usize,
                                     -root_data.split_ratio_offset,
                                 );
                                 if constraint.x % 2 == 0 {
@@ -381,11 +399,11 @@ impl Mux {
                     Orientation::Vertical => {
                         const1 = Vec2::new(
                             constraint.x,
-                            Mux::add_offset(constraint.y / 2, root_data.split_ratio_offset),
+                            Mux::add_offset((constraint.y as f32 * root_data.split_ratio) as usize, root_data.split_ratio_offset),
                         );
                         const2 = Vec2::new(constraint.x, {
                             let size =
-                                Mux::add_offset(constraint.y / 2, -root_data.split_ratio_offset);
+                                Mux::add_offset((constraint.y as f32 * root_data.split_ratio) as usize, -root_data.split_ratio_offset);
                             if constraint.y % 2 == 0 {
                                 match size.checked_sub(1) {
                                     Some(res) => res,
@@ -461,34 +479,34 @@ impl Mux {
                 match root_data.orientation {
                     Orientation::Horizontal => {
                         printer1 = printer.cropped(Vec2::new(
-                            Mux::add_offset(printer.size.x / 2, root_data.split_ratio_offset),
+                            Mux::add_offset((printer.size.x as f32 * root_data.split_ratio) as usize, root_data.split_ratio_offset),
                             printer.size.y,
                         ));
                         printer2 = printer
                             .offset(Vec2::new(
-                                Mux::add_offset(printer.size.x / 2, root_data.split_ratio_offset)
+                                Mux::add_offset((printer.size.x as f32 * root_data.split_ratio) as usize, root_data.split_ratio_offset)
                                     + 1,
                                 0,
                             ))
                             .cropped(Vec2::new(
-                                Mux::add_offset(printer.size.x / 2, -root_data.split_ratio_offset),
+                                Mux::add_offset((printer.size.x as f32 * root_data.split_ratio) as usize, -root_data.split_ratio_offset),
                                 printer.size.y,
                             ));
                     }
                     Orientation::Vertical => {
                         printer1 = printer.cropped(Vec2::new(
                             printer.size.x,
-                            Mux::add_offset(printer.size.y / 2, root_data.split_ratio_offset),
+                            Mux::add_offset((printer.size.y as f32 * root_data.split_ratio) as usize, root_data.split_ratio_offset),
                         ));
                         printer2 = printer
                             .offset(Vec2::new(
                                 0,
-                                Mux::add_offset(printer.size.y / 2, root_data.split_ratio_offset)
+                                Mux::add_offset((printer.size.y as f32 * root_data.split_ratio) as usize, root_data.split_ratio_offset)
                                     + 1,
                             ))
                             .cropped(Vec2::new(
                                 printer.size.x,
-                                Mux::add_offset(printer.size.y / 2, -root_data.split_ratio_offset),
+                                Mux::add_offset((printer.size.y as f32 * root_data.split_ratio) as usize, -root_data.split_ratio_offset),
                             ));
                     }
                 }
@@ -499,7 +517,7 @@ impl Mux {
                                 Vec2::new(
                                     0,
                                     Mux::add_offset(
-                                        printer.size.y / 2,
+                                        (printer.size.y as f32 * root_data.split_ratio) as usize,
                                         root_data.split_ratio_offset,
                                     ),
                                 ),
@@ -513,7 +531,7 @@ impl Mux {
                             printer.print_vline(
                                 Vec2::new(
                                     Mux::add_offset(
-                                        printer.size.x / 2,
+                                        (printer.size.x as f32 * root_data.split_ratio) as usize,
                                         root_data.split_ratio_offset,
                                     ),
                                     0,

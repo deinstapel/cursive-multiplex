@@ -352,7 +352,7 @@ impl Mux {
                             self.invalidated = true;
                             return EventResult::Consumed(None);
                         }
-                        Err(()) => break,
+                        Err(_) => break,
                     }
                 } else {
                     parent = parent.unwrap().ancestors(&self.tree).nth(1);

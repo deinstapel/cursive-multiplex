@@ -28,6 +28,12 @@ pub enum SwitchError {
     Failed {},
 }
 
+#[derive(Debug, Error)]
+pub enum RenderError {
+    #[error("encountered arithmetic error")]
+    Arithmetic {},
+}
+
 impl std::convert::From<indextree::NodeError> for SwitchError {
     fn from(_error: indextree::NodeError) -> Self {
         SwitchError::Failed {}
