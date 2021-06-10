@@ -5,9 +5,9 @@ die() {
     exit 1
 }
 
-if [ -z "$GITHUB_USERNAME" ]
+if [ -z "$GITHUB_ACTOR" ]
 then
-    die "the GITHUB_USERNAME environment variable is not set"
+    die "the GITHUB_ACTOR environment variable is not set"
 fi
 
 if [ -z "$GITHUB_TOKEN" ]
@@ -15,16 +15,18 @@ then
     die "the GITHUB_TOKEN environment variable is not set"
 fi
 
-if [ -z "$GITHUB_REPO_SLUG" ]
+if [ -z "$GITHUB_REPOSITORY" ]
 then
-    die "the GITHUB_REPO_SLUG environment variable is not set"
+    die "the GITHUB_REPOSITORY environment variable is not set"
 fi
 
 (
     cd "$(git rev-parse --show-toplevel)/target/shields" || die "cannot find project root!"
-    repo="https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GITHUB_REPO_SLUG}.git"
+    repo="https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
     tmp_dir=$(mktemp -d -t cursive-multiplex-deploy-XXXXXXXX)
 
+    git config --global user.email "runner@ci"
+    git config --global user.name "Github CI Runner"
     try=0
     while :; do
         if ! git clone --branch gh-pages "$repo" "$tmp_dir"
@@ -42,7 +44,7 @@ fi
         (
             cd "$tmp_dir" || die "failed to enter temporary directory"
             git add -A
-            git commit -m "Travis CI badge deployment"
+            git commit -m "Github CI badge deployment"
             git push origin gh-pages:gh-pages
         )
 

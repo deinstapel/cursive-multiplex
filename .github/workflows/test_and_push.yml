@@ -1,0 +1,34 @@
+name: "test_and_badge"
+
+on:
+  push:
+    branches:
+      - master
+      - main
+
+jobs:
+  test_and_badge:
+    name: "Test and Badge"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Prepare"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl git
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          source $HOME/.cargo/env
+          rustup toolchain install nightly
+          git clone https://github.com/deinstapel/cursive-multiplex.git
+
+      - name: "Build and Test"
+        run: |
+          cd cursive-multiplex
+          RUST_CHAIN=stable ./scripts/ci-build.sh
+          RUST_CHAIN=nightly ./scripts/ci-build.sh
+
+      - name: "Deploy Badge"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd cursive-multiplex
+          ./scripts/deploy-badges.sh
