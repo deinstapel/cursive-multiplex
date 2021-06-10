@@ -605,3 +605,59 @@ fn end2end_left_right_focus_history() {
     tsiv.input(Event::Alt(Key::Right));
     assert_display_snapshot!(tsiv.last_screen());
 }
+
+#[test]
+fn end2end_custom_split_ratio_horizontal() {
+    let mut tsiv = TestCursive::new(|siv: &mut cursive::Cursive| {
+        let mut mux = Mux::new();
+        mux.set_default_split_ratio(0.8);
+        let first = mux
+            .add_right_of(TextArea::new(), mux.root().build().unwrap())
+            .expect("First Insert failed");
+        let _ = mux.add_left_of(TextView::new("A very very long text to demonstrate the split that happens later on in this example."), first).expect("Could not add second view.");
+        siv.add_fullscreen_layer(mux);
+    });
+    assert_display_snapshot!(tsiv.last_screen());
+}
+
+#[test]
+fn end2end_custom_split_ratio_vertical() {
+    let mut tsiv = TestCursive::new(|siv: &mut cursive::Cursive| {
+        let mut mux = Mux::new();
+        mux.set_default_split_ratio(0.8);
+        let first = mux
+            .add_right_of(TextArea::new(), mux.root().build().unwrap())
+            .expect("First Insert failed");
+        let _ = mux.add_below(TextView::new("A very very long text to demonstrate the split that happens later on in this example."), first).expect("Could not add second view.");
+        siv.add_fullscreen_layer(mux);
+    });
+    assert_display_snapshot!(tsiv.last_screen());
+}
+
+#[test]
+fn end2end_custom_split_ratio_undershoot() {
+    let mut tsiv = TestCursive::new(|siv: &mut cursive::Cursive| {
+        let mut mux = Mux::new();
+        mux.set_default_split_ratio(-0.2);
+        let first = mux
+            .add_right_of(TextArea::new(), mux.root().build().unwrap())
+            .expect("First Insert failed");
+        let _ = mux.add_left_of(TextView::new("A very very long text to demonstrate the split that happens later on in this example."), first).expect("Could not add second view.");
+        siv.add_fullscreen_layer(mux);
+    });
+    assert_display_snapshot!(tsiv.last_screen());
+}
+
+#[test]
+fn end2end_custom_split_ratio_overshoot() {
+    let mut tsiv = TestCursive::new(|siv: &mut cursive::Cursive| {
+        let mut mux = Mux::new();
+        mux.set_default_split_ratio(42.0);
+        let first = mux
+            .add_right_of(TextArea::new(), mux.root().build().unwrap())
+            .expect("First Insert failed");
+        let _ = mux.add_left_of(TextView::new("A very very long text to demonstrate the split that happens later on in this example."), first).expect("Could not add second view.");
+        siv.add_fullscreen_layer(mux);
+    });
+    assert_display_snapshot!(tsiv.last_screen());
+}
