@@ -158,8 +158,6 @@ If you find any bugs/unexpected behaviour or you have a proposition for future c
 
 ### Running the tests
 
-> The tests will no longer kill your tmux server. As the tests have moved to use cursive exclusively in combination with [insta](https://crates.io/crates/insta)
-
 #### Running all test suites
 
 Just run
