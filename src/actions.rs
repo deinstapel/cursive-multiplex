@@ -62,18 +62,10 @@ impl Mux {
 
     fn traverse_single_node(&self, action: SearchPath, turn_point: Id, cur_node: Id) -> Option<Id> {
         let left = || -> Option<Id> {
-            if let Some(left) = cur_node.children(&self.tree).next() {
-                Some(left)
-            } else {
-                None
-            }
+            cur_node.children(&self.tree).next()
         };
         let right = || -> Option<Id> {
-            if let Some(right) = cur_node.children(&self.tree).last() {
-                Some(right)
-            } else {
-                None
-            }
+            cur_node.children(&self.tree).last()
         };
         let up = left;
         let down = right;

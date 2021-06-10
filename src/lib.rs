@@ -133,18 +133,16 @@ impl View for Mux {
         if let Event::Mouse {
             offset,
             position,
-            event,
+            event: MouseEvent::Press(MouseButton::Left),
         } = evt
         {
-            if let MouseEvent::Press(MouseButton::Left) = event {
-                if let Some(off_pos) = position.checked_sub(offset) {
-                    if let Some(pane) = self.clicked_pane(off_pos) {
-                        if self.tree.get_mut(pane).unwrap().get_mut().take_focus()
-                            && self.focus != pane
-                        {
-                            self.focus = pane;
-                            self.invalidated = true;
-                        }
+            if let Some(off_pos) = position.checked_sub(offset) {
+                if let Some(pane) = self.clicked_pane(off_pos) {
+                    if self.tree.get_mut(pane).unwrap().get_mut().take_focus()
+                        && self.focus != pane
+                    {
+                        self.focus = pane;
+                        self.invalidated = true;
                     }
                 }
             }
@@ -206,18 +204,18 @@ impl Mux {
     }
 
     pub fn active_view(&self) -> Option<&dyn View> {
-        self.tree.get(self.focus.clone())
+        self.tree.get(self.focus)
             .map(|node| node.get())
             .and_then(|node| {
-                node.view.as_ref().map(|b| &**b)
+                node.view.as_deref()
             })
     }
 
     pub fn active_view_mut(&mut self) -> Option<&mut dyn View> {
-        self.tree.get_mut(self.focus.clone())
+        self.tree.get_mut(self.focus)
             .map(|node| node.get_mut())
             .and_then(|node| {
-              node.view.as_mut().map(|b| &mut **b)
+              node.view.as_deref_mut()
             })
     }
 

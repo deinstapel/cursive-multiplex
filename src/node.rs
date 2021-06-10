@@ -1,6 +1,5 @@
 use crate::{AnyCb, Direction, Event, EventResult, Orientation, Printer, Selector, Vec2, View};
 use cursive_core::direction::Absolute;
-use std::convert::TryFrom;
 use crate::error::RenderError;
 
 pub(crate) struct Node {
