@@ -3,10 +3,10 @@
 </p>
 <h1 align="center">Welcome to cursive-multiplex 👋</h1>
 <p align="center">
-  <a href="https://travis-ci.org/deinstapel/cursive-multiplex">
+  <a href="https://github.com/deinstapel/cursive-multiplex/actions">
     <img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fstable-build.json" alt="stable build">
   </a>
-  <a href="https://travis-ci.org/deinstapel/cursive-multiplex">
+  <a href="https://github.com/deinstapel/cursive-multiplex/actions">
     <img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fnightly-build.json" alt="nightly build">
   </a>
   <a href="https://crates.io/crates/cursive-multiplex">
@@ -154,7 +154,7 @@ mux.switch_views(new_node, old_node)?;
 
 If you find any bugs/unexpected behaviour or you have a proposition for future changes open an issue describing the current behaviour and what you expected.
 
-## Development [![cargo test](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fcargo-test.json)](https://travis-ci.org/deinstapel/cursive-multiplex)
+## Development [![cargo test](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeinstapel.github.io%2Fcursive-multiplex%2Fcargo-test.json)](https://github.com/deinstapel/cursive-multiplex/actions)
 
 ### Running the tests
 
