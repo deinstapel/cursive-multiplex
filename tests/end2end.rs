@@ -661,3 +661,18 @@ fn end2end_custom_split_ratio_overshoot() {
     });
     assert_display_snapshot!(tsiv.last_screen());
 }
+
+#[test]
+fn end2end_custom_split_ratio_overshoot_correction() {
+    let mut tsiv = TestCursive::new(|siv: &mut cursive::Cursive| {
+        let mut mux = Mux::new();
+        mux.set_default_split_ratio(42.0);
+        let first = mux
+            .add_right_of(TextArea::new(), mux.root().build().unwrap())
+            .expect("First Insert failed");
+        mux.set_container_split_ratio(first, 0.5).expect("Could not modify id");
+        let _ = mux.add_left_of(TextView::new("A very very long text to demonstrate the split that happens later on in this example."), first).expect("Could not add second view.");
+        siv.add_fullscreen_layer(mux);
+    });
+    assert_display_snapshot!(tsiv.last_screen());
+}
