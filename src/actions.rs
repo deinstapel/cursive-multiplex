@@ -61,12 +61,8 @@ impl Mux {
     }
 
     fn traverse_single_node(&self, action: SearchPath, turn_point: Id, cur_node: Id) -> Option<Id> {
-        let left = || -> Option<Id> {
-            cur_node.children(&self.tree).next()
-        };
-        let right = || -> Option<Id> {
-            cur_node.children(&self.tree).last()
-        };
+        let left = || -> Option<Id> { cur_node.children(&self.tree).next() };
+        let right = || -> Option<Id> { cur_node.children(&self.tree).last() };
         let up = left;
         let down = right;
         match self.tree.get(turn_point).unwrap().get().orientation {

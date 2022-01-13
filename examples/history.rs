@@ -30,7 +30,8 @@ fn main() {
         .unwrap();
 
     let idlayer = cursive_core::views::NamedView::new("Mux", mux);
-    let mut linear = cursive_core::views::LinearLayout::new(cursive_core::direction::Orientation::Vertical);
+    let mut linear =
+        cursive_core::views::LinearLayout::new(cursive_core::direction::Orientation::Vertical);
 
     linear.add_child(idlayer);
     linear.add_child(menubar);

@@ -1,4 +1,7 @@
-use cursive::{Cursive, views::{LinearLayout, Menubar, NamedView, ResizedView, ScrollView, TextArea}};
+use cursive::{
+    views::{LinearLayout, Menubar, NamedView, ResizedView, ScrollView, TextArea},
+    Cursive,
+};
 use cursive_core::{direction::Orientation, views::TextView};
 use cursive_multiplex::Mux;
 
@@ -30,20 +33,19 @@ Integer sit amet eleifend ex. Vivamus aliquam eros et massa pellentesque gravida
     menubar.add_leaf("Feel free to try out the examples simply with `cargo run --example=basic` or `cargo run --example=tily`", |_|{});
 
     let node2 = mux
-        .add_right_of(
-            ResizedView::with_full_screen(TextArea::new()),
-            node1,
-        )
+        .add_right_of(ResizedView::with_full_screen(TextArea::new()), node1)
         .unwrap();
     if let Some(textview) = mux.active_view_mut() {
-        let valid_view = textview.downcast_mut::<ResizedView<TextArea>>().unwrap().get_inner_mut();
-        valid_view.set_content("This text is added by later modification! Check out the `basic` example to see how.");
+        let valid_view = textview
+            .downcast_mut::<ResizedView<TextArea>>()
+            .unwrap()
+            .get_inner_mut();
+        valid_view.set_content(
+            "This text is added by later modification! Check out the `basic` example to see how.",
+        );
     }
     let _ = mux
-        .add_below(
-            ResizedView::with_full_screen(TextArea::new()),
-            node2,
-        )
+        .add_below(ResizedView::with_full_screen(TextArea::new()), node2)
         .unwrap();
 
     mux.set_container_split_ratio(node2, 0.7).unwrap();

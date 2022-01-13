@@ -140,15 +140,27 @@ impl Mux {
     /// mux.set_container_split_ratio(new_node, 0.3).unwrap();
     /// # }
     /// ```
-    pub fn set_container_split_ratio<T: Into<f32>>(&mut self, id: Id, input: T) -> Result<(), AddViewError> {
+    pub fn set_container_split_ratio<T: Into<f32>>(
+        &mut self,
+        id: Id,
+        input: T,
+    ) -> Result<(), AddViewError> {
         let ratio = input.into().clamp(0.0, 1.0);
-        if let Some(parent_id) = self.tree.get(id).ok_or(AddViewError::GenericError{})?.parent() {
-            let parent = self.tree.get_mut(parent_id).ok_or(AddViewError::GenericError{})?.get_mut();
+        if let Some(parent_id) = self
+            .tree
+            .get(id)
+            .ok_or(AddViewError::GenericError {})?
+            .parent()
+        {
+            let parent = self
+                .tree
+                .get_mut(parent_id)
+                .ok_or(AddViewError::GenericError {})?
+                .get_mut();
             parent.split_ratio = ratio;
-            return Ok(())
+            return Ok(());
         }
-        Err(AddViewError::GenericError{})
-
+        Err(AddViewError::GenericError {})
     }
 
     fn add_node_id<T>(
@@ -193,7 +205,9 @@ impl Mux {
 
             node_id.detach(&mut self.tree);
 
-            let new_intermediate = self.tree.new_node(Node::new_empty(orientation, self.default_split_ratio));
+            let new_intermediate = self
+                .tree
+                .new_node(Node::new_empty(orientation, self.default_split_ratio));
             match position {
                 SearchPath::Right | SearchPath::Down => {
                     parent.append(new_intermediate, &mut self.tree);
@@ -255,11 +269,11 @@ impl Mux {
                         Ok(())
                     }
                 } else if parent2.children(&self.tree).next().unwrap() == snd {
-                        fst.detach(&mut self.tree);
-                        snd.detach(&mut self.tree);
-                        parent1.checked_append(snd, &mut self.tree)?;
-                        parent2.checked_prepend(fst, &mut self.tree)?;
-                        Ok(())
+                    fst.detach(&mut self.tree);
+                    snd.detach(&mut self.tree);
+                    parent1.checked_append(snd, &mut self.tree)?;
+                    parent2.checked_prepend(fst, &mut self.tree)?;
+                    Ok(())
                 } else {
                     fst.detach(&mut self.tree);
                     snd.detach(&mut self.tree);
