@@ -45,9 +45,9 @@ impl Mux {
                 // Traverse the path down again
                 if let Some(focus) = self.traverse_search_path(path, turn_point, direction, origin)
                 {
-                    if self.tree.get_mut(focus).unwrap().get_mut().take_focus() {
+                    if let Ok(result) = self.tree.get_mut(focus).unwrap().get_mut().take_focus() {
                         self.focus = focus;
-                        EventResult::Consumed(None)
+                        EventResult::Consumed(None).and(result)
                     } else {
                         // rejected
                         self.move_focus_relative(direction, focus, origin)

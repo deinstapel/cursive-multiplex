@@ -1,6 +1,7 @@
 use crate::error::RenderError;
 use crate::{AnyCb, Direction, Event, EventResult, Orientation, Printer, Selector, Vec2, View};
 use cursive_core::direction::Absolute;
+use cursive_core::view::CannotFocus;
 
 pub(crate) struct Node {
     pub(crate) view: Option<Box<dyn View>>,
@@ -159,11 +160,11 @@ impl Node {
         }
     }
 
-    pub(crate) fn take_focus(&mut self) -> bool {
+    pub(crate) fn take_focus(&mut self) -> Result<EventResult, CannotFocus> {
         if let Some(view) = self.view.as_mut() {
             view.take_focus(Direction::none())
         } else {
-            false
+            Err(CannotFocus)
         }
     }
 

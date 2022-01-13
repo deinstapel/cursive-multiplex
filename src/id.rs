@@ -229,7 +229,16 @@ impl Mux {
             debug!("Changed order");
         }
 
-        if self.tree.get_mut(new_node).unwrap().get_mut().take_focus() {
+        if self
+            .tree
+            .get_mut(new_node)
+            .unwrap()
+            .get_mut()
+            .take_focus()
+            .is_ok()
+        {
+            // Here we discard the potential callback from the focused view.
+            // Ideally we would bubble it up so it can be processed.
             self.focus = new_node;
             debug!("Changed Focus: {}", new_node);
         }

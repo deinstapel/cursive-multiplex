@@ -42,7 +42,7 @@ mod path;
 
 use cursive_core::direction::{Absolute, Direction};
 use cursive_core::event::{AnyCb, Event, EventResult, Key, MouseButton, MouseEvent};
-use cursive_core::view::{Selector, View, ViewNotFound};
+use cursive_core::view::{CannotFocus, Selector, View, ViewNotFound};
 use cursive_core::{Printer, Vec2};
 pub use error::*;
 pub use id::Id;
@@ -111,12 +111,12 @@ impl View for Mux {
         }
     }
 
-    fn take_focus(&mut self, _source: Direction) -> bool {
-        true
+    fn take_focus(&mut self, _source: Direction) -> Result<EventResult, CannotFocus> {
+        Ok(EventResult::consumed())
     }
 
-    fn focus_view(&mut self, _: &Selector) -> Result<(), ViewNotFound> {
-        Ok(())
+    fn focus_view(&mut self, _: &Selector) -> Result<EventResult, ViewNotFound> {
+        Ok(EventResult::consumed())
     }
 
     fn call_on_any<'a>(&mut self, slct: &Selector, cb: AnyCb<'a>) {
@@ -130,6 +130,7 @@ impl View for Mux {
 
     fn on_event(&mut self, evt: Event) -> EventResult {
         // pre_check if focus has to be changed, we dont want views react to mouse click out of their reach
+        let mut result = EventResult::Ignored;
         if let Event::Mouse {
             offset,
             position,
@@ -138,20 +139,23 @@ impl View for Mux {
         {
             if let Some(off_pos) = position.checked_sub(offset) {
                 if let Some(pane) = self.clicked_pane(off_pos) {
-                    if self.tree.get_mut(pane).unwrap().get_mut().take_focus() && self.focus != pane
-                    {
-                        self.focus = pane;
-                        self.invalidated = true;
+                    if let Ok(res) = self.tree.get_mut(pane).unwrap().get_mut().take_focus() {
+                        if self.focus != pane {
+                            result = res;
+                            self.focus = pane;
+                            self.invalidated = true;
+                        }
                     }
                 }
             }
         }
-        let result = self
-            .tree
-            .get_mut(self.focus)
-            .unwrap()
-            .get_mut()
-            .on_event(evt.clone(), self.zoomed);
+        let result = result.and(
+            self.tree
+                .get_mut(self.focus)
+                .unwrap()
+                .get_mut()
+                .on_event(evt.clone(), self.zoomed),
+        );
         match result {
             EventResult::Ignored => match evt {
                 _ if self.focus_left == evt => self.move_focus(Absolute::Left),
