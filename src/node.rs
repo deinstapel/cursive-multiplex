@@ -1,6 +1,7 @@
+use crate::error::RenderError;
 use crate::{AnyCb, Direction, Event, EventResult, Orientation, Printer, Selector, Vec2, View};
 use cursive_core::direction::Absolute;
-use crate::error::RenderError;
+use cursive_core::view::CannotFocus;
 
 pub(crate) struct Node {
     pub(crate) view: Option<Box<dyn View>>,
@@ -24,8 +25,7 @@ impl Node {
             split_ratio: 0.5,
             total_position: None,
             size: None,
-            total_size: None
-
+            total_size: None,
         }
     }
 
@@ -46,56 +46,60 @@ impl Node {
             match direction {
                 Absolute::Left | Absolute::Up => match direction.into() {
                     Orientation::Horizontal => {
-                        if (total_size.x as f32 * self.split_ratio) as i16 - self.split_ratio_offset.abs()
+                        if (total_size.x as f32 * self.split_ratio) as i16
+                            - self.split_ratio_offset.abs()
                             > 1
                             || self.split_ratio_offset > 0
                         {
                             self.split_ratio_offset -= 1;
                             Ok(())
                         } else {
-                            Err(RenderError::Arithmetic{})
+                            Err(RenderError::Arithmetic {})
                         }
                     }
                     Orientation::Vertical => {
-                        if (total_size.y as f32 * self.split_ratio) as i16 - self.split_ratio_offset.abs()
+                        if (total_size.y as f32 * self.split_ratio) as i16
+                            - self.split_ratio_offset.abs()
                             > 1
                             || self.split_ratio_offset > 0
                         {
                             self.split_ratio_offset -= 1;
                             Ok(())
                         } else {
-                            Err(RenderError::Arithmetic{})
+                            Err(RenderError::Arithmetic {})
                         }
                     }
                 },
                 Absolute::Right | Absolute::Down => match direction.into() {
                     Orientation::Horizontal => {
-                        if (total_size.x as f32 * (1.0 - self.split_ratio)) as i16 - self.split_ratio_offset.abs()
+                        if (total_size.x as f32 * (1.0 - self.split_ratio)) as i16
+                            - self.split_ratio_offset.abs()
                             > 1
                             || self.split_ratio_offset < 0
                         {
                             self.split_ratio_offset += 1;
                             Ok(())
                         } else {
-                            Err(RenderError::Arithmetic{})
+                            Err(RenderError::Arithmetic {})
                         }
                     }
                     Orientation::Vertical => {
-                        if (total_size.y as f32 * (1.0 - self.split_ratio)) as i16 - self.split_ratio_offset.abs()
+                        if (total_size.y as f32 * (1.0 - self.split_ratio)) as i16
+                            - self.split_ratio_offset.abs()
                             > 1
                             || self.split_ratio_offset < 0
                         {
                             self.split_ratio_offset += 1;
                             Ok(())
                         } else {
-                            Err(RenderError::Arithmetic{})
+                            Err(RenderError::Arithmetic {})
                         }
                     }
                 },
-                _ => Err(RenderError::Arithmetic{}),
+                _ => Err(RenderError::Arithmetic {}),
             }
         } else {
-            Err(RenderError::Arithmetic{})
+            Err(RenderError::Arithmetic {})
         }
     }
 
@@ -156,11 +160,11 @@ impl Node {
         }
     }
 
-    pub(crate) fn take_focus(&mut self) -> bool {
+    pub(crate) fn take_focus(&mut self) -> Result<EventResult, CannotFocus> {
         if let Some(view) = self.view.as_mut() {
             view.take_focus(Direction::none())
         } else {
-            false
+            Err(CannotFocus)
         }
     }
 

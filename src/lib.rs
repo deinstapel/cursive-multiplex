@@ -42,7 +42,7 @@ mod path;
 
 use cursive_core::direction::{Absolute, Direction};
 use cursive_core::event::{AnyCb, Event, EventResult, Key, MouseButton, MouseEvent};
-use cursive_core::view::{Selector, View, ViewNotFound};
+use cursive_core::view::{CannotFocus, Selector, View, ViewNotFound};
 use cursive_core::{Printer, Vec2};
 pub use error::*;
 pub use id::Id;
@@ -111,12 +111,12 @@ impl View for Mux {
         }
     }
 
-    fn take_focus(&mut self, _source: Direction) -> bool {
-        true
+    fn take_focus(&mut self, _source: Direction) -> Result<EventResult, CannotFocus> {
+        Ok(EventResult::consumed())
     }
 
-    fn focus_view(&mut self, _: &Selector) -> Result<(), ViewNotFound> {
-        Ok(())
+    fn focus_view(&mut self, _: &Selector) -> Result<EventResult, ViewNotFound> {
+        Ok(EventResult::consumed())
     }
 
     fn call_on_any<'a>(&mut self, slct: &Selector, cb: AnyCb<'a>) {
@@ -130,6 +130,7 @@ impl View for Mux {
 
     fn on_event(&mut self, evt: Event) -> EventResult {
         // pre_check if focus has to be changed, we dont want views react to mouse click out of their reach
+        let mut result = EventResult::Ignored;
         if let Event::Mouse {
             offset,
             position,
@@ -138,21 +139,23 @@ impl View for Mux {
         {
             if let Some(off_pos) = position.checked_sub(offset) {
                 if let Some(pane) = self.clicked_pane(off_pos) {
-                    if self.tree.get_mut(pane).unwrap().get_mut().take_focus()
-                        && self.focus != pane
-                    {
-                        self.focus = pane;
-                        self.invalidated = true;
+                    if let Ok(res) = self.tree.get_mut(pane).unwrap().get_mut().take_focus() {
+                        if self.focus != pane {
+                            result = res;
+                            self.focus = pane;
+                            self.invalidated = true;
+                        }
                     }
                 }
             }
         }
-        let result = self
-            .tree
-            .get_mut(self.focus)
-            .unwrap()
-            .get_mut()
-            .on_event(evt.clone(), self.zoomed);
+        let result = result.and(
+            self.tree
+                .get_mut(self.focus)
+                .unwrap()
+                .get_mut()
+                .on_event(evt.clone(), self.zoomed),
+        );
         match result {
             EventResult::Ignored => match evt {
                 _ if self.focus_left == evt => self.move_focus(Absolute::Left),
@@ -204,19 +207,17 @@ impl Mux {
     }
 
     pub fn active_view(&self) -> Option<&dyn View> {
-        self.tree.get(self.focus)
+        self.tree
+            .get(self.focus)
             .map(|node| node.get())
-            .and_then(|node| {
-                node.view.as_deref()
-            })
+            .and_then(|node| node.view.as_deref())
     }
 
     pub fn active_view_mut(&mut self) -> Option<&mut dyn View> {
-        self.tree.get_mut(self.focus)
+        self.tree
+            .get_mut(self.focus)
             .map(|node| node.get_mut())
-            .and_then(|node| {
-              node.view.as_deref_mut()
-            })
+            .and_then(|node| node.view.as_deref_mut())
     }
 
     /// Chainable setter for the default split ratio.
@@ -233,7 +234,6 @@ impl Mux {
         self.default_split_ratio = split.into().clamp(0.0, 1.0);
         self.tree.get_mut(self.root).unwrap().get_mut().split_ratio = self.default_split_ratio;
     }
-
 
     /// Chainable setter for action
     pub fn with_move_focus_up(mut self, evt: Event) -> Self {
@@ -373,7 +373,10 @@ impl Mux {
                 match orit {
                     Orientation::Horizontal => {
                         const1 = Vec2::new(
-                            Mux::add_offset((constraint.x as f32 * root_data.split_ratio) as usize, root_data.split_ratio_offset),
+                            Mux::add_offset(
+                                (constraint.x as f32 * root_data.split_ratio) as usize,
+                                root_data.split_ratio_offset,
+                            ),
                             constraint.y,
                         );
                         const2 = Vec2::new(
@@ -397,11 +400,16 @@ impl Mux {
                     Orientation::Vertical => {
                         const1 = Vec2::new(
                             constraint.x,
-                            Mux::add_offset((constraint.y as f32 * root_data.split_ratio) as usize, root_data.split_ratio_offset),
+                            Mux::add_offset(
+                                (constraint.y as f32 * root_data.split_ratio) as usize,
+                                root_data.split_ratio_offset,
+                            ),
                         );
                         const2 = Vec2::new(constraint.x, {
-                            let size =
-                                Mux::add_offset((constraint.y as f32 * root_data.split_ratio) as usize, -root_data.split_ratio_offset);
+                            let size = Mux::add_offset(
+                                (constraint.y as f32 * root_data.split_ratio) as usize,
+                                -root_data.split_ratio_offset,
+                            );
                             if constraint.y % 2 == 0 {
                                 match size.checked_sub(1) {
                                     Some(res) => res,
@@ -477,34 +485,50 @@ impl Mux {
                 match root_data.orientation {
                     Orientation::Horizontal => {
                         printer1 = printer.cropped(Vec2::new(
-                            Mux::add_offset((printer.size.x as f32 * root_data.split_ratio) as usize, root_data.split_ratio_offset),
+                            Mux::add_offset(
+                                (printer.size.x as f32 * root_data.split_ratio) as usize,
+                                root_data.split_ratio_offset,
+                            ),
                             printer.size.y,
                         ));
                         printer2 = printer
                             .offset(Vec2::new(
-                                Mux::add_offset((printer.size.x as f32 * root_data.split_ratio) as usize, root_data.split_ratio_offset)
-                                    + 1,
+                                Mux::add_offset(
+                                    (printer.size.x as f32 * root_data.split_ratio) as usize,
+                                    root_data.split_ratio_offset,
+                                ) + 1,
                                 0,
                             ))
                             .cropped(Vec2::new(
-                                Mux::add_offset((printer.size.x as f32 * root_data.split_ratio) as usize, -root_data.split_ratio_offset),
+                                Mux::add_offset(
+                                    (printer.size.x as f32 * root_data.split_ratio) as usize,
+                                    -root_data.split_ratio_offset,
+                                ),
                                 printer.size.y,
                             ));
                     }
                     Orientation::Vertical => {
                         printer1 = printer.cropped(Vec2::new(
                             printer.size.x,
-                            Mux::add_offset((printer.size.y as f32 * root_data.split_ratio) as usize, root_data.split_ratio_offset),
+                            Mux::add_offset(
+                                (printer.size.y as f32 * root_data.split_ratio) as usize,
+                                root_data.split_ratio_offset,
+                            ),
                         ));
                         printer2 = printer
                             .offset(Vec2::new(
                                 0,
-                                Mux::add_offset((printer.size.y as f32 * root_data.split_ratio) as usize, root_data.split_ratio_offset)
-                                    + 1,
+                                Mux::add_offset(
+                                    (printer.size.y as f32 * root_data.split_ratio) as usize,
+                                    root_data.split_ratio_offset,
+                                ) + 1,
                             ))
                             .cropped(Vec2::new(
                                 printer.size.x,
-                                Mux::add_offset((printer.size.y as f32 * root_data.split_ratio) as usize, -root_data.split_ratio_offset),
+                                Mux::add_offset(
+                                    (printer.size.y as f32 * root_data.split_ratio) as usize,
+                                    -root_data.split_ratio_offset,
+                                ),
                             ));
                     }
                 }

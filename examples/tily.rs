@@ -75,6 +75,9 @@ fn main() {
 
 fn add_plane(siv: &mut Cursive, node: Id) {
     let mut foo: cursive_core::views::ViewRef<Mux> = siv.find_name("Steven").unwrap();
-    foo.add_below(cursive_core::views::TextView::new("Dynamic!".to_string()), node)
-        .unwrap();
+    foo.add_below(
+        cursive_core::views::TextView::new("Dynamic!".to_string()),
+        node,
+    )
+    .unwrap();
 }
